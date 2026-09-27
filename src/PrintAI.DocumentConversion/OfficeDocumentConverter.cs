@@ -72,6 +72,9 @@ public static class OfficeDocumentConverter
             if (!process.Start())
                 throw new InvalidOperationException("Không khởi động được LibreOffice converter.");
 
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
             var effectiveTimeout = timeout ?? TimeSpan.FromSeconds(60);
             using var cts = new CancellationTokenSource(effectiveTimeout);
 
@@ -86,8 +89,8 @@ public static class OfficeDocumentConverter
                     $"LibreOffice conversion exceeded {effectiveTimeout.TotalSeconds:0} seconds.");
             }
 
-            var stdout = process.StandardOutput.ReadToEnd();
-            var stderr = process.StandardError.ReadToEnd();
+            var stdout = stdoutTask.GetAwaiter().GetResult();
+            var stderr = stderrTask.GetAwaiter().GetResult();
 
             if (process.ExitCode != 0)
             {

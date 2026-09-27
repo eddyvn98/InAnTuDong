@@ -46,6 +46,26 @@ app.MapGet("/api/demo-preview.png", () =>
     return Results.File(png, "image/png");
 });
 
+app.MapGet("/api/calibration-a4.png", (int? dpi) =>
+{
+    var requestedDpi = Math.Clamp(dpi ?? 300, 72, 600);
+    var png = CalibrationPageRenderer.RenderA4Png(requestedDpi);
+    return Results.File(png, "image/png");
+});
+
+app.MapGet("/api/calibration-info", () => Results.Ok(new
+{
+    paper = new { widthMm = 210, heightMm = 297 },
+    references = new[]
+    {
+        new { name = "outer inset box", expected = "190 x 277 mm", origin = "10 mm from each A4 edge" },
+        new { name = "large square", expected = "100 x 100 mm", origin = "20 mm left, 30 mm top" },
+        new { name = "small square", expected = "50 x 50 mm", origin = "140 mm left, 30 mm top" },
+        new { name = "horizontal ruler", expected = "100 mm", origin = "20 mm left, 160 mm top" },
+        new { name = "vertical ruler", expected = "100 mm", origin = "20 mm left, 175 mm top" }
+    }
+}));
+
 app.MapFallbackToFile("index.html");
 app.Run();
 

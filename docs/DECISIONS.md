@@ -49,3 +49,13 @@ Status: accepted
 Status: accepted
 
 JPG/PNG/PDF inspection lives behind a source-inspection boundary. SkiaSharp handles raster decode/orientation, MetadataExtractor reads available image metadata, and PDFsharp reads PDF page metadata. Layout remains file-format independent.
+
+## ADR-011 - Windows driver capability data is advisory until calibrated
+Status: accepted
+
+Printer paper sizes, printable area, hard margins, color and duplex capability are read from the installed Windows driver. These values define the initial device capability boundary, but exact physical scale is not trusted until a calibration page is printed and measured.
+
+## ADR-012 - Windows printer code stays out of the Railway path
+Status: accepted
+
+Printer enumeration and capability inspection live in a Windows-only project. Shared domain/layout/rendering remain cross-platform and the Railway web demo does not reference the Windows printing assembly.

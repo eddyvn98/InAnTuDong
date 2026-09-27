@@ -28,18 +28,18 @@ Exit: repo itself is enough to resume the project.
 - [x] JPG/PNG metadata inspector
 - [x] PDF metadata/page inspector
 - [x] basic mm geometry tests
-- [ ] golden preview tests
+- [x] golden preview tests
 
 Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 
 ## M2 - Windows print path
 
-- [ ] enumerate installed printers
-- [ ] select printer/profile
-- [ ] query capabilities/printable area
+- [x] enumerate installed printers
+- [x] select printer/profile
+- [x] query capabilities/printable area
 - [ ] submit through Windows spooler/driver
 - [ ] status/errors
-- [ ] Epson L3310 calibration page
+- [x] Epson L3310 calibration page
 - [ ] physical measurement verification
 
 ## M3 - AI planner + desktop UX

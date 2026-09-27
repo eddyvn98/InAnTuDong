@@ -23,6 +23,8 @@
     <ProjectReference Include="../PrintAI.Rendering/PrintAI.Rendering.csproj" />
     <ProjectReference Include="../PrintAI.SourceInspection/PrintAI.SourceInspection.csproj" />
     <ProjectReference Include="../PrintAI.Windows.Printing/PrintAI.Windows.Printing.csproj" />
+    <ProjectReference Include="../PrintAI.Scanning/PrintAI.Scanning.csproj" />
+    <ProjectReference Include="../PrintAI.Windows.Scanning/PrintAI.Windows.Scanning.csproj" />
   </ItemGroup>
 
   <ItemGroup>

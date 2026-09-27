@@ -36,7 +36,11 @@ jobs:
         shell: pwsh
         run: |
           [xml]$project = Get-Content src/PrintAI.Desktop/PrintAI.Desktop.csproj
-          $version = [string]($project.Project.PropertyGroup.Version | Select-Object -First 1)
+          $versionNode = $project.SelectSingleNode("/Project/PropertyGroup/Version")
+          if ($null -eq $versionNode) {
+            throw "Desktop project does not define Version."
+          }
+          $version = $versionNode.InnerText
 
           @(
             "product=Print AI"

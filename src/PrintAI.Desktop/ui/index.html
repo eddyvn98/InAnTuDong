@@ -42,7 +42,7 @@
 <main>
 <header>
   <div><h1>Print AI</h1><div class="sub">Nguồn → AI plan → deterministic preview → policy → Windows printer</div></div>
-  <span class="pill">M3 AI desktop</span>
+  <span class="pill">M5 workflows</span>
 </header>
 <div class="layout">
   <section class="panel">
@@ -122,6 +122,12 @@
       <button class="full" id="applySettings">Áp dụng & render lại</button>
     </div>
 
+    <h3>M5 workflows</h3>
+    <label>Preset built-in</label>
+    <select id="workflow"></select>
+    <div class="box" id="workflowInfo">Chọn source page rồi áp dụng preset.</div>
+    <button class="primary" id="applyWorkflow" style="width:100%">Áp dụng workflow</button>
+
     <h3>Recipes</h3>
     <label>Tên recipe</label>
     <input id="recipeName" placeholder="Ví dụ: Ảnh 4x6 có cut marks">
@@ -166,6 +172,9 @@ document.querySelector('#scan').onclick=()=>post('scan',{
   outputFormat:document.querySelector('#scanFormat').value,
   autoCrop:document.querySelector('#autoCrop').checked,
   autoDeskew:document.querySelector('#autoDeskew').checked
+});
+document.querySelector('#applyWorkflow').onclick=()=>post('applyBuiltInWorkflow',{
+  workflowId:document.querySelector('#workflow').value
 });
 document.querySelector('#saveRecipe').onclick=()=>post('saveRecipe',{
   name:document.querySelector('#recipeName').value.trim(),
@@ -242,6 +251,24 @@ function render(s){
     '<option value="'+esc(x.Id)+'" '+(x.Id===s.SelectedScanner?'selected':'')+'>'+esc(x.Name)+'</option>'
   ).join(''):'<option value="">Không có scanner WIA</option>';
   document.querySelector('#scan').disabled=!s.Scanners.length;
+
+  const workflow=document.querySelector('#workflow');
+  workflow.innerHTML=s.BuiltInWorkflows.length?s.BuiltInWorkflows.map(x=>
+    '<option value="'+esc(x.Id)+'" '+(x.Id===s.SelectedWorkflowId?'selected':'')+'>'+esc(x.Name)+'</option>'
+  ).join(''):'<option value="">Không có workflow</option>';
+  document.querySelector('#applyWorkflow').disabled=!s.BuiltInWorkflows.length||!s.Pages.length;
+  const selectedWorkflow=s.BuiltInWorkflows.find(x=>x.Id===workflow.value)||s.BuiltInWorkflows[0];
+  document.querySelector('#workflowInfo').innerHTML=selectedWorkflow
+    ?'<b>'+esc(selectedWorkflow.Name)+'</b><br>'+esc(selectedWorkflow.Description)+'<br><span class="meta">'+
+      selectedWorkflow.ItemWidthMm+' × '+selectedWorkflow.ItemHeightMm+' mm · '+selectedWorkflow.SourceCopies+' bản</span>'
+    :'Chưa có workflow.';
+  workflow.onchange=()=>{
+    const x=s.BuiltInWorkflows.find(v=>v.Id===workflow.value);
+    document.querySelector('#workflowInfo').innerHTML=x
+      ?'<b>'+esc(x.Name)+'</b><br>'+esc(x.Description)+'<br><span class="meta">'+
+        x.ItemWidthMm+' × '+x.ItemHeightMm+' mm · '+x.SourceCopies+' bản</span>'
+      :'Chưa có workflow.';
+  };
 
   const recipe=document.querySelector('#recipe');
   recipe.innerHTML=s.Recipes.length?s.Recipes.map(x=>

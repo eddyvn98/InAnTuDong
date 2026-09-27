@@ -17,5 +17,6 @@
     <ProjectReference Include="../../src/PrintAI.Recipes/PrintAI.Recipes.csproj" />
     <ProjectReference Include="../../src/PrintAI.Scanning/PrintAI.Scanning.csproj" />
     <ProjectReference Include="../../src/PrintAI.SourceInspection/PrintAI.SourceInspection.csproj" />
+    <ProjectReference Include="../../src/PrintAI.Workflows/PrintAI.Workflows.csproj" />
   </ItemGroup>
 </Project>

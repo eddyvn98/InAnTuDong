@@ -109,7 +109,7 @@ Epson L3310:
 
 Shared suite:
 
-- 35 tests pass on Ubuntu and Windows
+- 45 tests pass on Ubuntu and Windows
 
 Windows-specific suite:
 
@@ -170,15 +170,40 @@ When convenient on a Windows machine with the Epson L3310 driver installed:
 
 This verification no longer blocks M5 development.
 
+## M5 implementation in progress
+
+Branch `m5-workflow-presets` adds the first deterministic preset layer:
+
+- dedicated `PrintAI.Workflows` project
+- CCCD 1:1 preset at 85.60 x 53.98 mm
+- ID photo 3x4 preset
+- ID photo 4x6 preset
+- label/sticker 40x60 preset
+- built-in workflow selector in the desktop app
+- applied workflows become normal editable `PrintJobSpec` jobs
+- workflow jobs can still be saved as reusable local recipes
+- shared geometry/validation tests
+
+See `docs/M5_WORKFLOWS.md`.
+
+## M5 preset verification
+
+PR #13 verification on commit `7fdf21b5aff58684f10f6dfd0247bf7651032e3d`:
+
+- CI run #69: Ubuntu + Windows success
+- shared suite: 45/45 tests pass
+- Windows printer tests/probe remain green
+- WebView2 desktop build succeeds
+- Windows package run #13: success
+- `PrintAI-win-x64` artifact: 98,137,222 bytes
+- artifact SHA-256: `0cf6b70c5cf128aff7c86987166d22ad190b5d8cc57484ebe2e681c1625fe833`
+
 ## Exact next work - M5
 
-Start with deterministic workflow presets that build on the completed layout/recipe engine:
-
-1. CCCD copy workflow.
-2. ID photo presets.
-3. Label/sticker presets.
-4. Then content-to-layout and mixed jobs.
-5. HEIC/Office conversion and additional printer profiles follow after the preset workflows.
+1. Extend CCCD from single-side 1:1 to front/back composition using the mixed-job model.
+2. Add customizable label/sticker sheet presets.
+3. Implement content-to-layout and general mixed jobs.
+4. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
 
 ## Important execution boundary
 

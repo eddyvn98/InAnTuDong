@@ -38,7 +38,9 @@ The package version comes from the desktop project instead of being duplicated i
 
 ### 3. Regression fixtures
 
-Add representative automated fixtures for:
+Current automated release-regression coverage exercises raster inspection/rendering, generated multi-page PDF inspection/rendering and mixed image + PDF-page composition.
+
+Continue adding representative fixtures for:
 
 - raster image
 - multi-page PDF
@@ -50,7 +52,9 @@ Large proprietary/user files must not be committed as fixtures.
 
 ### 4. Packaged smoke test
 
-Exercise the self-contained win-x64 publish output before upload:
+The desktop executable supports `--self-test`, which bypasses normal UI startup, exercises packaged assets and the raster render pipeline, writes a JSON report and exits non-zero on failure.
+
+The self-contained win-x64 publish output is exercised before upload:
 
 - executable and UI/native assets present
 - app process can start on the CI runner

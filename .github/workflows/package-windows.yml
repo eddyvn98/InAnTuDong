@@ -73,6 +73,29 @@ jobs:
 
           Write-Host "Published package size: $sizeMb MB"
 
+      - name: Smoke-test packaged desktop
+        shell: pwsh
+        run: |
+          $report = "artifacts/PrintAI-selftest.json"
+          $exe = (Resolve-Path "artifacts/PrintAI-win-x64/PrintAI.exe").Path
+
+          $process = Start-Process `
+            -FilePath $exe `
+            -ArgumentList "--self-test", "--self-test-output", $report `
+            -Wait `
+            -PassThru `
+            -WindowStyle Hidden
+
+          if (-not (Test-Path $report)) {
+            throw "Packaged self-test did not produce a report."
+          }
+
+          Get-Content $report
+
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged self-test failed with exit code $($process.ExitCode)."
+          }
+
       - name: Create ZIP
         shell: pwsh
         run: |
@@ -92,5 +115,6 @@ jobs:
           path: |
             artifacts/PrintAI-win-x64.zip
             artifacts/PrintAI-win-x64.sha256.txt
+            artifacts/PrintAI-selftest.json
           if-no-files-found: error
           retention-days: 14

@@ -340,13 +340,27 @@ Branch `m6-release-readiness` starts M6 with:
 - SHA-256 checksum generated for the Windows ZIP
 - M6 scope and exit criteria documented in `docs/M6_RELEASE_READINESS.md`
 
+## M6 smoke/regression implementation in progress
+
+Branch `m6-smoke-regression` adds:
+
+- `PrintAI.exe --self-test` headless startup mode
+- JSON self-test report with application version/runtime/check results
+- packaged UI asset verification
+- packaged PNG inspection -> PrintJobSpec -> A4 rendering exercise
+- packaged Windows printer-probe exercise without requiring a physical printer
+- optional LibreOffice discovery reporting
+- package workflow executes the published EXE before ZIP upload
+- self-test JSON is uploaded beside the ZIP/checksum as release evidence
+- shared regression tests for raster source, generated two-page PDF and mixed image+PDF rendering
+
 Exact next M6 work after this slice is verified:
 
-1. representative regression fixtures
-2. packaged Windows startup smoke test
-3. install/upgrade/rollback flow
-4. support diagnostics export
-5. tagged preview release and real-machine validation matrix
+1. install/upgrade/rollback flow
+2. support diagnostics export
+3. tagged preview release
+4. real iPhone HEIC fixture/field validation
+5. real-machine scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

@@ -97,8 +97,8 @@ These are validation tasks, not missing software architecture.
 
 - [~] in-app system readiness diagnostics
 - [~] versioned Windows package manifest + SHA-256 checksum
-- [ ] representative format regression fixtures
-- [ ] packaged Windows smoke test
+- [~] representative format regression fixtures — raster/PDF/mixed pipeline coverage implemented; HEIC real fixture still pending
+- [~] packaged Windows smoke test — headless PrintAI.exe self-test implemented; CI verification pending
 - [ ] install / upgrade / rollback flow
 - [ ] support diagnostics / error export
 - [ ] tagged release + release notes

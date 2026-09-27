@@ -167,6 +167,8 @@ public sealed partial class DesktopSession
             OutputPageCount: _outputPageCount,
             SelectedOutputPage: _selectedOutputPage,
             Printers: printers,
+            Scanners: _scanner.Devices,
+            ScannerStatus: _scanner.Status,
             SelectedPrinter: _selectedPrinter,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,

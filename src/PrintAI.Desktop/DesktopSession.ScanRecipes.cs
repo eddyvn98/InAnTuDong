@@ -115,7 +115,9 @@ public sealed partial class DesktopSession
             name,
             job.Layout,
             job.Print,
-            job.Policy,
+            directPrintEligible
+                ? new PolicySpec(PreviewPolicy.Direct)
+                : job.Policy,
             job.Sources.FirstOrDefault()?.Copies ?? 1,
             directPrintEligible));
 

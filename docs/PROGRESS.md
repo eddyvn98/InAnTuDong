@@ -4,41 +4,59 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-M0 verification -> M1 deterministic A4 engine.
+**M1 - Deterministic A4 engine**
 
-## Completed in source
+## Verified foundation
 
-- product/architecture/spec/roadmap documentation
-- persistent AI handoff rules in `AGENTS.md`
-- .NET 10 domain project
-- baseline `PrintJobSpec`
-- validator
-- deterministic grid/repeat layout
-- automatic 90-degree rotation when it increases capacity
-- xUnit tests for A4 geometry and validation
-- ASP.NET Core web demo with `/health` and `/api/demo-layout`
-- Dockerfile suitable for Railway
-- GitHub Actions CI definition for Ubuntu + Windows
+- Repository source-of-truth docs are in place.
+- .NET 10 domain/layout/web skeleton is merged to `main`.
+- GitHub Actions CI run #3 is green on both:
+  - Ubuntu: restore -> test -> web build
+  - Windows: restore -> test -> web build
+- Baseline layout tests pass:
+  - A4 40x60 mm without rotation = 16 items/page
+  - A4 40x60 mm with rotation = 18 items/page
+  - oversized paper is rejected
+- Railway project `InAnTuDong` created.
+- Railway service `printai-web` deploys from `eddyvn98/InAnTuDong` branch `main`.
+- Railway deployment reached `SUCCESS`.
+- ASP.NET Core runtime log confirms the app is listening on `0.0.0.0:8080`.
+- Railway public service domain created: `https://printai-web-production.up.railway.app`.
 
-## Verification still required
+## Current implementation
 
-- observe GitHub Actions CI reach green terminal status
-- deploy web service to Railway
-- verify Railway deployment reaches SUCCESS
-- open public web/health endpoint and verify HTTP response
+- `PrintAI.Domain`
+  - `PrintJobSpec`
+  - validation
+  - canonical mm-based geometry contract
+- `PrintAI.Layout`
+  - deterministic grid/repeat placement
+  - automatic 90-degree rotation when capacity improves
+- `PrintAI.Web`
+  - `/health`
+  - `/api/demo-layout`
+  - browser A4 geometry preview demo
+- Dockerfile
+- Windows + Linux CI
 
-## Exact next engineering tasks after verification
+## Exact next engineering tasks
 
-1. add exact-size single-item layout
-2. add fit/contain/cover calculations
-3. introduce SkiaSharp preview rendering
-4. inspect JPG/PNG metadata
-5. inspect PDF page metadata
-6. begin Windows printer capability probe
+1. Add exact-size single-item layout mode.
+2. Add fit/contain/cover geometry.
+3. Add SkiaSharp and render actual image content into the A4 preview.
+4. Add cut-mark rendering.
+5. Add JPG/PNG metadata inspection.
+6. Add PDF page metadata inspection.
+7. Start Windows printer capability probe for Epson L3310.
+8. Add a calibration page for physical-size verification.
+
+## Web verification note
+
+Railway reports the deployment healthy and runtime logs show the web server listening on port 8080. The public domain is provisioned. The current execution environment could not resolve the newly-created Railway hostname immediately, so direct external HTTP verification from this session was not available at the moment of creation. Treat Railway deployment/runtime status as verified; re-check the public URL in a later session if needed.
 
 ## Not started
 
-- real spooler submission
+- real Windows spooler submission
 - AI provider integration
 - WebView2 desktop shell
 - scanner control
@@ -53,4 +71,4 @@ M0 verification -> M1 deterministic A4 engine.
 
 ## Session rule
 
-Never continue from chat memory alone. Read this file plus the relevant specs, then update this file before ending a work session.
+Never continue from chat memory alone. Read this file, `AGENTS.md`, and the relevant specs first. Update this file before ending a work session.

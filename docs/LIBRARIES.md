@@ -16,7 +16,11 @@ Used by `PrintAI.Rendering` for image decode/encode, crop/scale/rotate, preview 
 
 Used by `PrintAI.SourceInspection` to inspect PDF page count and physical page dimensions.
 
-It is not currently the PDF rasterization engine. Rendering imported PDF pages remains a separate future capability.
+### PDFtoImage 5.4.0
+
+Used by `PrintAI.Rendering` to rasterize individual PDF pages through PDFium into SkiaSharp bitmaps. The package targets .NET 10 and carries supported native PDFium runtimes for Windows/Linux/macOS.
+
+PDF rendering stays behind the rendering boundary; Domain/Layout remain PDF-agnostic.
 
 ### MetadataExtractor 2.9.3
 

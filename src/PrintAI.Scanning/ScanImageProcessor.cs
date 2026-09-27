@@ -214,7 +214,12 @@ public static class ScanImageProcessor
         canvas.Translate(result.Width / 2f, result.Height / 2f);
         canvas.RotateDegrees((float)degrees);
         canvas.Translate(-source.Width / 2f, -source.Height / 2f);
-        canvas.DrawBitmap(source, 0, 0);
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
+        canvas.DrawBitmap(
+            source,
+            new SKRect(0, 0, source.Width, source.Height),
+            new SKRect(0, 0, source.Width, source.Height),
+            sampling);
         canvas.Flush();
 
         return result;
@@ -230,10 +235,12 @@ public static class ScanImageProcessor
 
         using var canvas = new SKCanvas(result);
         canvas.Clear(SKColors.White);
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
         canvas.DrawBitmap(
             source,
             bounds,
-            new SKRect(0, 0, bounds.Width, bounds.Height));
+            new SKRect(0, 0, bounds.Width, bounds.Height),
+            sampling);
         canvas.Flush();
 
         return result;
@@ -248,7 +255,12 @@ public static class ScanImageProcessor
             source.AlphaType);
 
         using var canvas = new SKCanvas(result);
-        canvas.DrawBitmap(source, 0, 0);
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
+        canvas.DrawBitmap(
+            source,
+            new SKRect(0, 0, source.Width, source.Height),
+            new SKRect(0, 0, source.Width, source.Height),
+            sampling);
         canvas.Flush();
 
         return result;

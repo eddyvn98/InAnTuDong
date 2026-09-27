@@ -10,8 +10,8 @@
 - [x] persistent progress file
 - [x] buildable domain/layout/web skeleton
 - [x] GitHub Actions definition for Windows + Linux
-- [ ] CI observed green on GitHub
-- [ ] Railway deployment observed healthy
+- [x] CI observed green on GitHub
+- [x] Railway deployment observed healthy
 
 Exit: repo itself is enough to resume the project.
 
@@ -21,12 +21,12 @@ Exit: repo itself is enough to resume the project.
 - [x] baseline validator
 - [x] grid/repeat layout
 - [x] choose 90-degree rotation when it fits more items
-- [ ] exact-size single item mode
-- [ ] fit/contain/cover rules
-- [ ] cut marks
-- [ ] SkiaSharp preview renderer
-- [ ] JPG/PNG metadata inspector
-- [ ] PDF metadata/page inspector
+- [x] exact-size single item mode
+- [x] fit/contain/cover rules
+- [x] cut marks
+- [x] SkiaSharp preview renderer
+- [x] JPG/PNG metadata inspector
+- [x] PDF metadata/page inspector
 - [x] basic mm geometry tests
 - [ ] golden preview tests
 

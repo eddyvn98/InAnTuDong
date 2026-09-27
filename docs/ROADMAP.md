@@ -40,7 +40,7 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [ ] submit through Windows spooler/driver
 - [ ] status/errors
 - [x] Epson L3310 calibration page
-- [ ] physical measurement verification
+- [x] physical measurement verification
 
 ## M3 - AI planner + desktop UX
 

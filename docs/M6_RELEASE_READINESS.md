@@ -64,9 +64,11 @@ Do not automate actual physical printing in CI.
 
 ### 5. Install / upgrade / rollback
 
-Define a user-safe Windows installation path and document upgrade/rollback.
+The M6 package ships PowerShell lifecycle scripts for a per-user install under `%LOCALAPPDATA%\Programs\PrintAI`.
 
-The existing portable ZIP remains supported until an installer is verified.
+Upgrade stages the new release before moving the current install to `.previous`. Rollback swaps current and previous. Uninstall removes application files while keeping PrintAI local user data unless `-RemoveData` is explicitly requested.
+
+The package workflow exercises this lifecycle in a sandbox before upload. The portable ZIP remains supported.
 
 ### 6. Field validation matrix
 

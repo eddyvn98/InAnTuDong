@@ -9,123 +9,103 @@ Last updated: 2026-09-27
 ## Verified foundation
 
 - M0 foundation is complete.
-- M1 deterministic A4 engine is complete, including semantic golden preview coverage.
-- GitHub Actions runs on Ubuntu and Windows.
-- Railway project `InAnTuDong` / service `printai-web` deploys from `main`.
-- Public web domain: `https://printai-web-production.up.railway.app`.
+- M1 deterministic A4 engine is complete.
+- Railway web demo is healthy.
+- Epson L3310 calibration references were physically measured by the user and reported correct.
+- Calibrated L3310 profile therefore uses identity correction:
+  - ScaleX = 1.000
+  - ScaleY = 1.000
+  - OffsetX = 0 mm
+  - OffsetY = 0 mm
 
-## M1 completed
+## M2 implemented
 
-- canonical millimetre geometry
-- validation
-- grid/repeat layout
-- capacity-based 90-degree rotation
-- exact-size mode
-- contain/cover geometry
-- cut marks
-- SkiaSharp raster A4 preview
-- JPG/PNG metadata inspection
-- PDF page metadata inspection
-- semantic golden preview test
+### Capability probe
 
-## M2 capability probe implemented in PR #3
-
-Branch: `feat/m2-printer-probe-calibration`
-
-### Windows printer boundary
-
-`PrintAI.Windows.Printing` now provides:
+`PrintAI.Windows.Printing` provides:
 
 - installed-printer enumeration
-- default-printer detection
-- printer validity
-- color capability
-- duplex capability
-- supported paper sizes converted to millimetres
-- advertised printer resolutions
-- A4 portrait printable area
-- A4 hard margins
-- printer-name matching, including an `L3310` model-token match
-
-`PrintAI.WindowsProbe` outputs the capability snapshot as JSON.
-
-Example:
-
-```powershell
-dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- L3310
-```
+- printer selection/matching
+- default/valid/color/duplex capability
+- paper sizes and resolutions
+- A4 printable area
+- hard margins
 
 ### Calibration
 
-`PrintAI.Rendering` now generates an A4 calibration raster with:
+The A4 calibration renderer provides known 100 mm and 50 mm geometry.
 
-- 10 mm inset outer frame
-- 100 x 100 mm reference square
-- 50 x 50 mm reference square
-- 100 mm horizontal ruler with 1/5/10 mm ticks
-- 100 mm vertical ruler with 1/5/10 mm ticks
-- center cross
+The user physically measured the calibration output on Epson L3310 and reported all reference dimensions/placement correct.
 
-Web endpoints:
+### Windows spooler submission
 
-- `/api/calibration-a4.png?dpi=300`
-- `/api/calibration-info`
+PR #4 adds:
 
-The home page links to the 300 DPI calibration page.
+- `PrinterDeviceProfile`
+- calibrated Epson L3310 identity profile
+- `WindowsSpoolerPrinter.SubmitA4Png`
+- A4 portrait selection through the installed Windows driver
+- hard-margin origin compensation
+- full A4 image drawn at 210 x 297 mm
+- silent `StandardPrintController` submission
+- copies support
+- structured submission failures
+- unique PrintAI document names
 
-## Verification
+CLI:
 
-PR #3 CI run #16 is green on both operating systems.
+```powershell
+dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- print L3310 "C:\path\page.png"
+```
 
-Ubuntu:
+### Job status
 
-- restore shared tests
-- shared tests
+`SpoolerJobMonitor` maps Windows spooler state into:
+
+- Queued
+- Printing
+- Completed
+- Error
+- Deleted
+- Unknown
+
+CLI:
+
+```powershell
+dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- status "EPSON L3310 Series" <job-id>
+```
+
+The implementation uses `System.Printing` to inspect the local Windows queue. Very fast completed jobs may disappear before lookup; that case is reported as not-found-or-already-completed.
+
+## CI verification
+
+Latest implementation CI passed the meaningful Windows pipeline steps:
+
+- shared restore/tests
 - web build
-
-Windows:
-
-- restore shared tests
-- shared tests
-- web build
-- restore Windows printer tests
+- Windows printer restore
 - Windows printer tests
 - Windows printer probe build
 - Windows printer probe smoke-run
 
-The smoke-run verifies the executable printer enumeration path starts and exits successfully on a real Windows GitHub runner.
+CI never performs a physical print.
 
-## Physical verification required before spooler implementation
+## Final M2 hardware gate
 
-The software boundary is ready, but no CI environment has the user's Epson L3310.
+One final physical verification remains:
 
-On a Windows machine with the Epson driver installed:
+1. generate/use an A4 PNG from PrintAI
+2. submit it through the new `print L3310 ...` command
+3. measure a known exact-size element
+4. confirm the PrintAI spooler path itself preserves the already-calibrated physical scale
 
-1. run the printer probe with `L3310`
-2. save the JSON output
-3. open/print the calibration image at 100% / Actual Size
-4. measure the 100 mm horizontal ruler
-5. measure the 100 mm vertical ruler
-6. measure the 100 x 100 mm square
-7. record visible left/top edge offset or clipping
-
-Do not implement production spooler submission until those physical measurements are known.
-
-## Exact next engineering tasks
-
-1. Capture the real Epson L3310 capability JSON.
-2. Record physical calibration measurements.
-3. Define a device profile from measured driver + physical behavior.
-4. Implement Windows spooler submission using the validated profile.
-5. Add job status/errors.
-6. Verify an exact-size physical print with a ruler.
+After that passes, M2 can be considered physically closed and work should move to M3 desktop UX + planner.
 
 ## Deferred / known gaps
 
-- `DpiX` / `DpiY` are modeled but not normalized from every EXIF/JFIF/PNG combination.
+- `DpiX` / `DpiY` normalization is incomplete.
 - PDF page rasterization is not implemented.
 - multi-source file loading/orchestration is not implemented.
-- real spooler submission is intentionally gated on physical calibration.
 - AI provider integration, WebView2 desktop shell, scanner control and recipes are not started.
 
 ## Session rule

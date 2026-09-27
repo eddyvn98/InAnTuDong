@@ -58,6 +58,10 @@ public sealed class WiaScannerAdapter : IScannerAdapter
 
             return result;
         }
+        catch (InvalidOperationException)
+        {
+            return [];
+        }
         catch (COMException ex)
         {
             throw new ScannerUnavailableException(
@@ -82,7 +86,17 @@ public sealed class WiaScannerAdapter : IScannerAdapter
 
         try
         {
-            manager = WiaCom.Create("WIA.DeviceManager");
+            try
+            {
+                manager = WiaCom.Create("WIA.DeviceManager");
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new ScannerUnavailableException(
+                    "Windows WIA is unavailable.",
+                    ex);
+            }
+
             dynamic dynamicManager = manager;
 
             deviceInfo = FindDeviceInfo(

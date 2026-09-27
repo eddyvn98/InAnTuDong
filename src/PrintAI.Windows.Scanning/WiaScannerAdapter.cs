@@ -55,7 +55,7 @@ public sealed class WiaScannerAdapter : IScannerAdapter
         EnsureWindows();
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Task.Run(() =>
+        return RunStaAsync(() =>
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -105,6 +105,40 @@ public sealed class WiaScannerAdapter : IScannerAdapter
             image.SaveFile(outputPath);
             return outputPath;
         }, cancellationToken);
+    }
+
+    private static Task<T> RunStaAsync<T>(
+        Func<T> action,
+        CancellationToken cancellationToken)
+    {
+        var completion = new TaskCompletionSource<T>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var thread = new Thread(() =>
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                completion.TrySetResult(action());
+            }
+            catch (OperationCanceledException ex)
+            {
+                completion.TrySetCanceled(ex.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                completion.TrySetException(ex);
+            }
+        })
+        {
+            IsBackground = true,
+            Name = "PrintAI-WIA"
+        };
+
+        thread.SetApartmentState(ApartmentState.STA);
+        thread.Start();
+
+        return completion.Task;
     }
 
     private static dynamic CreateCom(string progId)

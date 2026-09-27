@@ -385,9 +385,15 @@ The merged slice adds:
 - portable ZIP usage remains supported
 - Windows package CI exercises install -> installed self-test -> upgrade -> rollback -> uninstall in a sandbox
 
-## M6 support report in progress
+## M6 support report verification
 
-Branch `m6-support-report` adds a user-exportable JSON support report containing:
+PR #24 verification:
+
+- CI run #97: Ubuntu + Windows success
+- Windows package run #41: success
+- packaged self-test + install lifecycle remain green
+
+The slice adds a user-exportable JSON support report containing:
 
 - Print AI version and runtime
 - OS description
@@ -400,7 +406,7 @@ Branch `m6-support-report` adds a user-exportable JSON support report containing
 
 Privacy boundary: the report intentionally excludes API keys, AI endpoint, source file paths, job history and document content.
 
-Exact next M6 work after this slice is verified:
+Exact next M6 work:
 
 1. tagged preview release + release notes
 2. real iPhone HEIC field validation

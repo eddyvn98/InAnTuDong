@@ -4,6 +4,7 @@ public enum SourceKind
 {
     Jpeg,
     Png,
+    Heic,
     Pdf
 }
 

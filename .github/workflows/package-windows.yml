@@ -35,11 +35,15 @@ jobs:
       - name: Add build manifest
         shell: pwsh
         run: |
+          [xml]$project = Get-Content src/PrintAI.Desktop/PrintAI.Desktop.csproj
+          $version = [string]($project.Project.PropertyGroup.Version | Select-Object -First 1)
+
           @(
             "product=Print AI"
-            "version=0.3.0"
+            "version=$version"
             "runtime=win-x64"
             "commit=$env:GITHUB_SHA"
+            "configuration=Release"
           ) | Set-Content artifacts/PrintAI-win-x64/BUILD.txt
 
       - name: Verify package layout
@@ -70,10 +74,19 @@ jobs:
         run: |
           Compress-Archive             -Path artifacts/PrintAI-win-x64/*             -DestinationPath artifacts/PrintAI-win-x64.zip             -CompressionLevel Optimal
 
+      - name: Write SHA-256 checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash artifacts/PrintAI-win-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  PrintAI-win-x64.zip" | Set-Content artifacts/PrintAI-win-x64.sha256.txt
+          Write-Host "SHA-256: $hash"
+
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
           name: PrintAI-win-x64
-          path: artifacts/PrintAI-win-x64.zip
+          path: |
+            artifacts/PrintAI-win-x64.zip
+            artifacts/PrintAI-win-x64.sha256.txt
           if-no-files-found: error
           retention-days: 14

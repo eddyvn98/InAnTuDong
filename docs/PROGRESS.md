@@ -211,27 +211,39 @@ Branch `m5-mixed-cccd` adds:
 - synchronized copy edits across mixed sources
 - shared tests for source ordering, page indexes, validation and mixed rendering
 
-## M5 custom label implementation in progress
+## M5 custom label verification
 
-Branch `m5-custom-label-sheets` adds:
+PR #15 is merged into `main`.
 
-- deterministic custom label/sticker sheet factory
-- width/height in millimetres
-- copy count, gap and margin controls
-- Contain/Cover
-- optional rotation and cut marks
-- automatic A4 pagination without shrinking requested physical size
-- input guardrails for invalid sizes, margins and excessive copy counts
-- desktop controls integrated with the existing preview/print pipeline
-- shared tests for geometry, pagination, source-page preservation and invalid input
+Baseline:
+
+- main commit: `5217643c427fefb6fe960c7ceb52990ef36c2440`
+- CI main run #75: success
+- shared suite: 54/54 tests pass
+- Windows package run #19: success
+
+## M5 general composition + content-to-layout in progress
+
+Branch `m5-general-composition` adds the reusable mixed composition surface on top of the existing mixed-source renderer:
+
+- select any number of approved source pages
+- preserve explicit source/page order
+- set a separate copy count for each selected source page
+- choose common physical item width/height, gap, margin, fit, rotation and cut marks
+- deterministic paper-saving grid layout across as many A4 output pages as required
+- preserve per-source copy counts when later editing common layout settings
+- preview remains required and printing continues through the existing spooler path
+- cap total content items at 1000 per job
+- shared tests for source order, per-source copies, pagination and invalid geometry
+
+This is the first content-to-layout slice for schema 1.0: mixed content can vary by source/page and copy count while all placements in the composition share one physical item size. Irregular per-item physical sizes remain outside schema 1.0.
 
 ## Exact next work - M5
 
-1. Verify custom label sheets in Linux + Windows CI and package build.
-2. Generalize the CCCD two-source controls into a reusable mixed composition UI.
-3. Implement content-to-layout.
-4. Add HEIC support.
-5. Add Office conversion and additional printer profiles after workflow composition is stable.
+1. Verify general composition/content-to-layout in Linux + Windows CI and package build.
+2. Add HEIC support behind source inspection/rendering boundaries.
+3. Add Office conversion behind a conversion adapter.
+4. Add additional printer profiles after format conversion is stable.
 
 ## Important execution boundary
 

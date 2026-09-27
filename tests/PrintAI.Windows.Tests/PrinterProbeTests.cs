@@ -42,6 +42,28 @@ public sealed class PrinterProbeTests
         Assert.Equal("EPSON L3310 Series", match.Name);
     }
 
+    [Fact]
+    public void EpsonL3310Profile_UsesIdentityCalibration()
+    {
+        var profile = PrinterDeviceProfile.EpsonL3310Calibrated;
+
+        Assert.Equal(1.0, profile.ScaleX);
+        Assert.Equal(1.0, profile.ScaleY);
+        Assert.Equal(0, profile.OffsetXMm);
+        Assert.Equal(0, profile.OffsetYMm);
+    }
+
+    [Fact]
+    public void SubmitA4Png_MissingFileFailsBeforePrinting()
+    {
+        var result = WindowsSpoolerPrinter.SubmitA4Png(
+            "not-a-real-printer",
+            Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.png"));
+
+        Assert.Equal(PrintSubmissionState.Failed, result.State);
+        Assert.Contains("not found", result.Error!, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static PrinterCapabilitySnapshot Create(string name) =>
         new(
             name,

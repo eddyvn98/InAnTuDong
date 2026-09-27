@@ -4,7 +4,7 @@ Last updated: 2026-09-28
 
 ## Current milestone
 
-**M5 - Advanced workflows — software scope complete**
+**M6 - Hardening & Release**
 
 ## Completed milestones
 
@@ -326,6 +326,27 @@ Remaining validation items are intentionally non-blocking:
 4. physically calibrate L3316/L3210/L3250 only if those printers are actually used
 
 Do not mark an unmeasured printer profile as physically verified.
+
+## M6 release-readiness implementation in progress
+
+Branch `m6-release-readiness` starts M6 with:
+
+- app version `0.6.0`
+- deterministic shared release-readiness evaluator
+- desktop System Readiness panel
+- core failures: unwritable work directory or no Windows printer
+- optional warnings: unverified printer profile, no WIA scanner, no LibreOffice, no AI planner
+- package `BUILD.txt` version sourced from the desktop project
+- SHA-256 checksum generated for the Windows ZIP
+- M6 scope and exit criteria documented in `docs/M6_RELEASE_READINESS.md`
+
+Exact next M6 work after this slice is verified:
+
+1. representative regression fixtures
+2. packaged Windows startup smoke test
+3. install/upgrade/rollback flow
+4. support diagnostics export
+5. tagged preview release and real-machine validation matrix
 
 ## Important execution boundary
 

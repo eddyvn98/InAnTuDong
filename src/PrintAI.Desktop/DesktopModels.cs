@@ -23,7 +23,21 @@ public sealed record DesktopState(
     bool CanPrintJob,
     bool CanPrintAllSources,
     DesktopPlannerView Planner,
+    DesktopReadinessView Readiness,
     IReadOnlyList<JobHistoryEntry> History);
+
+public sealed record DesktopReadinessView(
+    bool ReadyForCorePrinting,
+    int PassCount,
+    int WarningCount,
+    int FailureCount,
+    IReadOnlyList<DesktopReadinessCheck> Checks);
+
+public sealed record DesktopReadinessCheck(
+    string Id,
+    string Name,
+    string State,
+    string Detail);
 
 public sealed record DesktopPlannerView(
     bool Configured,

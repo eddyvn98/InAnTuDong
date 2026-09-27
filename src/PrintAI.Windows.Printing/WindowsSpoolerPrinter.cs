@@ -33,6 +33,7 @@ public static class WindowsSpoolerPrinter
 
             document.DocumentName = documentName;
             document.OriginAtMargins = false;
+            document.PrintController = new StandardPrintController();
             document.PrinterSettings.PrinterName = printerName;
             document.PrinterSettings.Copies = copies;
 
@@ -48,6 +49,7 @@ public static class WindowsSpoolerPrinter
 
             document.DefaultPageSettings.PaperSize = a4;
             document.DefaultPageSettings.Landscape = false;
+            document.DefaultPageSettings.Color = document.PrinterSettings.SupportsColor;
 
             document.PrintPage += (_, e) =>
             {

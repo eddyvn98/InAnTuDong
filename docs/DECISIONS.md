@@ -84,3 +84,9 @@ The desktop UI may accept an API key for the active process, but it does not per
 Status: accepted
 
 Planner/layout output pagination is distinct from source pagination. The desktop UI exposes both source-page navigation and A4 output-page navigation, and a planned job can submit all output pages in deterministic order.
+
+
+## ADR-018 - Built-in workflows compile to PrintJobSpec
+Status: accepted
+
+M5 built-in workflows are deterministic preset definitions that create ordinary validated `PrintJobSpec` jobs. They may prefill physical size, fit, copy count, quality and cut marks, but they do not bypass validation, preview/policy gates or the Windows print adapter. User edits and reusable recipes remain downstream of the same job boundary.

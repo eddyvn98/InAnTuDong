@@ -45,12 +45,17 @@ public sealed partial class DesktopSession
         {
             try
             {
-                var png = SourceJobRenderer.RenderA4(
-                    job,
-                    page.SourcePath,
-                    page.SourcePageIndex,
-                    outputPage,
-                    dpi: 300);
+                var png = RequiresMixedRenderer(job)
+                    ? SourceJobRenderer.RenderMixedA4(
+                        job,
+                        outputPage,
+                        dpi: 300)
+                    : SourceJobRenderer.RenderA4(
+                        job,
+                        page.SourcePath,
+                        page.SourcePageIndex,
+                        outputPage,
+                        dpi: 300);
 
                 var path = Path.Combine(
                     _workDir,

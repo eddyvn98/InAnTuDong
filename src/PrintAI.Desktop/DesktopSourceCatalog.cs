@@ -13,7 +13,13 @@ public static class DesktopSourceCatalog
             ".png",
             ".heic",
             ".heif",
-            ".pdf"
+            ".pdf",
+            ".doc",
+            ".docx",
+            ".xls",
+            ".xlsx",
+            ".ppt",
+            ".pptx"
         };
 
     public static IReadOnlyList<DesktopPage> BuildPages(

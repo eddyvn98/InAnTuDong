@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using PrintAI.Planning;
 using Xunit;
 
@@ -19,12 +20,11 @@ public sealed class PrintJobPlanParserTests
     [Fact]
     public void Parse_RejectsUnknownFields()
     {
-        var json = ValidJson().Replace(
-            ""warnings":[]",
-            ""warnings":[],"unexpected":true");
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        node["unexpected"] = true;
 
         var error = Assert.Throws<PlanningFormatException>(() =>
-            PrintJobPlanParser.Parse(json));
+            PrintJobPlanParser.Parse(node.ToJsonString()));
 
         Assert.Contains("schema", error.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -32,12 +32,11 @@ public sealed class PrintJobPlanParserTests
     [Fact]
     public void Parse_RejectsUnsupportedSchemaVersion()
     {
-        var json = ValidJson().Replace(
-            @"""schemaVersion"":""1.0""",
-            @"""schemaVersion"":""2.0""");
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        node["job"]!["schemaVersion"] = "2.0";
 
         var error = Assert.Throws<PlanningFormatException>(() =>
-            PrintJobPlanParser.Parse(json));
+            PrintJobPlanParser.Parse(node.ToJsonString()));
 
         Assert.Contains("schema.version", error.Message);
     }

@@ -91,6 +91,23 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 
 These are validation tasks, not missing software architecture.
 
+## M6 - Hardening & Release
+
+**Current milestone after M5 software completion.**
+
+- [~] in-app system readiness diagnostics
+- [~] versioned Windows package manifest + SHA-256 checksum
+- [ ] representative format regression fixtures
+- [ ] packaged Windows smoke test
+- [ ] install / upgrade / rollback flow
+- [ ] support diagnostics / error export
+- [ ] tagged release + release notes
+- [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
+
+Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing.
+
+See `docs/M6_RELEASE_READINESS.md`.
+
 ## Priority
 
-Do not invest heavily in AI prompting before physical sizing and the Windows print path are reliable.
+Do not invest heavily in new workflow features during M6 unless a release-blocking defect requires it.

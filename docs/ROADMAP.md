@@ -41,17 +41,17 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] status/errors
 - [x] Epson L3310 calibration page
 - [x] physical measurement verification
-- [ ] exact-size spooler physical verification
+- [x] exact-size spooler physical verification
 
 ## M3 - AI planner + desktop UX
 
-- [ ] WPF/WebView2 shell
-- [ ] files/folder input
-- [ ] source inspection
+- [x] WPF/WebView2 shell
+- [x] files/folder input
+- [x] source inspection
 - [ ] provider-neutral AI planner
 - [ ] structured output parsing
 - [ ] Safe/Smart/Auto policy
-- [ ] preview approval
+- [x] preview approval
 - [ ] job history
 
 ## M4 - Scan + recipes

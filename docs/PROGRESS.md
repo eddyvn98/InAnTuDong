@@ -4,110 +4,135 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M2 - Windows print path**
+**M3 - Desktop UX first, AI planner second**
 
-## Verified foundation
+## Completed milestones
 
-- M0 foundation is complete.
-- M1 deterministic A4 engine is complete.
-- Railway web demo is healthy.
-- Epson L3310 calibration references were physically measured by the user and reported correct.
-- Calibrated L3310 profile therefore uses identity correction:
-  - ScaleX = 1.000
-  - ScaleY = 1.000
-  - OffsetX = 0 mm
-  - OffsetY = 0 mm
+### M0 - Foundation
 
-## M2 implemented
+Complete.
 
-### Capability probe
+### M1 - Deterministic A4 engine
 
-`PrintAI.Windows.Printing` provides:
+Complete:
 
-- installed-printer enumeration
-- printer selection/matching
-- default/valid/color/duplex capability
-- paper sizes and resolutions
-- A4 printable area
-- hard margins
+- millimetre-based domain/layout
+- validation
+- grid/repeat + rotation
+- exact-size mode
+- contain/cover
+- cut marks
+- SkiaSharp A4 rendering
+- JPG/PNG/PDF inspection
+- golden preview coverage
 
-### Calibration
+### M2 - Windows print path
 
-The A4 calibration renderer provides known 100 mm and 50 mm geometry.
+Physically complete on Epson L3310:
 
-The user physically measured the calibration output on Epson L3310 and reported all reference dimensions/placement correct.
-
-### Windows spooler submission
-
-PR #4 adds:
-
-- `PrinterDeviceProfile`
+- installed printer enumeration/capabilities
+- A4 printable area/hard margins
 - calibrated Epson L3310 identity profile
-- `WindowsSpoolerPrinter.SubmitA4Png`
-- A4 portrait selection through the installed Windows driver
-- hard-margin origin compensation
-- full A4 image drawn at 210 x 297 mm
-- silent `StandardPrintController` submission
-- copies support
-- structured submission failures
-- unique PrintAI document names
+- Windows spooler submission
+- spooler job status/errors
+- calibration page
+- physical calibration measured correct by the user
+- exact-size output submitted through the PrintAI spooler path measured correct by the user
 
-CLI:
+M2 no longer has a physical sizing gate.
 
-```powershell
-dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- print L3310 "C:\path\page.png"
-```
+## M3 desktop slice in PR #5
 
-### Job status
+Branch: `feat/m3-desktop-shell`
 
-`SpoolerJobMonitor` maps Windows spooler state into:
+### Windows desktop shell
 
-- Queued
-- Printing
-- Completed
-- Error
-- Deleted
-- Unknown
+New `PrintAI.Desktop` project:
 
-CLI:
+- WPF native host
+- Microsoft WebView2 stable package
+- local HTML/CSS/JS UI loaded from the app output
+- native/web message bridge
 
-```powershell
-dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- status "EPSON L3310 Series" <job-id>
-```
+### Input
 
-The implementation uses `System.Printing` to inspect the local Windows queue. Very fast completed jobs may disappear before lookup; that case is reported as not-found-or-already-completed.
+Implemented:
 
-## CI verification
+- multi-file picker
+- folder picker
+- window file/folder drop handler
+- JPG/JPEG/PNG/PDF filtering
+- duplicate prevention
+- maximum 100 expanded inputs per session
 
-Latest implementation CI passed the meaningful Windows pipeline steps:
+### Inspection
 
-- shared restore/tests
-- web build
-- Windows printer restore
-- Windows printer tests
-- Windows printer probe build
-- Windows printer probe smoke-run
+Selected sources are passed through `PrintAI.SourceInspection`.
 
-CI never performs a physical print.
+The desktop UI shows:
 
-## Final M2 hardware gate
+- file name
+- source kind
+- image pixel dimensions
+- PDF page count
+- per-source inspection errors
 
-One final physical verification remains:
+### Preview
 
-1. generate/use an A4 PNG from PrintAI
-2. submit it through the new `print L3310 ...` command
-3. measure a known exact-size element
-4. confirm the PrintAI spooler path itself preserves the already-calibrated physical scale
+For the first supported raster source:
 
-After that passes, M2 can be considered physically closed and work should move to M3 desktop UX + planner.
+1. create a deterministic default A4 `PrintJobSpec`
+2. render a low-resolution A4 preview for the UI
+3. separately render a 300 DPI A4 raster for physical printing
 
-## Deferred / known gaps
+`RasterFilePreview` keeps file decoding at the rendering boundary.
 
-- `DpiX` / `DpiY` normalization is incomplete.
-- PDF page rasterization is not implemented.
-- multi-source file loading/orchestration is not implemented.
-- AI provider integration, WebView2 desktop shell, scanner control and recipes are not started.
+A regression test covers real PNG file -> A4 raster preview.
+
+### Printer + approval
+
+The desktop app:
+
+- enumerates installed Windows printers
+- prefers Epson L3310 when present, otherwise the default printer
+- lets the user explicitly select a printer
+- keeps Print disabled until a raster preview exists
+- requires the user to inspect the preview and press Print
+- submits the 300 DPI raster through the already-calibrated Windows spooler path
+- shows submission/job status text
+
+This satisfies the first M3 preview-approval UX without involving AI.
+
+## CI
+
+The initial M3 desktop commit built successfully in PR #5 CI run #27:
+
+- Ubuntu shared tests/build green
+- Windows shared tests/build green
+- Windows printer tests/build/smoke-run green
+- Windows WebView2 desktop shell build green
+
+The follow-up regression test/docs commits are running through the same matrix before merge.
+
+## Remaining M3 work
+
+1. PDF rasterization so PDF can preview/print through the same UI.
+2. Multi-source/multi-page preview orchestration.
+3. Provider-neutral AI planner interface.
+4. Structured AI output -> `PrintJobSpec` parsing.
+5. Safe / Smart / Auto policy engine.
+6. User-editable print/layout controls around AI output.
+7. Job history.
+8. Package/publish the desktop app for normal Windows installation/use.
+
+## Important design rule
+
+Do not let AI talk directly to the printer or generate device coordinates.
+
+The execution path remains:
+
+source -> inspection -> planner/spec -> validation -> deterministic layout -> preview -> policy/user approval -> Windows print adapter.
 
 ## Session rule
 
-Never continue from chat memory alone. Read this file, `AGENTS.md`, `ROADMAP.md`, `DECISIONS.md`, `LIBRARIES.md` and the relevant specs first. Update this file before ending a work session.
+Never continue from chat memory alone. Read this file, `AGENTS.md`, `ROADMAP.md`, `DECISIONS.md`, `LIBRARIES.md` and relevant specs first. Update this file before ending a work session.

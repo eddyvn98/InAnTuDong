@@ -49,3 +49,7 @@ jobs:
       - name: Smoke-run Windows printer probe
         if: matrix.os == 'windows-latest'
         run: dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -c Release --no-build
+
+      - name: Build Windows desktop shell
+        if: matrix.os == 'windows-latest'
+        run: dotnet build src/PrintAI.Desktop/PrintAI.Desktop.csproj -c Release

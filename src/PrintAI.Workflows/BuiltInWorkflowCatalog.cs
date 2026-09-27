@@ -59,10 +59,10 @@ public static class BuiltInWorkflowCatalog
                 CutMarks: false,
                 Fit: FitMode.Contain),
             SourceCopies: 1,
-            new PrintSettings(
+            Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.High),
-            new PolicySpec(PreviewPolicy.Required)),
+            Policy: new PolicySpec(PreviewPolicy.Required)),
         new(
             IdPhoto3x4,
             "Ảnh thẻ 3x4",
@@ -78,7 +78,7 @@ public static class BuiltInWorkflowCatalog
                 CutMarks: true,
                 Fit: FitMode.Cover),
             SourceCopies: 8,
-            new PrintSettings(
+            Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.High),
             new PolicySpec(PreviewPolicy.Required)),
@@ -116,7 +116,7 @@ public static class BuiltInWorkflowCatalog
                 CutMarks: true,
                 Fit: FitMode.Contain),
             SourceCopies: 12,
-            new PrintSettings(
+            Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.Standard),
             new PolicySpec(PreviewPolicy.Required))

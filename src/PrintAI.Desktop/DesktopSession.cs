@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text.Json.Serialization;
 using System.Windows;
 using Microsoft.Win32;
 using PrintAI.Domain;
@@ -12,13 +11,12 @@ namespace PrintAI.Desktop;
 public sealed class DesktopSession
 {
     private static readonly HashSet<string> SupportedExtensions =
-        new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".jpg", ".jpeg", ".png", ".pdf"
-        };
+        new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".pdf" };
 
     private readonly List<string> _paths = [];
+    private readonly List<DesktopPage> _pages = [];
     private readonly string _workDir;
+    private int _selectedPage;
     private string? _selectedPrinter;
     private string? _status;
     private string? _previewDataUrl;
@@ -28,14 +26,12 @@ public sealed class DesktopSession
     {
         _workDir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "PrintAI",
-            "work");
+            "PrintAI", "work");
         Directory.CreateDirectory(_workDir);
 
         var printers = PrinterCapabilityProbe.Enumerate();
         _selectedPrinter =
-            printers.FirstOrDefault(p =>
-                p.Name.Contains("L3310", StringComparison.OrdinalIgnoreCase))?.Name
+            printers.FirstOrDefault(p => p.Name.Contains("L3310", StringComparison.OrdinalIgnoreCase))?.Name
             ?? printers.FirstOrDefault(p => p.IsDefault)?.Name
             ?? printers.FirstOrDefault()?.Name;
     }
@@ -55,12 +51,7 @@ public sealed class DesktopSession
 
     public void PickFolder(Window owner)
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "Chọn thư mục ảnh/PDF",
-            Multiselect = false
-        };
-
+        var dialog = new OpenFolderDialog { Title = "Chọn thư mục ảnh/PDF" };
         if (dialog.ShowDialog(owner) == true)
             AddPaths([dialog.FolderName]);
     }
@@ -77,6 +68,17 @@ public sealed class DesktopSession
                 break;
         }
 
+        RebuildPages();
+        _selectedPage = Math.Clamp(_selectedPage, 0, Math.Max(0, _pages.Count - 1));
+        RebuildPreview();
+    }
+
+    public void SelectPage(int index)
+    {
+        if (index < 0 || index >= _pages.Count)
+            return;
+
+        _selectedPage = index;
         RebuildPreview();
     }
 
@@ -89,16 +91,30 @@ public sealed class DesktopSession
     public void Clear()
     {
         _paths.Clear();
+        _pages.Clear();
+        _selectedPage = 0;
         _previewDataUrl = null;
         _printPath = null;
         _status = null;
     }
 
-    public void Print()
+    public void PrintCurrent()
     {
         if (_printPath is null)
         {
-            _status = "Chưa có preview raster có thể in.";
+            _status = "Chưa có trang preview có thể in.";
+            return;
+        }
+
+        var result = Submit(_printPath);
+        _status = Describe(result);
+    }
+
+    public void PrintAll()
+    {
+        if (_pages.Count == 0)
+        {
+            _status = "Không có trang để in.";
             return;
         }
 
@@ -108,71 +124,110 @@ public sealed class DesktopSession
             return;
         }
 
-        var profile = _selectedPrinter.Contains(
-            "L3310",
-            StringComparison.OrdinalIgnoreCase)
-            ? PrinterDeviceProfile.EpsonL3310Calibrated
-            : new PrinterDeviceProfile("default", _selectedPrinter);
+        var success = 0;
+        for (var i = 0; i < _pages.Count; i++)
+        {
+            try
+            {
+                var page = _pages[i];
+                var job = CreateDefaultJob(page.SourcePath);
+                var png = SourcePagePreview.RenderA4(
+                    job, page.SourcePath, page.SourcePageIndex, dpi: 300);
+                var path = Path.Combine(_workDir, $"print-{i:D4}.png");
+                File.WriteAllBytes(path, png);
 
-        var result = WindowsSpoolerPrinter.SubmitA4Png(
-            _selectedPrinter,
-            _printPath,
-            profile);
+                var result = Submit(path);
+                if (result.State == PrintSubmissionState.Failed)
+                {
+                    _status = $"Dừng ở trang {i + 1}/{_pages.Count}: {result.Error}";
+                    return;
+                }
 
-        _status = result.State == PrintSubmissionState.Failed
-            ? $"In lỗi: {result.Error}"
-            : result.JobId is int id
-                ? $"Đã gửi tới spooler · Job #{id}"
-                : "Đã gửi tới spooler.";
+                success++;
+            }
+            catch (Exception ex)
+            {
+                _status = $"Dừng ở trang {i + 1}/{_pages.Count}: {ex.Message}";
+                return;
+            }
+        }
+
+        _status = $"Đã gửi {success}/{_pages.Count} trang tới spooler.";
     }
 
     public DesktopState BuildState()
     {
         var printers = PrinterCapabilityProbe.Enumerate()
-            .Select(p => new DesktopPrinter(
-                p.Name,
-                p.IsDefault,
-                p.SupportsColor,
-                p.CanDuplex))
+            .Select(p => new DesktopPrinter(p.Name, p.IsDefault, p.SupportsColor, p.CanDuplex))
             .ToArray();
 
-        var files = _paths.Select(InspectSafe).ToArray();
-
         return new(
-            Files: files,
+            Files: _paths.Select(InspectSafe).ToArray(),
+            Pages: _pages,
+            SelectedPage: _selectedPage,
             Printers: printers,
             SelectedPrinter: _selectedPrinter,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,
-            CanPrint: _printPath is not null &&
-                      !string.IsNullOrWhiteSpace(_selectedPrinter));
+            CanPrint: _printPath is not null && !string.IsNullOrWhiteSpace(_selectedPrinter),
+            CanPrintAll: _pages.Count > 0 && !string.IsNullOrWhiteSpace(_selectedPrinter));
+    }
+
+    private void RebuildPages()
+    {
+        _pages.Clear();
+
+        foreach (var path in _paths)
+        {
+            try
+            {
+                var metadata = SourceInspector.Inspect(path);
+                var count = metadata.Kind == SourceKind.Pdf
+                    ? metadata.PageCount ?? 0
+                    : 1;
+
+                for (var page = 0; page < count; page++)
+                {
+                    _pages.Add(new(
+                        GlobalIndex: _pages.Count,
+                        SourcePath: path,
+                        SourceName: Path.GetFileName(path),
+                        SourcePageIndex: page,
+                        PageLabel: metadata.Kind == SourceKind.Pdf
+                            ? $"Trang {page + 1}/{count}"
+                            : "Ảnh"));
+                }
+            }
+            catch
+            {
+                // Per-file error is already surfaced through InspectSafe.
+            }
+        }
     }
 
     private void RebuildPreview()
     {
-        var rasterPath = _paths.FirstOrDefault(IsRaster);
-        if (rasterPath is null)
+        if (_pages.Count == 0)
         {
             _previewDataUrl = null;
             _printPath = null;
-            _status = _paths.Count == 0
-                ? null
-                : "PDF đã inspect được nhưng raster preview PDF chưa có ở milestone này.";
+            _status = _paths.Count == 0 ? null : "Không có trang hợp lệ để preview.";
             return;
         }
 
         try
         {
-            var job = CreateDefaultJob(rasterPath);
-            var preview = RasterFilePreview.RenderA4(job, rasterPath, dpi: 96);
-            var printable = RasterFilePreview.RenderA4(job, rasterPath, dpi: 300);
+            var page = _pages[_selectedPage];
+            var job = CreateDefaultJob(page.SourcePath);
+            var preview = SourcePagePreview.RenderA4(
+                job, page.SourcePath, page.SourcePageIndex, dpi: 96);
+            var printable = SourcePagePreview.RenderA4(
+                job, page.SourcePath, page.SourcePageIndex, dpi: 300);
 
-            _previewDataUrl =
-                $"data:image/png;base64,{Convert.ToBase64String(preview)}";
-
+            _previewDataUrl = $"data:image/png;base64,{Convert.ToBase64String(preview)}";
             _printPath = Path.Combine(_workDir, "current-print.png");
             File.WriteAllBytes(_printPath, printable);
-            _status = "Preview sẵn sàng. Kiểm tra rồi bấm Print.";
+            _status = $"Preview {page.SourceName} · {page.PageLabel} sẵn sàng.";
         }
         catch (Exception ex)
         {
@@ -182,20 +237,39 @@ public sealed class DesktopSession
         }
     }
 
+    private PrintSubmissionResult Submit(string path)
+    {
+        if (string.IsNullOrWhiteSpace(_selectedPrinter))
+            return new(PrintSubmissionState.Failed, "", "", Error: "Không tìm thấy máy in.");
+
+        var profile = _selectedPrinter.Contains("L3310", StringComparison.OrdinalIgnoreCase)
+            ? PrinterDeviceProfile.EpsonL3310Calibrated
+            : new PrinterDeviceProfile("default", _selectedPrinter);
+
+        return WindowsSpoolerPrinter.SubmitA4Png(_selectedPrinter, path, profile);
+    }
+
+    private static string Describe(PrintSubmissionResult result) =>
+        result.State == PrintSubmissionState.Failed
+            ? $"In lỗi: {result.Error}"
+            : result.JobId is int id
+                ? $"Đã gửi tới spooler · Job #{id}"
+                : "Đã gửi tới spooler.";
+
     private static PrintJobSpec CreateDefaultJob(string path) =>
         new(
-            JobName: Path.GetFileName(path),
-            Sources: [new SourceSpec(path)],
-            Paper: new PaperSpec(),
-            Layout: new LayoutSpec(
+            Path.GetFileName(path),
+            [new SourceSpec(path)],
+            new PaperSpec(),
+            new LayoutSpec(
                 LayoutMode.Grid,
                 ItemWidthMm: 200,
                 ItemHeightMm: 287,
                 MarginMm: 5,
                 AllowRotate: false,
                 Fit: FitMode.Contain),
-            Print: new PrintSettings(),
-            Policy: new PolicySpec(PreviewPolicy.Required));
+            new PrintSettings(),
+            new PolicySpec(PreviewPolicy.Required));
 
     private static DesktopFile InspectSafe(string path)
     {
@@ -203,24 +277,12 @@ public sealed class DesktopSession
         {
             var metadata = SourceInspector.Inspect(path);
             return new(
-                Path.GetFileName(path),
-                path,
-                metadata.Kind.ToString(),
-                metadata.PixelWidth,
-                metadata.PixelHeight,
-                metadata.PageCount,
-                null);
+                Path.GetFileName(path), path, metadata.Kind.ToString(),
+                metadata.PixelWidth, metadata.PixelHeight, metadata.PageCount, null);
         }
         catch (Exception ex)
         {
-            return new(
-                Path.GetFileName(path),
-                path,
-                "Error",
-                null,
-                null,
-                null,
-                ex.Message);
+            return new(Path.GetFileName(path), path, "Error", null, null, null, ex.Message);
         }
     }
 
@@ -237,34 +299,33 @@ public sealed class DesktopSession
             if (!Directory.Exists(path))
                 continue;
 
-            foreach (var file in Directory.EnumerateFiles(
-                path,
-                "*.*",
-                SearchOption.TopDirectoryOnly))
-            {
+            foreach (var file in Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly))
                 if (Supported(file))
                     yield return Path.GetFullPath(file);
-            }
         }
     }
 
     private static bool Supported(string path) =>
         SupportedExtensions.Contains(Path.GetExtension(path));
-
-    private static bool IsRaster(string path) =>
-        Path.GetExtension(path) is ".jpg" or ".jpeg" or ".png" ||
-        Path.GetExtension(path).Equals(".jpg", StringComparison.OrdinalIgnoreCase) ||
-        Path.GetExtension(path).Equals(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-        Path.GetExtension(path).Equals(".png", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record DesktopState(
     IReadOnlyList<DesktopFile> Files,
+    IReadOnlyList<DesktopPage> Pages,
+    int SelectedPage,
     IReadOnlyList<DesktopPrinter> Printers,
     string? SelectedPrinter,
     string? PreviewDataUrl,
     string? Status,
-    bool CanPrint);
+    bool CanPrint,
+    bool CanPrintAll);
+
+public sealed record DesktopPage(
+    int GlobalIndex,
+    string SourcePath,
+    string SourceName,
+    int SourcePageIndex,
+    string PageLabel);
 
 public sealed record DesktopFile(
     string Name,

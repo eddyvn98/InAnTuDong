@@ -201,7 +201,10 @@
     <h3>M6 · Kiểm tra hệ thống</h3>
     <div class="box" id="readinessSummary">Đang kiểm tra...</div>
     <div class="readiness" id="readinessList"></div>
-    <button id="refreshReadiness" style="margin-top:8px;width:100%">Kiểm tra lại</button>
+    <div class="row" style="margin-top:8px">
+      <button id="refreshReadiness">Kiểm tra lại</button>
+      <button id="exportSupportReport">Xuất support report</button>
+    </div>
 
     <h3>Máy in</h3>
     <select id="printer"></select>
@@ -230,6 +233,7 @@ document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
 document.querySelector('#refreshReadiness').onclick=()=>post('refreshReadiness');
+document.querySelector('#exportSupportReport').onclick=()=>post('exportSupportReport');
 document.querySelector('#scanner').onchange=e=>post('selectScanner',{scanner:e.target.value});
 document.querySelector('#scan').onclick=()=>post('scan',{
   dpi:Number(document.querySelector('#scanDpi').value),

@@ -35,6 +35,9 @@
     .history{display:grid;gap:7px}.historyItem{border:1px solid #e5e9f0;border-radius:9px;padding:8px}
     .settings{display:grid;grid-template-columns:1fr 1fr;gap:7px}.check{display:flex;align-items:center;gap:7px;font-size:12px}
     .check input{width:auto}.full{grid-column:1/-1}.stack{display:grid;gap:7px}
+    .compositionList{display:grid;gap:6px;margin-top:8px;max-height:180px;overflow:auto}
+    .compositionItem{display:grid;grid-template-columns:auto 1fr 76px;gap:7px;align-items:center;padding:7px;border:1px solid #e2e7ef;border-radius:9px;background:#fff}
+    .compositionItem input[type="checkbox"]{width:auto}.compositionItem input[type="number"]{padding:6px 7px}
     @media(max-width:1050px){.layout{grid-template-columns:330px 1fr}.right{grid-column:1/-1}}
   </style>
 </head>
@@ -129,6 +132,31 @@
     <button class="primary" id="applyWorkflow" style="width:100%">Áp dụng workflow</button>
 
     <div class="box" style="margin-top:10px">
+      <b>Nhiều nội dung → A4</b>
+      <div class="meta">Chọn nhiều source/page, đặt số bản riêng cho từng nội dung rồi tự xếp tiết kiệm giấy.</div>
+      <div class="actions" style="margin-top:8px">
+        <button id="compositionAll">Chọn tất cả</button>
+        <button id="compositionNone">Bỏ chọn</button>
+      </div>
+      <div class="compositionList" id="compositionList"></div>
+      <div class="row">
+        <div><label>Rộng mm</label><input id="compositionWidth" type="number" min="1" step="0.1" value="40"></div>
+        <div><label>Cao mm</label><input id="compositionHeight" type="number" min="1" step="0.1" value="60"></div>
+      </div>
+      <div class="row">
+        <div><label>Gap mm</label><input id="compositionGap" type="number" min="0" step="0.1" value="2"></div>
+        <div><label>Margin mm</label><input id="compositionMargin" type="number" min="0" step="0.1" value="5"></div>
+      </div>
+      <div class="row">
+        <div><label>Fit</label><select id="compositionFit"><option>Contain</option><option>Cover</option></select></div>
+        <div></div>
+      </div>
+      <label class="check"><input id="compositionRotate" type="checkbox" checked> Tự xoay để xếp được nhiều hơn</label>
+      <label class="check"><input id="compositionCutMarks" type="checkbox"> Cut marks</label>
+      <button class="primary" id="composeMixed" style="width:100%;margin-top:8px">Tạo composition</button>
+    </div>
+
+    <div class="box" style="margin-top:10px">
       <b>CCCD mặt trước + mặt sau</b>
       <div class="row">
         <div><label>Mặt trước</label><select id="cccdFrontPage"></select></div>
@@ -188,6 +216,7 @@ const post=(action,extra={})=>chrome.webview.postMessage({action,...extra});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=id=>Number(document.querySelector(id).value);
 const set=(id,v)=>{const e=document.querySelector(id);if(e)e.value=v??''};
+const compositionSelection=new Map();
 
 document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
@@ -204,6 +233,40 @@ document.querySelector('#scan').onclick=()=>post('scan',{
 document.querySelector('#applyWorkflow').onclick=()=>post('applyBuiltInWorkflow',{
   workflowId:document.querySelector('#workflow').value
 });
+document.querySelector('#compositionAll').onclick=()=>{
+  document.querySelectorAll('[data-compose-check]').forEach(box=>{
+    box.checked=true;
+    const index=Number(box.dataset.composeCheck);
+    const current=compositionSelection.get(index)||{copies:1};
+    compositionSelection.set(index,{checked:true,copies:current.copies||1});
+  });
+};
+document.querySelector('#compositionNone').onclick=()=>{
+  document.querySelectorAll('[data-compose-check]').forEach(box=>{
+    box.checked=false;
+    const index=Number(box.dataset.composeCheck);
+    const current=compositionSelection.get(index)||{copies:1};
+    compositionSelection.set(index,{checked:false,copies:current.copies||1});
+  });
+};
+document.querySelector('#composeMixed').onclick=()=>{
+  const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>{
+    const pageIndex=Number(box.dataset.composeCheck);
+    const copies=Number(document.querySelector('[data-compose-copies="'+pageIndex+'"]').value);
+    compositionSelection.set(pageIndex,{checked:true,copies});
+    return {pageIndex,copies};
+  });
+  post('composeMixedPages',{
+    items,
+    itemWidthMm:Number(document.querySelector('#compositionWidth').value),
+    itemHeightMm:Number(document.querySelector('#compositionHeight').value),
+    gapMm:Number(document.querySelector('#compositionGap').value),
+    marginMm:Number(document.querySelector('#compositionMargin').value),
+    allowRotate:document.querySelector('#compositionRotate').checked,
+    cutMarks:document.querySelector('#compositionCutMarks').checked,
+    fit:document.querySelector('#compositionFit').value
+  });
+};
 document.querySelector('#composeCccd').onclick=()=>post('composeCccdFrontBack',{
   frontPageIndex:Number(document.querySelector('#cccdFrontPage').value),
   backPageIndex:Number(document.querySelector('#cccdBackPage').value)
@@ -294,6 +357,37 @@ function render(s){
   ).join(''):'<option value="">Không có scanner WIA</option>';
   document.querySelector('#scan').disabled=!s.Scanners.length;
 
+  for(const index of [...compositionSelection.keys()]){
+    if(index>=s.Pages.length)compositionSelection.delete(index);
+  }
+  if(s.Pages.length&&!([...compositionSelection.values()].some(x=>x.checked))){
+    compositionSelection.set(s.SelectedPage,{checked:true,copies:1});
+  }
+  const compositionList=document.querySelector('#compositionList');
+  compositionList.innerHTML=s.Pages.length?s.Pages.map((p,i)=>{
+    const saved=compositionSelection.get(i)||{checked:false,copies:1};
+    return '<div class="compositionItem">'+
+      '<input type="checkbox" data-compose-check="'+i+'" '+(saved.checked?'checked':'')+'>'+
+      '<div><b>'+(i+1)+'. '+esc(p.SourceName)+'</b><div class="meta">'+esc(p.PageLabel)+'</div></div>'+
+      '<input type="number" min="1" max="1000" value="'+(saved.copies||1)+'" data-compose-copies="'+i+'" title="Số bản">'+
+      '</div>';
+  }).join(''):'<div class="meta">Chưa có source page.</div>';
+  compositionList.querySelectorAll('[data-compose-check]').forEach(box=>{
+    box.onchange=()=>{
+      const index=Number(box.dataset.composeCheck);
+      const copies=Number(compositionList.querySelector('[data-compose-copies="'+index+'"]').value)||1;
+      compositionSelection.set(index,{checked:box.checked,copies});
+    };
+  });
+  compositionList.querySelectorAll('[data-compose-copies]').forEach(input=>{
+    input.onchange=()=>{
+      const index=Number(input.dataset.composeCopies);
+      const current=compositionSelection.get(index)||{checked:false,copies:1};
+      compositionSelection.set(index,{checked:current.checked,copies:Number(input.value)||1});
+    };
+  });
+  document.querySelector('#composeMixed').disabled=!s.Pages.length;
+
   const cccdFront=document.querySelector('#cccdFrontPage');
   const cccdBack=document.querySelector('#cccdBackPage');
   const oldFront=cccdFront.value;
@@ -363,6 +457,9 @@ function render(s){
     const j=s.Planner.Job;
     set('#jobMode',j.Mode);set('#fit',j.Fit);set('#width',j.ItemWidthMm);set('#height',j.ItemHeightMm);
     set('#gap',j.GapMm);set('#margin',j.MarginMm);set('#copies',j.Copies);
+    const copies=document.querySelector('#copies');
+    copies.disabled=!!j.CopiesArePerSource;
+    copies.title=j.CopiesArePerSource?'Job nhiều source: chỉnh số bản trong composition UI.':'';
     document.querySelector('#rotate').checked=j.AllowRotate;
     document.querySelector('#cutMarks').checked=j.CutMarks;
   }

@@ -14,6 +14,45 @@ public static class SourceJobRenderer
             : layout.Placements.Max(p => p.Page) + 1;
     }
 
+    public static byte[] RenderMixedA4(
+        PrintJobSpec job,
+        int outputPageIndex,
+        int dpi)
+    {
+        var layout = LayoutEngine.Layout(job);
+        var pageCount = layout.Placements.Count == 0
+            ? 0
+            : layout.Placements.Max(p => p.Page) + 1;
+
+        if (outputPageIndex < 0 || outputPageIndex >= pageCount)
+            throw new ArgumentOutOfRangeException(nameof(outputPageIndex));
+
+        var sources = new List<SKBitmap>(job.Sources.Count);
+
+        try
+        {
+            foreach (var source in job.Sources)
+            {
+                sources.Add(Decode(
+                    source.Path,
+                    source.PageIndex,
+                    dpi));
+            }
+
+            return A4PreviewRenderer.RenderPng(
+                job,
+                layout,
+                sources,
+                page: outputPageIndex,
+                dpi: dpi);
+        }
+        finally
+        {
+            foreach (var source in sources)
+                source.Dispose();
+        }
+    }
+
     public static byte[] RenderA4(
         PrintJobSpec job,
         string sourcePath,

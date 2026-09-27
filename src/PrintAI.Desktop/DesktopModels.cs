@@ -15,6 +15,8 @@ public sealed record DesktopState(
     string? SelectedScanner,
     IReadOnlyList<DesktopRecipe> Recipes,
     string? SelectedRecipeId,
+    IReadOnlyList<DesktopWorkflowPreset> BuiltInWorkflows,
+    string? SelectedWorkflowId,
     string? PreviewDataUrl,
     string? Status,
     bool CanPrint,
@@ -89,3 +91,12 @@ public sealed record DesktopRecipe(
     string Name,
     bool DirectPrintEligible,
     DateTimeOffset? UpdatedAt);
+
+public sealed record DesktopWorkflowPreset(
+    string Id,
+    string Name,
+    string Category,
+    string Description,
+    double ItemWidthMm,
+    double ItemHeightMm,
+    int SourceCopies);

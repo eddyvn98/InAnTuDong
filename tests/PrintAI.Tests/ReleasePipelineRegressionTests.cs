@@ -3,15 +3,13 @@ using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
 using PrintAI.Workflows;
+using SkiaSharp;
 using Xunit;
 
 namespace PrintAI.Tests;
 
 public sealed class ReleasePipelineRegressionTests
 {
-    private const string TinyPngBase64 =
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlWQAAAAASUVORK5CYII=";
-
     [Fact]
     public void RasterSource_InspectsAndRendersToA4()
     {
@@ -29,8 +27,8 @@ public sealed class ReleasePipelineRegressionTests
             dpi: 96);
 
         Assert.Equal(SourceKind.Png, metadata.Kind);
-        Assert.Equal(1, metadata.PixelWidth);
-        Assert.Equal(1, metadata.PixelHeight);
+        Assert.Equal(32, metadata.PixelWidth);
+        Assert.Equal(32, metadata.PixelHeight);
         AssertPng(output);
     }
 
@@ -148,9 +146,29 @@ public sealed class ReleasePipelineRegressionTests
         public string WriteTinyPng(string name)
         {
             var path = PathFor(name);
-            File.WriteAllBytes(
-                path,
-                Convert.FromBase64String(TinyPngBase64));
+
+            using var bitmap = new SKBitmap(32, 32);
+            using var canvas = new SKCanvas(bitmap);
+            canvas.Clear(SKColors.White);
+
+            using var paint = new SKPaint
+            {
+                Color = SKColors.Black,
+                Style = SKPaintStyle.Fill
+            };
+
+            canvas.DrawRect(8, 8, 16, 16, paint);
+            canvas.Flush();
+
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(
+                SKEncodedImageFormat.Png,
+                100);
+
+            if (data is null)
+                throw new InvalidOperationException("Could not encode regression PNG.");
+
+            File.WriteAllBytes(path, data.ToArray());
             return path;
         }
 

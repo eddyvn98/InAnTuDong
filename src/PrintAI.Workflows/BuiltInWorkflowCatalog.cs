@@ -81,7 +81,7 @@ public static class BuiltInWorkflowCatalog
             Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.High),
-            new PolicySpec(PreviewPolicy.Required)),
+            Policy: new PolicySpec(PreviewPolicy.Required)),
         new(
             IdPhoto4x6,
             "Ảnh thẻ 4x6",
@@ -97,10 +97,10 @@ public static class BuiltInWorkflowCatalog
                 CutMarks: true,
                 Fit: FitMode.Cover),
             SourceCopies: 8,
-            new PrintSettings(
+            Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.High),
-            new PolicySpec(PreviewPolicy.Required)),
+            Policy: new PolicySpec(PreviewPolicy.Required)),
         new(
             Label40x60,
             "Label 40x60",
@@ -119,7 +119,7 @@ public static class BuiltInWorkflowCatalog
             Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.Standard),
-            new PolicySpec(PreviewPolicy.Required))
+            Policy: new PolicySpec(PreviewPolicy.Required))
     ];
 
     public static IReadOnlyList<BuiltInWorkflowPreset> All => Presets;

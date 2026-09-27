@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="../PrintAI.Domain/PrintAI.Domain.csproj" />
+    <ProjectReference Include="../PrintAI.Spreadsheet/PrintAI.Spreadsheet.csproj" />
   </ItemGroup>
 </Project>

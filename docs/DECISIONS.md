@@ -128,3 +128,13 @@ Word, Excel and PowerPoint documents are not rendered directly by Domain/Layout.
 The first adapter calls LibreOffice headlessly with its documented `--convert-to pdf --outdir` interface. LibreOffice is optional and external to the PrintAI package; the app discovers it from explicit configuration, standard installation paths or PATH and reports a clear error when unavailable.
 
 Office COM automation is not used because it would require Microsoft Office installation and interactive desktop assumptions.
+
+
+## ADR-023 - Printer profile verification is explicit metadata
+Status: accepted
+
+Printer selection resolves through a catalog of device profiles. A profile may contain default scale/offset values without implying those values were physically measured.
+
+Only a profile that has completed real printed measurement may set `IsPhysicallyVerified=true`. The Epson L3310 profile is currently the only verified profile.
+
+L3316, L3210, L3250 and the generic A4 fallback use identity transforms as safe defaults but remain unverified. Unverified profiles must not unlock verification-dependent direct-print behavior. The desktop recipe/direct-print gate reads the catalog's verification flag instead of inferring verification from the printer name.

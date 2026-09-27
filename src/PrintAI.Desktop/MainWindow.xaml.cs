@@ -113,6 +113,17 @@ public partial class MainWindow : Window
                     _session.ApplyBuiltInWorkflow(
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
+                case "composeMixedPages":
+                    _session.ComposeMixedPages(
+                        ReadCompositionItems(root),
+                        root.GetProperty("itemWidthMm").GetDouble(),
+                        root.GetProperty("itemHeightMm").GetDouble(),
+                        root.GetProperty("gapMm").GetDouble(),
+                        root.GetProperty("marginMm").GetDouble(),
+                        root.GetProperty("allowRotate").GetBoolean(),
+                        root.GetProperty("cutMarks").GetBoolean(),
+                        root.GetProperty("fit").GetString() ?? "Contain");
+                    break;
                 case "composeCccdFrontBack":
                     _session.ComposeCccdFrontBack(
                         root.GetProperty("frontPageIndex").GetInt32(),
@@ -188,6 +199,23 @@ public partial class MainWindow : Window
         var json = JsonSerializer.Serialize(payload);
         WebView.CoreWebView2.PostWebMessageAsJson(json);
         return Task.CompletedTask;
+    }
+
+    private static IReadOnlyList<DesktopCompositionItem> ReadCompositionItems(
+        JsonElement root)
+    {
+        if (!root.TryGetProperty("items", out var items) ||
+            items.ValueKind != JsonValueKind.Array)
+        {
+            throw new ArgumentException("Danh sách source/page không hợp lệ.");
+        }
+
+        return items
+            .EnumerateArray()
+            .Select(item => new DesktopCompositionItem(
+                item.GetProperty("pageIndex").GetInt32(),
+                item.GetProperty("copies").GetInt32()))
+            .ToArray();
     }
 
     private static DesktopJobEdits ReadEdits(JsonElement root)

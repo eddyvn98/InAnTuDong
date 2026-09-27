@@ -26,9 +26,15 @@ Used by `PrintAI.SourceInspection` to read available JPG/PNG metadata such as EX
 
 Planned desktop UI host for the future Windows app.
 
+### System.Drawing.Common 10.0.12 / System.Drawing.Printing
+
+Used only in the Windows printing boundary to enumerate installed printers and inspect driver-advertised color, duplex, paper, resolution and printable-area capabilities.
+
+The package is Windows-only for this product and is not referenced by the Railway/web path.
+
 ### Windows printing APIs
 
-Planned printer path. Use installed Windows printer drivers, capabilities and spooler rather than rebuilding the printing stack.
+The capability probe is now implemented. The next step is spooler submission through the installed Windows driver rather than rebuilding the printing stack.
 
 ### Scanner adapter
 

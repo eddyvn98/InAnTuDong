@@ -45,7 +45,8 @@ public sealed record DesktopJobView(
     int Copies,
     bool AllowRotate,
     bool CutMarks,
-    string Fit)
+    string Fit,
+    bool CopiesArePerSource)
 {
     public static DesktopJobView From(PrintJobSpec job) =>
         new(
@@ -57,8 +58,13 @@ public sealed record DesktopJobView(
             job.Sources.FirstOrDefault()?.Copies ?? 1,
             job.Layout.AllowRotate,
             job.Layout.CutMarks,
-            job.Layout.Fit.ToString());
+            job.Layout.Fit.ToString(),
+            job.Sources.Count > 1);
 }
+
+public sealed record DesktopCompositionItem(
+    int PageIndex,
+    int Copies);
 
 public sealed record DesktopPage(
     int GlobalIndex,

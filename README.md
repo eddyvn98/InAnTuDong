@@ -48,4 +48,12 @@ dotnet run --project src/PrintAI.Web/PrintAI.Web.csproj
 
 Then open the address printed by ASP.NET Core.
 
+Windows desktop shell:
+
+```powershell
+dotnet run --project src/PrintAI.Desktop/PrintAI.Desktop.csproj
+```
+
+The desktop app currently supports JPG/PNG preview + printing and JPG/PNG/PDF source inspection. PDF raster preview/printing is still a later slice.
+
 See `docs/PROGRESS.md` for the exact current state.

@@ -1,6 +1,6 @@
 namespace PrintAI.Domain;
 
-public sealed record SourceSpec(string Path, int Copies = 1);
+public sealed record SourceSpec(string Path, int Copies = 1, int PageIndex = 0);
 
 public sealed record PaperSpec(
     double WidthMm = 210,

@@ -69,3 +69,10 @@ The AI boundary returns a strict JSON envelope containing a versioned `PrintJobS
 Status: accepted
 
 Safe/Smart/Auto execution decisions are deterministic code. The model may report confidence/questions/warnings, but cannot bypass validation, preview policy or the Windows print adapter.
+
+## ADR-015 - Desktop talks to a PrintAI planner gateway, not a vendor API
+Status: accepted
+
+The desktop model transport is configured with `PRINTAI_PLANNER_URL` and optional `PRINTAI_PLANNER_TOKEN`. It posts the PrintAI-owned `PlannerModelRequest` contract and expects the raw strict planner JSON envelope.
+
+Provider credentials and provider-specific request/response formats stay behind that gateway. This keeps desktop/core independent from OpenAI, Anthropic, Google, OpenRouter or local-model APIs.

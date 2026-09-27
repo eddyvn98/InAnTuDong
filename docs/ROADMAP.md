@@ -54,7 +54,11 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] structured output parsing
 - [x] Safe/Smart/Auto policy
 - [x] preview approval
-- [ ] job history
+- [x] desktop natural-language planner integration
+- [x] deterministic user-editable job settings
+- [x] multi-output A4 preview/print
+- [x] job history
+- [ ] desktop package/publish
 
 ## M4 - Scan + recipes
 

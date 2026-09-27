@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using PrintAI.Planning;
 using Xunit;
 
@@ -16,12 +17,24 @@ public sealed class ChatCompletionPlannerClientTests
         {
             requestBody = await request.Content!.ReadAsStringAsync();
 
+            var body = JsonSerializer.Serialize(new
+            {
+                choices = new[]
+                {
+                    new
+                    {
+                        message = new
+                        {
+                            content = """{"job":{}}"""
+                        }
+                    }
+                }
+            });
+
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(
-                    """
-                    {"choices":[{"message":{"content":"{"job":{}}"}}]}
-                    """,
+                    body,
                     Encoding.UTF8,
                     "application/json")
             };

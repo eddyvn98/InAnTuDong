@@ -245,9 +245,16 @@ The merged slice adds the reusable mixed composition surface on top of the exist
 
 This is the first content-to-layout slice for schema 1.0: mixed content can vary by source/page and copy count while all placements in the composition share one physical item size. Irregular per-item physical sizes remain outside schema 1.0.
 
-## M5 HEIC/HEIF implementation in progress
+## M5 HEIC/HEIF verification
 
-Branch `m5-heic` adds:
+PR #17 is merged into `main` at `e72d304ac80f3eb9e4c16c655684d5751a2f635f`.
+
+Verification:
+
+- CI run #80: Ubuntu + Windows success
+- Windows package run #24: success
+
+The merged slice adds:
 
 - `.heic` and `.heif` desktop file/folder input
 - a replaceable `PrintAI.ImageDecoding` boundary
@@ -257,11 +264,26 @@ Branch `m5-heic` adds:
 - Windows/Linux native codec assets supplied by NuGet
 - no changes to PrintJobSpec, physical layout, policy or spooler execution
 
+## M5 Office conversion in progress
+
+Branch `m5-office-conversion` adds:
+
+- DOC/DOCX/XLS/XLSX/PPT/PPTX input discovery
+- `PrintAI.DocumentConversion` boundary
+- LibreOffice headless conversion to isolated PDF work files
+- converter discovery through `PRINTAI_LIBREOFFICE_PATH`, standard Windows paths and PATH
+- per-conversion temporary LibreOffice user profile
+- timeout/process-tree cleanup
+- normal PDF inspection, preview, mixed-layout and spooler flow after conversion
+- clear desktop error when LibreOffice is unavailable
+
+LibreOffice remains optional and is not bundled with the Windows package.
+
 ## Exact next work - M5
 
-1. Verify HEIC/HEIF in Linux + Windows CI and Windows package build.
-2. Add Office conversion behind a conversion adapter.
-3. Add additional printer profiles after format conversion is stable.
+1. Verify Office conversion code in Linux + Windows CI and Windows package build.
+2. Perform a real DOCX/XLSX/PPTX conversion on a Windows machine with LibreOffice installed when convenient.
+3. Add additional printer profile catalog/selection without claiming unmeasured calibration.
 
 ## Important execution boundary
 

@@ -6,6 +6,7 @@
 - Microsoft Edge WebView2 Runtime
 - installed Windows printer driver for the target printer
 - Epson L3310 driver when using the verified L3310 profile
+- LibreOffice only when importing Word/Excel/PowerPoint files
 
 The package is self-contained for .NET. You do not need the .NET SDK to run it.
 
@@ -14,7 +15,7 @@ The package is self-contained for .NET. You do not need the .NET SDK to run it.
 1. Extract the whole ZIP to a normal folder.
 2. Keep all DLL/native files and the `ui` folder beside `PrintAI.exe`.
 3. Run `PrintAI.exe`.
-4. Select or drag a JPG, PNG or PDF into the app.
+4. Select or drag a JPG, PNG, HEIC, PDF or supported Office document into the app.
 5. Review the A4 preview before printing.
 
 Do not move only `PrintAI.exe` out of the extracted folder. WebView2, PDFium and other native/runtime files are shipped beside it.
@@ -44,3 +45,18 @@ PRINTAI_AI_API_KEY=optional-key
 The repository's L3310 device profile has been physically calibrated and exact-size output through the PrintAI spooler path was measured successfully.
 
 If the printer driver, borderless setting, media mode or scaling configuration changes, rerun the calibration before relying on exact physical dimensions.
+
+
+## Office documents
+
+DOC, DOCX, XLS, XLSX, PPT and PPTX are converted to PDF before they enter the PrintAI layout/preview pipeline.
+
+Install LibreOffice normally, or set an explicit converter path:
+
+```text
+PRINTAI_LIBREOFFICE_PATH=C:\Program Files\LibreOffice\program\soffice.exe
+```
+
+PrintAI also checks the normal LibreOffice installation location and the system PATH.
+
+LibreOffice is not bundled into the PrintAI ZIP. Image/PDF/HEIC printing continues to work without it.

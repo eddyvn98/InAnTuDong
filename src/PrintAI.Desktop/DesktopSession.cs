@@ -1,6 +1,9 @@
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Windows;
 using Microsoft.Win32;
+using PrintAI.DocumentConversion;
 using PrintAI.Domain;
 using PrintAI.History;
 using PrintAI.Rendering;
@@ -53,7 +56,7 @@ public sealed partial class DesktopSession
         {
             Title = "Chọn file để in",
             Multiselect = true,
-            Filter = "Supported files|*.jpg;*.jpeg;*.png;*.heic;*.heif;*.pdf|All files|*.*"
+            Filter = "Supported files|*.jpg;*.jpeg;*.png;*.heic;*.heif;*.pdf;*.doc;*.docx;*.xls;*.xlsx;*.ppt;*.pptx|All files|*.*"
         };
 
         if (dialog.ShowDialog(owner) == true)
@@ -64,7 +67,7 @@ public sealed partial class DesktopSession
     {
         var dialog = new OpenFolderDialog
         {
-            Title = "Chọn thư mục ảnh/PDF"
+            Title = "Chọn thư mục ảnh/PDF/Office"
         };
 
         if (dialog.ShowDialog(owner) == true)
@@ -73,8 +76,32 @@ public sealed partial class DesktopSession
 
     public void AddPaths(IEnumerable<string> paths)
     {
-        foreach (var path in DesktopSourceCatalog.Expand(paths))
+        var conversionErrors = new List<string>();
+        var convertedCount = 0;
+
+        foreach (var inputPath in DesktopSourceCatalog.Expand(paths))
         {
+            string path;
+
+            try
+            {
+                if (OfficeDocumentConverter.IsSupported(inputPath))
+                {
+                    path = ConvertOfficeSource(inputPath);
+                    convertedCount++;
+                }
+                else
+                {
+                    path = inputPath;
+                }
+            }
+            catch (Exception ex)
+            {
+                conversionErrors.Add(
+                    $"{Path.GetFileName(inputPath)}: {ex.Message}");
+                continue;
+            }
+
             if (_paths.Contains(path, StringComparer.OrdinalIgnoreCase))
                 continue;
 
@@ -91,6 +118,18 @@ public sealed partial class DesktopSession
 
         ResetPlan();
         RebuildPreview();
+
+        if (conversionErrors.Count > 0)
+        {
+            _status =
+                $"Không chuyển được {conversionErrors.Count} file Office. " +
+                string.Join(" | ", conversionErrors.Take(3));
+        }
+        else if (convertedCount > 0 && _previewDataUrl is not null)
+        {
+            _status =
+                $"Đã chuyển {convertedCount} file Office sang PDF để preview/in.";
+        }
     }
 
     public void SelectPage(int index)
@@ -184,6 +223,22 @@ public sealed partial class DesktopSession
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
             Planner: BuildPlannerView(job),
             History: _history.Read().Take(20).ToArray());
+    }
+
+    private string ConvertOfficeSource(string inputPath)
+    {
+        var normalized = Path.GetFullPath(inputPath);
+        var hash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(normalized)))[..12];
+
+        var outputDirectory = Path.Combine(
+            _workDir,
+            "converted",
+            hash);
+
+        return OfficeDocumentConverter.ConvertToPdf(
+            normalized,
+            outputDirectory);
     }
 
     private void RebuildPages()

@@ -33,3 +33,15 @@ jobs:
 
       - name: Build web
         run: dotnet build src/PrintAI.Web/PrintAI.Web.csproj -c Release
+
+      - name: Restore Windows printer tests
+        if: matrix.os == 'windows-latest'
+        run: dotnet restore tests/PrintAI.Windows.Tests/PrintAI.Windows.Tests.csproj
+
+      - name: Test Windows printer probe
+        if: matrix.os == 'windows-latest'
+        run: dotnet test tests/PrintAI.Windows.Tests/PrintAI.Windows.Tests.csproj -c Release --no-restore
+
+      - name: Build Windows printer probe
+        if: matrix.os == 'windows-latest'
+        run: dotnet build src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -c Release

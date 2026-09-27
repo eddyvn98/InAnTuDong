@@ -23,8 +23,16 @@ public sealed record DesktopState(
     bool CanPrintJob,
     bool CanPrintAllSources,
     DesktopPlannerView Planner,
+    DesktopExcelSmartPrintView ExcelSmartPrint,
     DesktopReadinessView Readiness,
     IReadOnlyList<JobHistoryEntry> History);
+
+public sealed record DesktopExcelSmartPrintView(
+    bool Available,
+    string? SourceName,
+    int SheetCount,
+    int WideSheetCount,
+    string? LastPlanSummary);
 
 public sealed record DesktopReadinessView(
     bool ReadyForCorePrinting,

@@ -1,6 +1,7 @@
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Printing;
+using System.Runtime.InteropServices;
 
 namespace PrintAI.Windows.Printing;
 

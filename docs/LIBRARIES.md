@@ -4,23 +4,31 @@ Prefer proven libraries/platform APIs for commodity functionality.
 
 A dependency should have a clear purpose, compatible license, active-enough maintenance, and a replacement boundary.
 
-## Planned choices
+## Current choices
+
+### SkiaSharp 4.150.1
+
+Used by `PrintAI.Rendering` for image decode/encode, crop/scale/rotate, preview rendering and raster drawing.
+
+`SkiaSharp.NativeAssets.Linux.NoDependencies` is included so the Railway/Linux demo can execute the same rendering path as CI.
+
+### PDFsharp 6.2.4
+
+Used by `PrintAI.SourceInspection` to inspect PDF page count and physical page dimensions.
+
+It is not currently the PDF rasterization engine. Rendering imported PDF pages remains a separate future capability.
+
+### MetadataExtractor 2.9.3
+
+Used by `PrintAI.SourceInspection` to read available JPG/PNG metadata such as EXIF, JFIF and PNG metadata directories without hand-parsing file formats.
 
 ### Microsoft.Web.WebView2
 
-Desktop UI host for the future Windows app.
-
-### SkiaSharp
-
-Image decode/encode, crop/scale/rotate, preview rendering, cut marks, and raster drawing.
-
-### PDFsharp
-
-PDF generation/manipulation where appropriate.
+Planned desktop UI host for the future Windows app.
 
 ### Windows printing APIs
 
-Use installed Windows printer drivers, capabilities and spooler rather than rebuilding the printing stack.
+Planned printer path. Use installed Windows printer drivers, capabilities and spooler rather than rebuilding the printing stack.
 
 ### Scanner adapter
 
@@ -32,6 +40,6 @@ Small physical-unit/domain validation and deterministic layout rules remain cust
 
 Do not add a complex packing library until mixed/irregular packing requirements justify it.
 
-## Current bootstrap
+## Dependency boundary
 
-The initial CI/web bootstrap intentionally has no production third-party rendering dependency yet. External rendering packages are added when their feature is implemented, not merely predeclared.
+Physical geometry stays in millimetres in Domain/Layout. Rendering libraries only receive converted pixel/device coordinates at the rendering boundary.

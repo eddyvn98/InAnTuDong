@@ -3,6 +3,7 @@ using System.Net.Http;
 using PrintAI.Domain;
 using PrintAI.Planning;
 using PrintAI.SourceInspection;
+using PrintAI.Spreadsheet;
 
 namespace PrintAI.Desktop;
 
@@ -10,6 +11,7 @@ public sealed class DesktopPlannerSession
 {
     private readonly HttpClient _httpClient = new();
     private PrintPlanner? _planner;
+    private SpreadsheetPrintPlanner? _spreadsheetPlanner;
 
     public string? Endpoint { get; private set; }
     public string? Model { get; private set; }
@@ -28,10 +30,12 @@ public sealed class DesktopPlannerSession
 
         Endpoint = uri.ToString();
         Model = model.Trim();
-        _planner = new PrintPlanner(
-            new ChatCompletionPlannerClient(
-                _httpClient,
-                new ChatCompletionTransportOptions(uri, Model, apiKey)));
+        var client = new ChatCompletionPlannerClient(
+            _httpClient,
+            new ChatCompletionTransportOptions(uri, Model, apiKey));
+
+        _planner = new PrintPlanner(client);
+        _spreadsheetPlanner = new SpreadsheetPrintPlanner(client);
     }
 
     public bool ConfigureFromEnvironment()
@@ -51,6 +55,24 @@ public sealed class DesktopPlannerSession
             Environment.GetEnvironmentVariable("PRINTAI_AI_API_KEY"));
 
         return true;
+    }
+
+
+    public async Task<SpreadsheetPlanningOutcome> PlanSpreadsheetAsync(
+        string request,
+        SpreadsheetWorkbookProfile profile,
+        CancellationToken cancellationToken = default)
+    {
+        if (_spreadsheetPlanner is null)
+        {
+            throw new InvalidOperationException(
+                "AI planner is not configured. Set endpoint and model first.");
+        }
+
+        return await _spreadsheetPlanner.PlanAsync(
+            request,
+            profile,
+            cancellationToken);
     }
 
     public async Task<DesktopPlanResult> PlanAsync(

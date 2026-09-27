@@ -22,6 +22,7 @@
     <ProjectReference Include="../PrintAI.Planning/PrintAI.Planning.csproj" />
     <ProjectReference Include="../PrintAI.History/PrintAI.History.csproj" />
     <ProjectReference Include="../PrintAI.Recipes/PrintAI.Recipes.csproj" />
+    <ProjectReference Include="../PrintAI.ReleaseReadiness/PrintAI.ReleaseReadiness.csproj" />
     <ProjectReference Include="../PrintAI.Scanning/PrintAI.Scanning.csproj" />
     <ProjectReference Include="../PrintAI.Rendering/PrintAI.Rendering.csproj" />
     <ProjectReference Include="../PrintAI.SourceInspection/PrintAI.SourceInspection.csproj" />

@@ -102,6 +102,7 @@ These are validation tasks, not missing software architecture.
 - [x] install / upgrade / rollback flow — lifecycle scripts verified by Windows package CI
 - [x] support diagnostics / error export — privacy-safe support report verified
 - [ ] tagged release + release notes
+- [~] Excel Smart Print — XLSX structure analysis, guarded AI plan and deterministic workbook optimizer implemented; CI/real-file verification pending
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 
 Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing.

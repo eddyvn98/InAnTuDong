@@ -4,7 +4,7 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M4 - Scan + recipes**
+**M5 - Advanced workflows**
 
 ## Completed milestones
 
@@ -123,7 +123,13 @@ Packaging:
 - required package layout verification succeeds
 - ZIP artifact upload succeeds
 
-## M4 implementation in progress
+## M4 - Scan + recipes
+
+Software implementation complete and ready to merge.
+
+Physical Epson L3310 scan validation is intentionally deferred and remains a post-merge hardware verification item.
+
+### Implemented
 
 Branch `m4-scan-recipes` now implements:
 
@@ -153,14 +159,26 @@ PR #12 verification on commit `78fc1279b7d19cd14b8b27fa61a543cf374f6575`:
 - `PrintAI-win-x64` artifact: 98,128,342 bytes
 - artifact SHA-256: `9d28480867b795515e4242554d42332bae54358d9d6717f61d422c5df40bb064`
 
-## Exact next work - M4
+## Deferred hardware verification
 
-1. Download the PR #12 `PrintAI-win-x64` artifact on a Windows machine with the Epson L3310 driver installed.
-2. Perform one real WIA scan at 300 DPI.
-3. Validate scan -> crop/deskew -> preview -> print physically.
-4. Also test PDF scan output and one saved recipe.
-5. Tune WIA property handling/crop thresholds only if real hardware requires it.
-6. Merge M4 after physical validation is green.
+When convenient on a Windows machine with the Epson L3310 driver installed:
+
+1. Run a real WIA scan at 300 DPI.
+2. Validate scan -> crop/deskew -> preview -> print physically.
+3. Test PDF scan output and one saved recipe.
+4. Tune WIA property handling/crop thresholds only if real hardware requires it.
+
+This verification no longer blocks M5 development.
+
+## Exact next work - M5
+
+Start with deterministic workflow presets that build on the completed layout/recipe engine:
+
+1. CCCD copy workflow.
+2. ID photo presets.
+3. Label/sticker presets.
+4. Then content-to-layout and mixed jobs.
+5. HEIC/Office conversion and additional printer profiles follow after the preset workflows.
 
 ## Important execution boundary
 

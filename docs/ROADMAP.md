@@ -73,11 +73,11 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 
 **Current milestone after M4 software merge.**
 
-- [~] CCCD — 1:1 single-side preset implemented; front/back composition remains
+- [x] CCCD — 1:1 single-side + front/back composition
 - [x] ID photo presets — 3x4 and 4x6
 - [~] labels/stickers — 40x60 preset implemented; custom sheet workflow remains
 - [ ] content-to-layout
-- [ ] mixed jobs
+- [~] mixed jobs — multi-source/page rendering implemented; general composition UI remains
 - [ ] HEIC
 - [ ] Office conversion
 - [ ] additional printer profiles

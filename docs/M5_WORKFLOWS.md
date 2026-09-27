@@ -64,3 +64,18 @@ built-in workflow
 ```
 
 No workflow is allowed to call the printer directly.
+
+
+## CCCD front + back composition
+
+The second M5 slice adds a mixed-source CCCD workflow:
+
+- choose any two source pages as front and back
+- pages may come from separate images/PDFs or two pages of the same PDF
+- preserve source order: front first, back second
+- render both on the same A4 page
+- each card face remains 85.60 x 53.98 mm
+- preview remains required
+- printing still goes through the existing Windows spooler path
+
+Mixed rendering is not CCCD-specific. Each layout placement now references its source index, and each source can reference a specific page within a PDF.

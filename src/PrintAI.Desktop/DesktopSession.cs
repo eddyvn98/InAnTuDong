@@ -216,19 +216,29 @@ public sealed partial class DesktopSession
                 0,
                 Math.Max(0, _outputPageCount - 1));
 
-            var preview = SourceJobRenderer.RenderA4(
-                job,
-                page.SourcePath,
-                page.SourcePageIndex,
-                _selectedOutputPage,
-                dpi: 96);
+            var preview = RequiresMixedRenderer(job)
+                ? SourceJobRenderer.RenderMixedA4(
+                    job,
+                    _selectedOutputPage,
+                    dpi: 96)
+                : SourceJobRenderer.RenderA4(
+                    job,
+                    page.SourcePath,
+                    page.SourcePageIndex,
+                    _selectedOutputPage,
+                    dpi: 96);
 
-            var printable = SourceJobRenderer.RenderA4(
-                job,
-                page.SourcePath,
-                page.SourcePageIndex,
-                _selectedOutputPage,
-                dpi: 300);
+            var printable = RequiresMixedRenderer(job)
+                ? SourceJobRenderer.RenderMixedA4(
+                    job,
+                    _selectedOutputPage,
+                    dpi: 300)
+                : SourceJobRenderer.RenderA4(
+                    job,
+                    page.SourcePath,
+                    page.SourcePageIndex,
+                    _selectedOutputPage,
+                    dpi: 300);
 
             _previewDataUrl =
                 $"data:image/png;base64,{Convert.ToBase64String(preview)}";

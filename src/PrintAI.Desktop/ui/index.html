@@ -128,6 +128,15 @@
     <div class="box" id="workflowInfo">Chọn source page rồi áp dụng preset.</div>
     <button class="primary" id="applyWorkflow" style="width:100%">Áp dụng workflow</button>
 
+    <div class="box" style="margin-top:10px">
+      <b>CCCD mặt trước + mặt sau</b>
+      <div class="row">
+        <div><label>Mặt trước</label><select id="cccdFrontPage"></select></div>
+        <div><label>Mặt sau</label><select id="cccdBackPage"></select></div>
+      </div>
+      <button class="primary" id="composeCccd" style="width:100%;margin-top:8px">Ghép 2 mặt trên A4</button>
+    </div>
+
     <h3>Recipes</h3>
     <label>Tên recipe</label>
     <input id="recipeName" placeholder="Ví dụ: Ảnh 4x6 có cut marks">
@@ -175,6 +184,10 @@ document.querySelector('#scan').onclick=()=>post('scan',{
 });
 document.querySelector('#applyWorkflow').onclick=()=>post('applyBuiltInWorkflow',{
   workflowId:document.querySelector('#workflow').value
+});
+document.querySelector('#composeCccd').onclick=()=>post('composeCccdFrontBack',{
+  frontPageIndex:Number(document.querySelector('#cccdFrontPage').value),
+  backPageIndex:Number(document.querySelector('#cccdBackPage').value)
 });
 document.querySelector('#saveRecipe').onclick=()=>post('saveRecipe',{
   name:document.querySelector('#recipeName').value.trim(),
@@ -251,6 +264,21 @@ function render(s){
     '<option value="'+esc(x.Id)+'" '+(x.Id===s.SelectedScanner?'selected':'')+'>'+esc(x.Name)+'</option>'
   ).join(''):'<option value="">Không có scanner WIA</option>';
   document.querySelector('#scan').disabled=!s.Scanners.length;
+
+  const cccdFront=document.querySelector('#cccdFrontPage');
+  const cccdBack=document.querySelector('#cccdBackPage');
+  const oldFront=cccdFront.value;
+  const oldBack=cccdBack.value;
+  const pageOptions=s.Pages.map((p,i)=>
+    '<option value="'+i+'">'+(i+1)+'. '+esc(p.SourceName)+' · '+esc(p.PageLabel)+'</option>'
+  ).join('');
+  cccdFront.innerHTML=pageOptions||'<option value="">Chưa có source page</option>';
+  cccdBack.innerHTML=pageOptions||'<option value="">Chưa có source page</option>';
+  if(oldFront!==''&&Number(oldFront)<s.Pages.length)cccdFront.value=oldFront;
+  else if(s.Pages.length)cccdFront.value=String(s.SelectedPage);
+  if(oldBack!==''&&Number(oldBack)<s.Pages.length)cccdBack.value=oldBack;
+  else if(s.Pages.length>1)cccdBack.value=String(s.SelectedPage===0?1:0);
+  document.querySelector('#composeCccd').disabled=s.Pages.length<2;
 
   const workflow=document.querySelector('#workflow');
   workflow.innerHTML=s.BuiltInWorkflows.length?s.BuiltInWorkflows.map(x=>

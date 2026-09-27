@@ -23,18 +23,20 @@ public static class ExactSizeLayoutEngine
         if (!selected.Fits)
             throw new InvalidOperationException("The requested exact-size item does not fit inside the printable layout area.");
 
-        var totalItems = job.Sources.Sum(s => s.Copies);
+        var sourceItems = ExpandSources(job);
         var x = (paperWidth - selected.WidthMm) / 2;
         var y = (paperHeight - selected.HeightMm) / 2;
-        var placements = Enumerable.Range(0, totalItems)
-            .Select(index => new Placement(
+        var placements = sourceItems
+            .Select((sourceItem, index) => new Placement(
                 index,
                 Page: index,
                 XMm: x,
                 YMm: y,
                 WidthMm: selected.WidthMm,
                 HeightMm: selected.HeightMm,
-                Rotated: selected.Rotated))
+                Rotated: selected.Rotated,
+                SourceIndex: sourceItem.SourceIndex,
+                SourceCopyIndex: sourceItem.SourceCopyIndex))
             .ToArray();
 
         return new LayoutResult(
@@ -43,6 +45,25 @@ public static class ExactSizeLayoutEngine
             CapacityPerPage: 1,
             Rotated: selected.Rotated,
             Placements: placements);
+    }
+
+    private static IReadOnlyList<SourceItem> ExpandSources(PrintJobSpec job)
+    {
+        var items = new List<SourceItem>();
+
+        for (var sourceIndex = 0;
+             sourceIndex < job.Sources.Count;
+             sourceIndex++)
+        {
+            for (var copyIndex = 0;
+                 copyIndex < job.Sources[sourceIndex].Copies;
+                 copyIndex++)
+            {
+                items.Add(new(sourceIndex, copyIndex));
+            }
+        }
+
+        return items;
     }
 
     private static Candidate CandidateFor(
@@ -67,6 +88,10 @@ public static class ExactSizeLayoutEngine
         paper.Orientation == PageOrientation.Portrait
             ? (paper.WidthMm, paper.HeightMm)
             : (paper.HeightMm, paper.WidthMm);
+
+    private sealed record SourceItem(
+        int SourceIndex,
+        int SourceCopyIndex);
 
     private sealed record Candidate(
         double WidthMm,

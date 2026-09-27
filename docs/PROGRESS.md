@@ -198,12 +198,26 @@ PR #13 verification on commit `7fdf21b5aff58684f10f6dfd0247bf7651032e3d`:
 - `PrintAI-win-x64` artifact: 98,137,222 bytes
 - artifact SHA-256: `0cf6b70c5cf128aff7c86987166d22ad190b5d8cc57484ebe2e681c1625fe833`
 
+## M5 mixed-job implementation in progress
+
+Branch `m5-mixed-cccd` adds:
+
+- `SourceSpec.PageIndex` for page-specific mixed sources
+- deterministic source mapping on every layout placement
+- multi-source A4 rendering
+- mixed-source printing through the existing spooler path
+- CCCD front/back composer using any two desktop source pages
+- support for two pages from the same PDF
+- synchronized copy edits across mixed sources
+- shared tests for source ordering, page indexes, validation and mixed rendering
+
 ## Exact next work - M5
 
-1. Extend CCCD from single-side 1:1 to front/back composition using the mixed-job model.
+1. Verify mixed CCCD on Linux + Windows CI and package build.
 2. Add customizable label/sticker sheet presets.
-3. Implement content-to-layout and general mixed jobs.
-4. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
+3. Generalize the CCCD two-source controls into a reusable mixed composition UI.
+4. Implement content-to-layout.
+5. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
 
 ## Important execution boundary
 

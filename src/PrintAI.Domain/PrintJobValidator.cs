@@ -37,6 +37,9 @@ public static class PrintJobValidator
         if (job.Sources.Any(s => s.Copies < 1))
             errors.Add(new("sources.copies", "Source copies must be at least 1."));
 
+        if (job.Sources.Any(s => s.PageIndex < 0))
+            errors.Add(new("sources.pageIndex", "Source page index cannot be negative."));
+
         if (job.Paper.WidthMm <= 0 || job.Paper.HeightMm <= 0)
             errors.Add(new("paper.size", "Paper dimensions must be positive."));
 

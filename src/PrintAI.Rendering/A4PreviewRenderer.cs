@@ -11,9 +11,20 @@ public static class A4PreviewRenderer
         LayoutResult layout,
         SKBitmap source,
         int page = 0,
+        int dpi = 96) =>
+        RenderPng(job, layout, [source], page, dpi);
+
+    public static byte[] RenderPng(
+        PrintJobSpec job,
+        LayoutResult layout,
+        IReadOnlyList<SKBitmap> sources,
+        int page = 0,
         int dpi = 96)
     {
-        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(sources);
+        if (sources.Count == 0)
+            throw new ArgumentException("At least one rendered source is required.", nameof(sources));
+
         if (dpi <= 0)
             throw new ArgumentOutOfRangeException(nameof(dpi));
 
@@ -27,7 +38,19 @@ public static class A4PreviewRenderer
 
         foreach (var placement in layout.Placements.Where(p => p.Page == page))
         {
-            DrawPlacement(canvas, source, placement, job.Layout.Fit, dpi);
+            if (placement.SourceIndex < 0 ||
+                placement.SourceIndex >= sources.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Placement references unavailable source index {placement.SourceIndex}.");
+            }
+
+            DrawPlacement(
+                canvas,
+                sources[placement.SourceIndex],
+                placement,
+                job.Layout.Fit,
+                dpi);
 
             if (job.Layout.CutMarks)
                 DrawCutMarks(canvas, placement, dpi);

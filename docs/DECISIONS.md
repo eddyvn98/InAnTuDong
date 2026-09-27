@@ -90,3 +90,11 @@ Planner/layout output pagination is distinct from source pagination. The desktop
 Status: accepted
 
 M5 built-in workflows are deterministic preset definitions that create ordinary validated `PrintJobSpec` jobs. They may prefill physical size, fit, copy count, quality and cut marks, but they do not bypass validation, preview/policy gates or the Windows print adapter. User edits and reusable recipes remain downstream of the same job boundary.
+
+
+## ADR-019 - Mixed jobs map every placement to a source
+Status: accepted
+
+A layout placement carries `SourceIndex` and `SourceCopyIndex`. `SourceSpec` also carries a zero-based `PageIndex` so different pages from the same PDF can participate in one job.
+
+The deterministic layout engine decides geometry only. The renderer resolves each placement back to its approved source and page. This keeps multi-source composition reusable for CCCD front/back, label sheets and future content-to-layout workflows without introducing workflow-specific printer code.

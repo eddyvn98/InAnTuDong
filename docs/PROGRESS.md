@@ -141,14 +141,26 @@ Branch `m4-scan-recipes` now implements:
 
 The Windows desktop UI feeds a completed scan back into the existing source -> preview -> planner/policy -> spooler pipeline.
 
+## M4 verification
+
+PR #12 verification on commit `78fc1279b7d19cd14b8b27fa61a543cf374f6575`:
+
+- CI run #65: Ubuntu + Windows success
+- shared suite: 38/38 tests pass
+- Windows printer tests/probe remain green
+- WebView2 desktop build succeeds
+- Windows package run #9: success
+- `PrintAI-win-x64` artifact: 98,128,342 bytes
+- artifact SHA-256: `9d28480867b795515e4242554d42332bae54358d9d6717f61d422c5df40bb064`
+
 ## Exact next work - M4
 
-1. Run PR CI on Windows + Linux and fix any compile/test failures.
-2. Build the self-contained Windows package from the M4 branch.
-3. On a Windows machine with Epson L3310 driver installed, perform one real WIA scan.
-4. Validate scan -> crop/deskew -> preview -> print physically.
+1. Download the PR #12 `PrintAI-win-x64` artifact on a Windows machine with the Epson L3310 driver installed.
+2. Perform one real WIA scan at 300 DPI.
+3. Validate scan -> crop/deskew -> preview -> print physically.
+4. Also test PDF scan output and one saved recipe.
 5. Tune WIA property handling/crop thresholds only if real hardware requires it.
-6. Merge M4 after CI and physical validation are green.
+6. Merge M4 after physical validation is green.
 
 ## Important execution boundary
 

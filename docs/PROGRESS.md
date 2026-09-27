@@ -340,9 +340,18 @@ Branch `m6-release-readiness` starts M6 with:
 - SHA-256 checksum generated for the Windows ZIP
 - M6 scope and exit criteria documented in `docs/M6_RELEASE_READINESS.md`
 
-## M6 smoke/regression implementation in progress
+## M6 smoke/regression verification
 
-Branch `m6-smoke-regression` adds:
+PR #22 is merged into `main` at `33fa87eb37aae6f249de97739582f4bc8ff0ad26`.
+
+Verification:
+
+- CI run #93: Ubuntu + Windows success
+- Windows package run #37: success
+- packaged `PrintAI.exe --self-test`: success
+- release regression suite: success
+
+The merged slice adds:
 
 - `PrintAI.exe --self-test` headless startup mode
 - JSON self-test report with application version/runtime/check results
@@ -354,13 +363,26 @@ Branch `m6-smoke-regression` adds:
 - self-test JSON is uploaded beside the ZIP/checksum as release evidence
 - shared regression tests for raster source, generated two-page PDF and mixed image+PDF rendering
 
+## M6 install lifecycle in progress
+
+Branch `m6-install-lifecycle` adds:
+
+- per-user `Install-PrintAI.ps1` with no admin requirement
+- staged upgrade before replacing the current install
+- automatic `.previous` retention for one-step rollback
+- `Rollback-PrintAI.ps1` current/previous swap
+- `Uninstall-PrintAI.ps1` that keeps local user data by default
+- explicit `-RemoveData` opt-in for full local-data deletion
+- Start Menu/Desktop shortcuts for normal installs
+- portable ZIP usage remains supported
+- Windows package CI exercises install -> installed self-test -> upgrade -> rollback -> uninstall in a sandbox
+
 Exact next M6 work after this slice is verified:
 
-1. install/upgrade/rollback flow
-2. support diagnostics export
-3. tagged preview release
-4. real iPhone HEIC fixture/field validation
-5. real-machine scanner/Office/printer validation matrix
+1. support diagnostics export
+2. tagged preview release + release notes
+3. real iPhone HEIC field validation
+4. real-machine scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

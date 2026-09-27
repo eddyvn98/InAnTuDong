@@ -4,7 +4,7 @@ Last updated: 2026-09-28
 
 ## Current milestone
 
-**M5 - Advanced workflows**
+**M5 - Advanced workflows — software scope complete**
 
 ## Completed milestones
 
@@ -264,9 +264,16 @@ The merged slice adds:
 - Windows/Linux native codec assets supplied by NuGet
 - no changes to PrintJobSpec, physical layout, policy or spooler execution
 
-## M5 Office conversion in progress
+## M5 Office conversion verification
 
-Branch `m5-office-conversion` adds:
+PR #18 is merged into `main` at `f84b864caea6ee4119d5f56ab242535bcd1a7684`.
+
+Verification:
+
+- CI run #83: Ubuntu + Windows success
+- Windows package run #27: success
+
+The merged slice adds:
 
 - DOC/DOCX/XLS/XLSX/PPT/PPTX input discovery
 - `PrintAI.DocumentConversion` boundary
@@ -279,11 +286,46 @@ Branch `m5-office-conversion` adds:
 
 LibreOffice remains optional and is not bundled with the Windows package.
 
-## Exact next work - M5
+## M5 printer profiles verification
 
-1. Verify Office conversion code in Linux + Windows CI and Windows package build.
-2. Perform a real DOCX/XLSX/PPTX conversion on a Windows machine with LibreOffice installed when convenient.
-3. Add additional printer profile catalog/selection without claiming unmeasured calibration.
+PR #19 is merged into `main` at `53db0256f45f0f964b17e523fd16a6953b42f071`.
+
+Verification:
+
+- CI run #84: Ubuntu + Windows success
+- Windows package run #28: success
+
+The merged profile catalog contains:
+
+- Epson L3310 — physically verified
+- Epson L3316 — identity default, not physically verified
+- Epson L3210 — identity default, not physically verified
+- Epson L3250 — identity default, not physically verified
+- generic A4 fallback — identity default, not physically verified
+
+Unverified profiles do not claim exact-size calibration. The desktop gate now uses profile verification metadata rather than a hard-coded printer-name check.
+
+## M5 software completion
+
+The requested M5 software scope is implemented:
+
+- workflow presets
+- CCCD front/back
+- customizable label sheets
+- general mixed composition
+- content-to-layout with uniform physical placement geometry
+- HEIC/HEIF input
+- optional Office-to-PDF conversion
+- extensible printer profile catalog
+
+Remaining validation items are intentionally non-blocking:
+
+1. real Epson L3310 WIA scanner verification from M4
+2. open/render a representative real iPhone HEIC/HEIF file in the packaged Windows app
+3. verify DOCX/XLSX/PPTX conversion fidelity on a Windows machine with LibreOffice installed
+4. physically calibrate L3316/L3210/L3250 only if those printers are actually used
+
+Do not mark an unmeasured printer profile as physically verified.
 
 ## Important execution boundary
 

@@ -79,8 +79,17 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] content-to-layout — general mixed-source uniform-size composition
 - [x] mixed jobs — reusable multi-source/page composition UI
 - [x] HEIC — HEIC/HEIF decode through replaceable adapter
-- [~] Office conversion — LibreOffice adapter implemented; CI/package + real-file verification pending
-- [ ] additional printer profiles
+- [x] Office conversion — optional LibreOffice adapter to PDF; real-file fidelity check deferred
+- [x] additional printer profiles — verified/unverified catalog with generic fallback
+
+## M5 deferred real-world verification
+
+- [~] real Epson L3310 WIA scan validation
+- [~] representative HEIC/HEIF file in packaged Windows app
+- [~] DOCX/XLSX/PPTX fidelity with installed LibreOffice
+- [~] physical calibration for L3316/L3210/L3250 only when those devices are available
+
+These are validation tasks, not missing software architecture.
 
 ## Priority
 

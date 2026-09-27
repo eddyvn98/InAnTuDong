@@ -68,6 +68,17 @@ public partial class MainWindow : Window
                 case "selectPrinter":
                     _session.SelectPrinter(root.GetProperty("printer").GetString());
                     break;
+                case "selectScanner":
+                    _session.SelectScanner(root.GetProperty("scanner").GetString());
+                    break;
+                case "scan":
+                    await _session.ScanAsync(
+                        root.GetProperty("dpi").GetInt32(),
+                        root.GetProperty("colorMode").GetString() ?? "Color",
+                        root.GetProperty("outputFormat").GetString() ?? "Png",
+                        root.GetProperty("autoCrop").GetBoolean(),
+                        root.GetProperty("autoDeskew").GetBoolean());
+                    break;
                 case "selectPage":
                     _session.SelectPage(root.GetProperty("index").GetInt32());
                     break;
@@ -89,6 +100,17 @@ public partial class MainWindow : Window
                     break;
                 case "applyJobSettings":
                     _session.ApplyJobEdits(ReadEdits(root));
+                    break;
+                case "saveRecipe":
+                    _session.SaveRecipe(
+                        root.GetProperty("name").GetString() ?? "",
+                        root.GetProperty("directPrintEligible").GetBoolean());
+                    break;
+                case "applyRecipe":
+                    _session.ApplyRecipe(root.GetProperty("recipeId").GetString() ?? "");
+                    break;
+                case "deleteRecipe":
+                    _session.DeleteRecipe(root.GetProperty("recipeId").GetString() ?? "");
                     break;
                 case "print":
                     _session.PrintCurrent();

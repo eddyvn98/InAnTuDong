@@ -58,6 +58,18 @@ public partial class MainWindow : Window
             switch (action)
             {
                 case "ready":
+                    await _session.RefreshScannersAsync();
+                    break;
+                case "refreshScanners":
+                    await _session.RefreshScannersAsync();
+                    break;
+                case "scan":
+                    await _session.ScanAsync(
+                        root.TryGetProperty("deviceId", out var deviceId)
+                            ? deviceId.GetString()
+                            : null,
+                        root.GetProperty("dpi").GetInt32(),
+                        root.GetProperty("colorMode").GetString() ?? "Color");
                     break;
                 case "pickFiles":
                     _session.PickFiles(this);

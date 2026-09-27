@@ -60,6 +60,14 @@
     <div class="drop">Kéo JPG / PNG / HEIC / PDF / Office vào cửa sổ.</div>
     <div id="fileList"></div>
 
+    <div class="box" id="excelSmartPrintBox" style="display:none">
+      <b>Excel Smart Print</b>
+      <div class="meta" id="excelSmartPrintInfo">Chọn file XLSX để tối ưu cách in.</div>
+      <label>Yêu cầu cho AI</label>
+      <textarea id="excelSmartPrintRequest" style="min-height:64px">In A4 dễ đọc, không làm chữ quá nhỏ, tự chia trang ngang khi cần.</textarea>
+      <button class="primary" id="applyExcelSmartPrint" style="width:100%;margin-top:8px">AI tối ưu Excel & tạo preview</button>
+    </div>
+
     <h3>Scanner WIA</h3>
     <label>Scanner</label>
     <select id="scanner"></select>
@@ -232,6 +240,9 @@ document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
+document.querySelector('#applyExcelSmartPrint').onclick=()=>post('applyExcelSmartPrint',{
+  request:document.querySelector('#excelSmartPrintRequest').value.trim()
+});
 document.querySelector('#refreshReadiness').onclick=()=>post('refreshReadiness');
 document.querySelector('#exportSupportReport').onclick=()=>post('exportSupportReport');
 document.querySelector('#scanner').onchange=e=>post('selectScanner',{scanner:e.target.value});
@@ -343,6 +354,15 @@ function render(s){
     return '<div class="file"><b title="'+esc(f.Path)+'">'+esc(f.Name)+'</b><div class="meta">'+esc(detail)+'</div></div>';
   }).join('');
   document.querySelector('#fileList').innerHTML=files||'<div class="meta" style="margin-top:12px">Chưa có file.</div>';
+
+  const excel=s.ExcelSmartPrint;
+  const excelBox=document.querySelector('#excelSmartPrintBox');
+  excelBox.style.display=excel.Available?'block':'none';
+  document.querySelector('#applyExcelSmartPrint').disabled=!excel.Available;
+  document.querySelector('#excelSmartPrintInfo').innerHTML=excel.Available
+    ?'<b>'+esc(excel.SourceName)+'</b><br>'+excel.SheetCount+' sheet · '+excel.WideSheetCount+' sheet rộng'+
+      (excel.LastPlanSummary?'<br><span class="meta">'+esc(excel.LastPlanSummary)+'</span>':'')
+    :'Chọn file XLSX để tối ưu cách in.';
 
   const pages=s.Pages.map((p,i)=>
     '<button class="chip '+(i===s.SelectedPage?'active':'')+'" data-source="'+i+'">'+(i+1)+'. '+esc(p.SourceName)+' · '+esc(p.PageLabel)+'</button>'

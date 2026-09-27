@@ -48,6 +48,8 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] WPF/WebView2 shell
 - [x] files/folder input
 - [x] source inspection
+- [x] PDF rasterization
+- [x] multi-source/multi-page preview
 - [ ] provider-neutral AI planner
 - [ ] structured output parsing
 - [ ] Safe/Smart/Auto policy

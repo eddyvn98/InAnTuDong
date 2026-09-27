@@ -4,7 +4,7 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M3 - Desktop UX first, AI planner second**
+**M3 - Source pipeline complete; AI planner next**
 
 ## Completed milestones
 
@@ -37,99 +37,105 @@ Physically complete on Epson L3310:
 - spooler job status/errors
 - calibration page
 - physical calibration measured correct by the user
-- exact-size output submitted through the PrintAI spooler path measured correct by the user
+- exact-size output submitted through PrintAI measured correct by the user
 
-M2 no longer has a physical sizing gate.
+## M3 deterministic desktop/source pipeline
 
-## M3 desktop slice in PR #5
+### Desktop shell
 
-Branch: `feat/m3-desktop-shell`
+Implemented and merged previously:
 
-### Windows desktop shell
+- WPF + WebView2
+- file/folder input
+- drag/drop
+- source inspection
+- installed-printer selection
+- explicit preview approval
+- 300 DPI print rendering
+- Windows spooler submission
 
-New `PrintAI.Desktop` project:
+### PDF rasterization
 
-- WPF native host
-- Microsoft WebView2 stable package
-- local HTML/CSS/JS UI loaded from the app output
-- native/web message bridge
+PR #6 adds `PDFtoImage 5.4.0` / PDFium behind `PrintAI.Rendering`.
 
-### Input
+`PdfPageRasterizer`:
 
-Implemented:
+- rasterizes one PDF page at a requested DPI
+- returns an SKBitmap
+- supports the Windows/Linux/macOS desktop runtime path
+- keeps PDF-specific code out of Domain/Layout
 
-- multi-file picker
-- folder picker
-- window file/folder drop handler
-- JPG/JPEG/PNG/PDF filtering
-- duplicate prevention
-- maximum 100 expanded inputs per session
+`SourcePagePreview` now provides one shared entry point for:
 
-### Inspection
+- JPG/JPEG
+- PNG
+- PDF page N
 
-Selected sources are passed through `PrintAI.SourceInspection`.
+The same A4 renderer is used after source decoding.
 
-The desktop UI shows:
+### Multi-source / multi-page orchestration
 
-- file name
-- source kind
-- image pixel dimensions
-- PDF page count
-- per-source inspection errors
+Desktop inputs are flattened into ordered `DesktopPage` items:
 
-### Preview
+- raster image = one page
+- PDF = one item per PDF page
+- multiple files preserve input order
 
-For the first supported raster source:
+The desktop UI now:
 
-1. create a deterministic default A4 `PrintJobSpec`
-2. render a low-resolution A4 preview for the UI
-3. separately render a 300 DPI A4 raster for physical printing
+- shows all source files
+- shows a horizontal page strip
+- allows selecting any source page
+- previews the selected page
+- prints the current page
+- prints all flattened pages in order
 
-`RasterFilePreview` keeps file decoding at the rendering boundary.
+For Print All, each page is rendered at 300 DPI immediately before spooler submission.
 
-A regression test covers real PNG file -> A4 raster preview.
+### Verification
 
-### Printer + approval
+PR #6 CI run #35 is green.
 
-The desktop app:
+Ubuntu:
 
-- enumerates installed Windows printers
-- prefers Epson L3310 when present, otherwise the default printer
-- lets the user explicitly select a printer
-- keeps Print disabled until a raster preview exists
-- requires the user to inspect the preview and press Print
-- submits the 300 DPI raster through the already-calibrated Windows spooler path
-- shows submission/job status text
+- shared restore/tests
+- PDFium PDF page rasterization tests execute successfully
+- source-page-to-A4 PDF preview test succeeds
+- web build succeeds
 
-This satisfies the first M3 preview-approval UX without involving AI.
+Windows:
 
-## CI
+- shared tests including PDF rasterization
+- web build
+- Windows printer tests
+- Windows printer probe build/smoke-run
+- WebView2 desktop shell build
 
-The initial M3 desktop commit built successfully in PR #5 CI run #27:
-
-- Ubuntu shared tests/build green
-- Windows shared tests/build green
-- Windows printer tests/build/smoke-run green
-- Windows WebView2 desktop shell build green
-
-The follow-up regression test/docs commits are running through the same matrix before merge.
+The first PDF implementation attempt was blocked by CA1416 platform analysis. The final implementation keeps an explicit runtime OS guard and a narrowly scoped analyzer suppression around the PDFtoImage call.
 
 ## Remaining M3 work
 
-1. PDF rasterization so PDF can preview/print through the same UI.
-2. Multi-source/multi-page preview orchestration.
-3. Provider-neutral AI planner interface.
-4. Structured AI output -> `PrintJobSpec` parsing.
-5. Safe / Smart / Auto policy engine.
-6. User-editable print/layout controls around AI output.
-7. Job history.
-8. Package/publish the desktop app for normal Windows installation/use.
+The deterministic source -> preview -> print path is now ready for AI integration.
+
+Next:
+
+1. provider-neutral AI planner interface
+2. strict structured output -> `PrintJobSpec` parsing
+3. planner validation/fallback behavior
+4. Safe / Smart / Auto policy engine
+5. user-editable print/layout controls around planner output
+6. job history
+7. package/publish desktop app for normal Windows installation
 
 ## Important design rule
 
-Do not let AI talk directly to the printer or generate device coordinates.
+AI may propose a `PrintJobSpec`, but it never:
 
-The execution path remains:
+- computes final device coordinates
+- bypasses deterministic validation
+- submits directly to the printer
+
+Execution remains:
 
 source -> inspection -> planner/spec -> validation -> deterministic layout -> preview -> policy/user approval -> Windows print adapter.
 

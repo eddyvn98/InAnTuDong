@@ -118,3 +118,13 @@ HEIC/HEIF support lives behind `PrintAI.ImageDecoding`. The first adapter uses P
 Source inspection and rendering consume the decoded raster through their existing Skia paths. Domain, Layout, PrintJobSpec, policy and printer execution remain file-format independent.
 
 The app does not depend on the Windows HEIF/HEVC Store codec because availability differs by machine. The decoder adapter can be replaced later without changing physical-layout or printer code.
+
+
+## ADR-022 - Office files are converted before entering PrintJobSpec
+Status: accepted
+
+Word, Excel and PowerPoint documents are not rendered directly by Domain/Layout. A replaceable document-conversion boundary first converts supported Office files to PDF, after which the existing PDF inspection/rendering pipeline is reused.
+
+The first adapter calls LibreOffice headlessly with its documented `--convert-to pdf --outdir` interface. LibreOffice is optional and external to the PrintAI package; the app discovers it from explicit configuration, standard installation paths or PATH and reports a clear error when unavailable.
+
+Office COM automation is not used because it would require Microsoft Office installation and interactive desktop assumptions.

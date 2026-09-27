@@ -21,9 +21,11 @@ public static class DesktopJobEditor
     {
         ArgumentNullException.ThrowIfNull(current);
 
-        var sources = current.Sources
-            .Select(source => source with { Copies = edits.Copies })
-            .ToArray();
+        var sources = current.Sources.Count > 1
+            ? current.Sources.ToArray()
+            : current.Sources
+                .Select(source => source with { Copies = edits.Copies })
+                .ToArray();
 
         var updated = current with
         {

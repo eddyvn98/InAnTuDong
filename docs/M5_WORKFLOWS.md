@@ -100,3 +100,29 @@ Guardrails:
 - copy count is limited to 1-1000 per job
 - gap and margin cannot be negative
 - at least one normal/rotated orientation must fit the A4 printable layout area
+
+
+## General mixed composition / content-to-layout
+
+The reusable composition workflow accepts any approved source pages from the desktop catalog.
+
+For each selected source page the user may set an independent copy count. The composition then applies one shared physical layout definition:
+
+- item width and height in millimetres
+- gap and A4 margin
+- Contain or Cover
+- optional 90-degree rotation
+- optional cut marks
+
+The grid engine expands sources in explicit source order, preserves page indexes, and paginates automatically across A4 output pages without changing the requested physical item size.
+
+The first schema 1.0 content-to-layout slice deliberately uses uniform placement geometry. Different content may come from different images or PDF pages and may request different copy counts, but irregular per-item physical dimensions remain deferred to a future schema revision.
+
+Guardrails:
+
+- at least one source/page is required
+- each selected source/page appears once in the UI composition list
+- each source copy count must be at least 1
+- total expanded content is capped at 1000 items per job
+- requested physical geometry must fit A4 in a permitted orientation
+- preview is required before printing

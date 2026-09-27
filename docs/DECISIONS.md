@@ -98,3 +98,13 @@ Status: accepted
 A layout placement carries `SourceIndex` and `SourceCopyIndex`. `SourceSpec` also carries a zero-based `PageIndex` so different pages from the same PDF can participate in one job.
 
 The deterministic layout engine decides geometry only. The renderer resolves each placement back to its approved source and page. This keeps multi-source composition reusable for CCCD front/back, label sheets and future content-to-layout workflows without introducing workflow-specific printer code.
+
+
+## ADR-020 - Content-to-layout starts with uniform placement geometry
+Status: accepted
+
+For PrintJobSpec schema 1.0, a mixed composition may contain many source pages with independent copy counts, but every placement in that job shares the same physical item width/height, gap, margin, fit and rotation policy.
+
+The existing mixed-source renderer remains responsible for resolving each placement to its explicit source/page. The deterministic grid engine remains responsible for A4 packing and pagination.
+
+Per-source copy counts are preserved when common layout settings are edited. Irregular per-item physical dimensions are deferred until a future schema revision demonstrates a concrete need; schema 1.0 is not expanded prematurely.

@@ -12,5 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/PrintAI.Windows.Printing/PrintAI.Windows.Printing.csproj" />
+    <ProjectReference Include="../../src/PrintAI.Scanning/PrintAI.Scanning.csproj" />
+    <ProjectReference Include="../../src/PrintAI.Windows.Scanning/PrintAI.Windows.Scanning.csproj" />
   </ItemGroup>
 </Project>

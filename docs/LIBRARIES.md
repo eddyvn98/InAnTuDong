@@ -12,6 +12,14 @@ Used by `PrintAI.Rendering` for image decode/encode, crop/scale/rotate, preview 
 
 `SkiaSharp.NativeAssets.Linux.NoDependencies` is included so the Railway/Linux demo can execute the same rendering path as CI.
 
+### PhotoSauce MagicScaler 0.15.0 + NativeCodecs.Libheif 1.19.5-preview1 + Libpng 1.6.44-preview1
+
+Used only behind `PrintAI.ImageDecoding` to decode HEIC/HEIF into PNG bytes before the normal Skia inspection/rendering path.
+
+The libheif and libpng packages include native binaries for Windows and Linux, so HEIC decoding does not depend on the optional Windows HEVC Store extension. The codec boundary is intentionally replaceable.
+
+HEIC/HEVC patent licensing varies by jurisdiction. Distribution must remain subject to the product owner's licensing review before commercial release.
+
 ### PDFsharp 6.2.4
 
 Used by `PrintAI.SourceInspection` to inspect PDF page count and physical page dimensions.

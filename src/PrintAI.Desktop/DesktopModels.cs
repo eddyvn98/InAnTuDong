@@ -10,6 +10,8 @@ public sealed record DesktopState(
     int OutputPageCount,
     int SelectedOutputPage,
     IReadOnlyList<DesktopPrinter> Printers,
+    IReadOnlyList<DesktopScanner> Scanners,
+    string? ScannerStatus,
     string? SelectedPrinter,
     string? PreviewDataUrl,
     string? Status,
@@ -75,3 +77,8 @@ public sealed record DesktopPrinter(
     bool IsDefault,
     bool SupportsColor,
     bool CanDuplex);
+
+public sealed record DesktopScanner(
+    string Id,
+    string Name,
+    string Adapter);

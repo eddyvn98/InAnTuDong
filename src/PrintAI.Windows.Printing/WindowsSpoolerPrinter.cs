@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.IO;
 using System.Drawing.Printing;
 using System.Printing;
 
@@ -71,12 +72,7 @@ public static class WindowsSpoolerPrinter
 
                 e.Graphics.DrawImage(
                     image,
-                    new RectangleF(0, 0, targetWidth, targetHeight),
-                    0,
-                    0,
-                    image.Width,
-                    image.Height,
-                    GraphicsUnit.Pixel);
+                    new RectangleF(0, 0, targetWidth, targetHeight));
 
                 e.HasMorePages = false;
             };

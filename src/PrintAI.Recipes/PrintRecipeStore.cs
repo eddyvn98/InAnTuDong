@@ -9,6 +9,7 @@ public sealed record PrintRecipe(
     LayoutSpec Layout,
     PrintSettings Print,
     PolicySpec Policy,
+    int SourceCopies = 1,
     bool DirectPrintEligible = false,
     DateTimeOffset? UpdatedAt = null)
 {
@@ -17,7 +18,7 @@ public sealed record PrintRecipe(
         string? jobName = null) =>
         new(
             jobName ?? Name,
-            [new SourceSpec(sourcePath)],
+            [new SourceSpec(sourcePath, SourceCopies)],
             new PaperSpec(),
             Layout,
             Print,

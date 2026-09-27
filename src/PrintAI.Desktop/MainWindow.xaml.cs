@@ -109,6 +109,10 @@ public partial class MainWindow : Window
                 case "applyRecipe":
                     _session.ApplyRecipe(root.GetProperty("recipeId").GetString() ?? "");
                     break;
+                case "applyBuiltInWorkflow":
+                    _session.ApplyBuiltInWorkflow(
+                        root.GetProperty("workflowId").GetString() ?? "");
+                    break;
                 case "deleteRecipe":
                     _session.DeleteRecipe(root.GetProperty("recipeId").GetString() ?? "");
                     break;

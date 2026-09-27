@@ -71,8 +71,17 @@ public partial class MainWindow : Window
                         message.RootElement.GetProperty("printer").GetString());
                     await PublishStateAsync();
                     break;
+                case "selectPage":
+                    _session.SelectPage(
+                        message.RootElement.GetProperty("index").GetInt32());
+                    await PublishStateAsync();
+                    break;
                 case "print":
-                    _session.Print();
+                    _session.PrintCurrent();
+                    await PublishStateAsync();
+                    break;
+                case "printAll":
+                    _session.PrintAll();
                     await PublishStateAsync();
                     break;
                 case "clear":

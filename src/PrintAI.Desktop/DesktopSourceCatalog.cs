@@ -11,6 +11,8 @@ public static class DesktopSourceCatalog
             ".jpg",
             ".jpeg",
             ".png",
+            ".heic",
+            ".heif",
             ".pdf"
         };
 

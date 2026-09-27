@@ -40,5 +40,17 @@
              Link="INSTALL_WINDOWS.md">
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
+    <Content Include="../../tools/windows/Install-PrintAI.ps1"
+             Link="Install-PrintAI.ps1">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="../../tools/windows/Rollback-PrintAI.ps1"
+             Link="Rollback-PrintAI.ps1">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="../../tools/windows/Uninstall-PrintAI.ps1"
+             Link="Uninstall-PrintAI.ps1">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 </Project>

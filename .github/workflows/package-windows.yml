@@ -57,7 +57,10 @@ jobs:
             "artifacts/PrintAI-win-x64/PrintAI.exe",
             "artifacts/PrintAI-win-x64/ui/index.html",
             "artifacts/PrintAI-win-x64/INSTALL_WINDOWS.md",
-            "artifacts/PrintAI-win-x64/BUILD.txt"
+            "artifacts/PrintAI-win-x64/BUILD.txt",
+            "artifacts/PrintAI-win-x64/Install-PrintAI.ps1",
+            "artifacts/PrintAI-win-x64/Rollback-PrintAI.ps1",
+            "artifacts/PrintAI-win-x64/Uninstall-PrintAI.ps1"
           )
 
           foreach ($path in $required) {
@@ -96,6 +99,63 @@ jobs:
             throw "Packaged self-test failed with exit code $($process.ExitCode)."
           }
 
+      - name: Smoke-test install, upgrade, rollback and uninstall
+        shell: pwsh
+        run: |
+          $source = (Resolve-Path "artifacts/PrintAI-win-x64").Path
+          $installRoot = Join-Path (Resolve-Path "artifacts").Path "install-smoke\PrintAI"
+          $installedReport = "artifacts/PrintAI-installed-selftest.json"
+
+          & (Join-Path $source "Install-PrintAI.ps1") `
+            -InstallRoot $installRoot `
+            -NoShortcuts `
+            -NoLaunch
+
+          if (-not (Test-Path (Join-Path $installRoot "PrintAI.exe"))) {
+            throw "Install smoke test did not create PrintAI.exe."
+          }
+
+          $installedExe = (Resolve-Path (Join-Path $installRoot "PrintAI.exe")).Path
+          $process = Start-Process `
+            -FilePath $installedExe `
+            -ArgumentList "--self-test", "--self-test-output", $installedReport `
+            -Wait `
+            -PassThru `
+            -WindowStyle Hidden
+
+          if ($process.ExitCode -ne 0 -or -not (Test-Path $installedReport)) {
+            throw "Installed Print AI self-test failed."
+          }
+
+          Set-Content (Join-Path $installRoot "rollback-marker.txt") "previous-install"
+
+          & (Join-Path $source "Install-PrintAI.ps1") `
+            -InstallRoot $installRoot `
+            -NoShortcuts `
+            -NoLaunch
+
+          $previousRoot = "$installRoot.previous"
+          if (-not (Test-Path (Join-Path $previousRoot "rollback-marker.txt"))) {
+            throw "Upgrade smoke test did not retain the previous installation."
+          }
+
+          & (Join-Path $source "Rollback-PrintAI.ps1") `
+            -InstallRoot $installRoot `
+            -NoShortcuts `
+            -NoLaunch
+
+          if (-not (Test-Path (Join-Path $installRoot "rollback-marker.txt"))) {
+            throw "Rollback smoke test did not restore the previous installation."
+          }
+
+          & (Join-Path $source "Uninstall-PrintAI.ps1") `
+            -InstallRoot $installRoot `
+            -NoShortcuts
+
+          if ((Test-Path $installRoot) -or (Test-Path "$installRoot.previous")) {
+            throw "Uninstall smoke test left application directories behind."
+          }
+
       - name: Create ZIP
         shell: pwsh
         run: |
@@ -116,5 +176,6 @@ jobs:
             artifacts/PrintAI-win-x64.zip
             artifacts/PrintAI-win-x64.sha256.txt
             artifacts/PrintAI-selftest.json
+            artifacts/PrintAI-installed-selftest.json
           if-no-files-found: error
           retention-days: 14

@@ -97,9 +97,9 @@ These are validation tasks, not missing software architecture.
 
 - [~] in-app system readiness diagnostics
 - [~] versioned Windows package manifest + SHA-256 checksum
-- [~] representative format regression fixtures — raster/PDF/mixed pipeline coverage implemented; HEIC real fixture still pending
-- [~] packaged Windows smoke test — headless PrintAI.exe self-test implemented; CI verification pending
-- [ ] install / upgrade / rollback flow
+- [x] representative core regression fixtures — raster/PDF/mixed pipeline; real HEIC remains field validation
+- [x] packaged Windows smoke test — published EXE self-test verified in package CI
+- [~] install / upgrade / rollback flow — per-user scripts + lifecycle smoke test implemented; CI verification pending
 - [ ] support diagnostics / error export
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware

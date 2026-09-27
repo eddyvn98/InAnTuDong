@@ -53,6 +53,33 @@
       <button class="danger" id="clear">Xóa nguồn</button>
     </div>
     <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ.</div>
+
+    <h3>Scanner WIA</h3>
+    <select id="scanner"></select>
+    <div class="row">
+      <div>
+        <label>DPI</label>
+        <select id="scanDpi">
+          <option>150</option>
+          <option selected>300</option>
+          <option>600</option>
+        </select>
+      </div>
+      <div>
+        <label>Màu</label>
+        <select id="scanColor">
+          <option>Color</option>
+          <option>Grayscale</option>
+          <option>BlackAndWhite</option>
+        </select>
+      </div>
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button id="refreshScanners">Làm mới scanner</button>
+      <button class="primary" id="scan">Scan → Preview</button>
+    </div>
+    <div class="meta" id="scannerStatus"></div>
+
     <div id="fileList"></div>
 
     <h3>AI planner</h3>
@@ -132,6 +159,12 @@ document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
+document.querySelector('#refreshScanners').onclick=()=>post('refreshScanners');
+document.querySelector('#scan').onclick=()=>post('scan',{
+  deviceId:document.querySelector('#scanner').value||null,
+  dpi:Number(document.querySelector('#scanDpi').value),
+  colorMode:document.querySelector('#scanColor').value
+});
 document.querySelector('#saveAi').onclick=()=>post('configurePlanner',{
   endpoint:document.querySelector('#endpoint').value.trim(),
   model:document.querySelector('#model').value.trim(),
@@ -191,6 +224,14 @@ function render(s){
   document.querySelector('#previewWrap').innerHTML=s.PreviewDataUrl
     ?'<img class="preview" alt="A4 preview" src="'+s.PreviewDataUrl+'">'
     :'<div class="empty">Không có preview khả dụng.</div>';
+
+  const scanner=document.querySelector('#scanner');
+  const previousScanner=scanner.value;
+  scanner.innerHTML=s.Scanners.length?s.Scanners.map(d=>
+    '<option value="'+esc(d.Id)+'">'+esc(d.Name)+' · '+esc(d.Adapter)+'</option>'
+  ).join(''):'<option value="">Không có scanner WIA</option>';
+  if(previousScanner&&s.Scanners.some(d=>d.Id===previousScanner))scanner.value=previousScanner;
+  document.querySelector('#scannerStatus').textContent=s.ScannerStatus||'';
 
   const printer=document.querySelector('#printer');
   printer.innerHTML=s.Printers.length?s.Printers.map(p=>

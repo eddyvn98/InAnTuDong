@@ -57,3 +57,27 @@ dotnet run --project src/PrintAI.Desktop/PrintAI.Desktop.csproj
 The desktop app currently supports JPG/PNG preview + printing and JPG/PNG/PDF source inspection. PDF raster preview/printing is still a later slice.
 
 See `docs/PROGRESS.md` for the exact current state.
+
+## Optional AI planner gateway
+
+The desktop app can use a provider-neutral PrintAI planner gateway.
+
+Set:
+
+```powershell
+$env:PRINTAI_PLANNER_URL = "https://your-planner.example/api/plan"
+$env:PRINTAI_PLANNER_TOKEN = "optional-bearer-token"
+```
+
+The gateway receives:
+
+```json
+{
+  "systemInstruction": "...",
+  "userPayload": "..."
+}
+```
+
+and returns the raw planner JSON envelope required by `PrintJobPlanParser`.
+
+No model-provider API key is stored in the desktop source code.

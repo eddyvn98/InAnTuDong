@@ -5,4 +5,7 @@
     <PackageReference Include="PDFsharp" Version="6.2.4" />
     <PackageReference Include="MetadataExtractor" Version="2.9.3" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PrintAI.ImageDecoding/PrintAI.ImageDecoding.csproj" />
+  </ItemGroup>
 </Project>

@@ -28,6 +28,8 @@ public sealed class SourceInspectorTests
             Assert.Equal(320, metadata.PixelWidth);
             Assert.Equal(240, metadata.PixelHeight);
             Assert.False(string.IsNullOrWhiteSpace(metadata.Orientation));
+            Assert.NotNull(metadata.RawMetadata);
+            Assert.NotEmpty(metadata.RawMetadata);
         }
         finally
         {

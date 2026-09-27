@@ -113,6 +113,11 @@ public partial class MainWindow : Window
                     _session.ApplyBuiltInWorkflow(
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
+                case "composeCccdFrontBack":
+                    _session.ComposeCccdFrontBack(
+                        root.GetProperty("frontPageIndex").GetInt32(),
+                        root.GetProperty("backPageIndex").GetInt32());
+                    break;
                 case "deleteRecipe":
                     _session.DeleteRecipe(root.GetProperty("recipeId").GetString() ?? "");
                     break;

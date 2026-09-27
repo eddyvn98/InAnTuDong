@@ -28,7 +28,63 @@ if ($actual -ne $expected) { throw "PrintAI package checksum mismatch." }
 
 `BUILD.txt` inside the ZIP identifies the product version, runtime, build configuration and source commit.
 
-## Start
+## Install
+
+After verifying the ZIP checksum, extract the whole package to a temporary/normal folder.
+
+Recommended per-user install:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Install-PrintAI.ps1
+```
+
+Default install location:
+
+```text
+%LOCALAPPDATA%\Programs\PrintAI
+```
+
+The installer does not require administrator rights. It creates Start Menu and Desktop shortcuts and launches Print AI after installation.
+
+### Upgrade
+
+Run `Install-PrintAI.ps1` from the newly extracted release package again.
+
+The new package is staged and verified before it replaces the current install. The old install is retained as:
+
+```text
+%LOCALAPPDATA%\Programs\PrintAI.previous
+```
+
+### Rollback
+
+From an extracted Print AI package, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Rollback-PrintAI.ps1
+```
+
+Rollback swaps the current install with the saved previous install, so the version you rolled back from remains available as the next rollback target.
+
+### Uninstall
+
+From an extracted Print AI package, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Uninstall-PrintAI.ps1
+```
+
+Uninstall removes application files and shortcuts but keeps local history, recipes and work files by default.
+
+To also remove Print AI local data:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\Uninstall-PrintAI.ps1 -RemoveData
+```
+
+## Portable start
+
+You may still use Print AI without installing it:
 
 1. Extract the whole ZIP to a normal folder.
 2. Keep all DLL/native files and the `ui` folder beside `PrintAI.exe`.

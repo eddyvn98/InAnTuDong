@@ -1,6 +1,6 @@
 # Progress / Session Handoff
 
-Last updated: 2026-09-27
+Last updated: 2026-09-28
 
 ## Current milestone
 
@@ -222,9 +222,16 @@ Baseline:
 - shared suite: 54/54 tests pass
 - Windows package run #19: success
 
-## M5 general composition + content-to-layout in progress
+## M5 general composition + content-to-layout verification
 
-Branch `m5-general-composition` adds the reusable mixed composition surface on top of the existing mixed-source renderer:
+PR #16 is merged into `main` at `a5f4b39b9c71ca5d822227dc1c3a49c0702bff97`.
+
+Verification:
+
+- CI run #76: Ubuntu + Windows success
+- Windows package run #20: success
+
+The merged slice adds the reusable mixed composition surface on top of the existing mixed-source renderer:
 
 - select any number of approved source pages
 - preserve explicit source/page order
@@ -238,12 +245,23 @@ Branch `m5-general-composition` adds the reusable mixed composition surface on t
 
 This is the first content-to-layout slice for schema 1.0: mixed content can vary by source/page and copy count while all placements in the composition share one physical item size. Irregular per-item physical sizes remain outside schema 1.0.
 
+## M5 HEIC/HEIF implementation in progress
+
+Branch `m5-heic` adds:
+
+- `.heic` and `.heif` desktop file/folder input
+- a replaceable `PrintAI.ImageDecoding` boundary
+- PhotoSauce/libheif decode to PNG bytes
+- HEIC dimensions through the existing source-inspection surface
+- HEIC rendering through the existing Skia A4 renderer
+- Windows/Linux native codec assets supplied by NuGet
+- no changes to PrintJobSpec, physical layout, policy or spooler execution
+
 ## Exact next work - M5
 
-1. Verify general composition/content-to-layout in Linux + Windows CI and package build.
-2. Add HEIC support behind source inspection/rendering boundaries.
-3. Add Office conversion behind a conversion adapter.
-4. Add additional printer profiles after format conversion is stable.
+1. Verify HEIC/HEIF in Linux + Windows CI and Windows package build.
+2. Add Office conversion behind a conversion adapter.
+3. Add additional printer profiles after format conversion is stable.
 
 ## Important execution boundary
 

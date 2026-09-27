@@ -1,3 +1,4 @@
+using System.Text.Json;
 using PrintAI.Planning;
 using Xunit;
 
@@ -49,7 +50,11 @@ public sealed class PrintPlannerTests
         Assert.Equal("A4 document", result.Job.JobName);
         Assert.Equal(1, client.CallCount);
         Assert.Contains("millimetres", client.LastRequest!.SystemInstruction);
-        Assert.Contains("In file này A4 một bản.", client.LastRequest.UserPayload);
+
+        using var payload = JsonDocument.Parse(client.LastRequest.UserPayload);
+        Assert.Equal(
+            "In file này A4 một bản.",
+            payload.RootElement.GetProperty("request").GetString());
     }
 
     private sealed class FakePlannerClient(string response) : IPlannerModelClient

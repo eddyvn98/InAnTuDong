@@ -2,6 +2,7 @@ using System.IO;
 using System.Windows;
 using Microsoft.Win32;
 using PrintAI.Domain;
+using PrintAI.Planning;
 using PrintAI.Rendering;
 using PrintAI.SourceInspection;
 using PrintAI.Windows.Printing;
@@ -15,6 +16,7 @@ public sealed class DesktopSession
 
     private readonly List<string> _paths = [];
     private readonly List<DesktopPage> _pages = [];
+    private readonly DesktopPlanningController _planning = new();
     private readonly string _workDir;
     private int _selectedPage;
     private string? _selectedPrinter;
@@ -88,6 +90,33 @@ public sealed class DesktopSession
             _selectedPrinter = printerName;
     }
 
+    public async Task PlanAsync(
+        string userRequest,
+        string safetyMode,
+        CancellationToken cancellationToken = default)
+    {
+        if (!Enum.TryParse<SafetyMode>(
+                safetyMode,
+                ignoreCase: true,
+                out var mode))
+        {
+            mode = SafetyMode.Smart;
+        }
+
+        var plan = await _planning.PlanAsync(
+            userRequest,
+            _paths,
+            _selectedPrinter,
+            mode,
+            cancellationToken);
+
+        _status = plan.Error is not null
+            ? $"Plan lỗi: {plan.Error}"
+            : $"AI plan: {plan.Decision} · confidence {plan.Confidence:P0}";
+
+        RebuildPreview();
+    }
+
     public void Clear()
     {
         _paths.Clear();
@@ -96,6 +125,7 @@ public sealed class DesktopSession
         _previewDataUrl = null;
         _printPath = null;
         _status = null;
+        _planning.Clear();
     }
 
     public void PrintCurrent()
@@ -130,7 +160,7 @@ public sealed class DesktopSession
             try
             {
                 var page = _pages[i];
-                var job = CreateDefaultJob(page.SourcePath);
+                var job = ResolveJob(page.SourcePath);
                 var png = SourcePagePreview.RenderA4(
                     job, page.SourcePath, page.SourcePageIndex, dpi: 300);
                 var path = Path.Combine(_workDir, $"print-{i:D4}.png");
@@ -169,6 +199,8 @@ public sealed class DesktopSession
             SelectedPrinter: _selectedPrinter,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,
+            PlannerAvailable: _planning.IsAvailable,
+            Plan: _planning.Current,
             CanPrint: _printPath is not null && !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintAll: _pages.Count > 0 && !string.IsNullOrWhiteSpace(_selectedPrinter));
     }
@@ -218,7 +250,7 @@ public sealed class DesktopSession
         try
         {
             var page = _pages[_selectedPage];
-            var job = CreateDefaultJob(page.SourcePath);
+            var job = ResolveJob(page.SourcePath);
             var preview = SourcePagePreview.RenderA4(
                 job, page.SourcePath, page.SourcePageIndex, dpi: 96);
             var printable = SourcePagePreview.RenderA4(
@@ -255,6 +287,9 @@ public sealed class DesktopSession
             : result.JobId is int id
                 ? $"Đã gửi tới spooler · Job #{id}"
                 : "Đã gửi tới spooler.";
+
+    private PrintJobSpec ResolveJob(string path) =>
+        _planning.ResolveJobForSource(path) ?? CreateDefaultJob(path);
 
     private static PrintJobSpec CreateDefaultJob(string path) =>
         new(
@@ -317,6 +352,8 @@ public sealed record DesktopState(
     string? SelectedPrinter,
     string? PreviewDataUrl,
     string? Status,
+    bool PlannerAvailable,
+    DesktopPlanState? Plan,
     bool CanPrint,
     bool CanPrintAll);
 

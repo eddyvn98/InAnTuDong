@@ -78,8 +78,8 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] labels/stickers — 40x60 preset + customizable A4 label sheets
 - [x] content-to-layout — general mixed-source uniform-size composition
 - [x] mixed jobs — reusable multi-source/page composition UI
-- [~] HEIC — implementation complete on branch; CI/package verification pending
-- [ ] Office conversion
+- [x] HEIC — HEIC/HEIF decode through replaceable adapter
+- [~] Office conversion — LibreOffice adapter implemented; CI/package + real-file verification pending
 - [ ] additional printer profiles
 
 ## Priority

@@ -48,7 +48,7 @@ public sealed class MixedCompositionWorkflowTests
         var layout = LayoutEngine.Layout(job);
 
         Assert.Equal(5, layout.Placements.Count);
-        Assert.Equal([0, 0, 0, 1, 1], layout.Placements.Select(p => p.SourceIndex).ToArray());
+        Assert.Equal(new[] { 0, 0, 0, 1, 1 }, layout.Placements.Select(p => p.SourceIndex).ToArray());
         Assert.Equal(0, layout.Placements[3].Page);
         Assert.Equal(1, layout.Placements[4].Page);
     }

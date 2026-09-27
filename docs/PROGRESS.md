@@ -9,66 +9,72 @@ Last updated: 2026-09-27
 ## Verified foundation
 
 - Repository source-of-truth docs are in place.
-- .NET 10 domain/layout/web skeleton is merged to `main`.
-- GitHub Actions CI run #3 is green on both:
-  - Ubuntu: restore -> test -> web build
-  - Windows: restore -> test -> web build
-- Baseline layout tests pass:
-  - A4 40x60 mm without rotation = 16 items/page
-  - A4 40x60 mm with rotation = 18 items/page
-  - oversized paper is rejected
-- Railway project `InAnTuDong` created.
-- Railway service `printai-web` deploys from `eddyvn98/InAnTuDong` branch `main`.
-- Railway deployment reached `SUCCESS`.
-- ASP.NET Core runtime log confirms the app is listening on `0.0.0.0:8080`.
-- Railway public service domain created: `https://printai-web-production.up.railway.app`.
+- .NET 10 domain/layout/web skeleton is on `main`.
+- GitHub Actions baseline CI is green on Ubuntu and Windows.
+- Railway project `InAnTuDong` and service `printai-web` deploy from `eddyvn98/InAnTuDong/main`.
+- Previous Railway deployment reached `SUCCESS` and ASP.NET Core listened on `0.0.0.0:8080`.
+- Public domain: `https://printai-web-production.up.railway.app`.
 
-## Current implementation
+## M1 implementation completed in PR #2
 
-- `PrintAI.Domain`
-  - `PrintJobSpec`
-  - validation
-  - canonical mm-based geometry contract
+Branch: `feat/m1-rendering-inspection`
+
 - `PrintAI.Layout`
-  - deterministic grid/repeat placement
-  - automatic 90-degree rotation when capacity improves
+  - grid/repeat placement
+  - capacity-based automatic 90-degree rotation
+  - exact-size mode preserving requested millimetres
+  - exact-size one-item-per-page placement, centered on paper
+  - contain/cover source-to-placement geometry
+  - deterministic cut-mark geometry in millimetres
+- `PrintAI.Rendering`
+  - SkiaSharp A4 raster renderer
+  - millimetres converted to pixels only at the rendering boundary
+  - contain/cover drawing
+  - 90-degree rotated placement rendering
+  - cut-mark rendering
+- `PrintAI.SourceInspection`
+  - JPG/JPEG/PNG pixel dimensions and encoded orientation
+  - JPG/PNG raw metadata via MetadataExtractor
+  - PDF page count
+  - PDF physical page dimensions in millimetres via PDFsharp
 - `PrintAI.Web`
   - `/health`
   - `/api/demo-layout`
-  - browser A4 geometry preview demo
-- Dockerfile
-- Windows + Linux CI
+  - `/api/demo-preview.png`
+  - browser now shows an actual SkiaSharp-generated A4 raster preview instead of CSS-only boxes
+
+## Verification
+
+Implementation commit CI run #10 is green on both:
+
+- Ubuntu: restore -> 12 tests -> web build
+- Windows: restore -> 12 tests -> web build
+
+The CI sequence also caught and fixed:
+- obsolete SkiaSharp bitmap sampling API
+- a PNG test fixture that attempted inspection before its write stream was closed
 
 ## Exact next engineering tasks
 
-1. Add exact-size single-item layout mode.
-2. Add fit/contain/cover geometry.
-3. Add SkiaSharp and render actual image content into the A4 preview.
-4. Add cut-mark rendering.
-5. Add JPG/PNG metadata inspection.
-6. Add PDF page metadata inspection.
-7. Start Windows printer capability probe for Epson L3310.
-8. Add a calibration page for physical-size verification.
+1. Add golden/snapshot preview coverage for stable renderer output.
+2. Start M2 Windows printer capability probe:
+   - enumerate installed printers
+   - identify Epson L3310
+   - query paper/media/duplex/color capabilities
+   - query printable area
+3. Add an Epson L3310 calibration page with known physical rulers/boxes.
+4. Print calibration output on real hardware and measure it with a ruler.
+5. Only after physical sizing is verified, implement spooler submission.
 
-## Web verification note
+## Deferred / known gaps
 
-Railway reports the deployment healthy and runtime logs show the web server listening on port 8080. The public domain is provisioned. The current execution environment could not resolve the newly-created Railway hostname immediately, so direct external HTTP verification from this session was not available at the moment of creation. Treat Railway deployment/runtime status as verified; re-check the public URL in a later session if needed.
-
-## Not started
-
-- real Windows spooler submission
-- AI provider integration
-- WebView2 desktop shell
-- scanner control
-- recipes
-
-## Known risks
-
-- driver printable area changes with media/quality/borderless mode
-- exact-size output requires physical calibration on Epson L3310
-- scanner may require TWAIN fallback if WIA is insufficient
-- PDF rendering/import may need a separate library from PDF authoring/manipulation
+- `DpiX` / `DpiY` are modeled but not yet normalized from all possible EXIF/JFIF/PNG metadata combinations; raw metadata is retained so normalization can be added without losing source information.
+- PDF metadata inspection is implemented, but PDF page rasterization is not.
+- renderer demo currently uses one generated raster source; multi-source file loading/orchestration belongs to the source-to-render pipeline.
+- exact-size correctness still requires physical printer calibration because driver printable-area behavior can vary by media/quality/borderless settings.
+- real Windows spooler submission is not started.
+- AI provider integration, WebView2 desktop shell, scanner control and recipes are not started.
 
 ## Session rule
 
-Never continue from chat memory alone. Read this file, `AGENTS.md`, and the relevant specs first. Update this file before ending a work session.
+Never continue from chat memory alone. Read this file, `AGENTS.md`, `ROADMAP.md`, `DECISIONS.md`, `LIBRARIES.md` and the relevant specs first. Update this file before ending a work session.

@@ -34,3 +34,18 @@ Use .NET 10 for the new codebase.
 Status: accepted
 
 Railway verifies/demoes shared domain/layout/web behavior. Windows printer/scanner execution remains on a local Windows agent.
+
+## ADR-008 - Exact-size does not imply scaling
+Status: accepted
+
+`LayoutMode.ExactSize` preserves the requested physical width/height in millimetres. The first implementation places one exact-size item per page, centers it in the printable layout area, and may rotate 90 degrees only when rotation is required to fit and is explicitly allowed.
+
+## ADR-009 - Fit geometry is separate from physical placement
+Status: accepted
+
+`Contain` and `Cover` control how source pixels map into an already-determined physical placement. They never change the placement's millimetre dimensions.
+
+## ADR-010 - Source inspection is separate from layout
+Status: accepted
+
+JPG/PNG/PDF inspection lives behind a source-inspection boundary. SkiaSharp handles raster decode/orientation, MetadataExtractor reads available image metadata, and PDFsharp reads PDF page metadata. Layout remains file-format independent.

@@ -1,5 +1,7 @@
 using PrintAI.Domain;
 using PrintAI.Layout;
+using PrintAI.Rendering;
+using PrintAI.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -19,7 +21,7 @@ app.MapGet("/health", () => Results.Ok(new
 app.MapGet("/api/demo-layout", () =>
 {
     var spec = DemoJob();
-    var result = GridLayoutEngine.Layout(spec);
+    var result = LayoutEngine.Layout(spec);
 
     return Results.Ok(new
     {
@@ -34,12 +36,22 @@ app.MapGet("/api/demo-layout", () =>
     });
 });
 
+app.MapGet("/api/demo-preview.png", () =>
+{
+    var spec = DemoJob();
+    var layout = LayoutEngine.Layout(spec);
+    using var source = DemoSourceFactory.Create();
+    var png = A4PreviewRenderer.RenderPng(spec, layout, source, page: 0, dpi: 120);
+
+    return Results.File(png, "image/png");
+});
+
 app.MapFallbackToFile("index.html");
 app.Run();
 
 static PrintJobSpec DemoJob() => new(
     "Demo 4x6cm",
-    [new SourceSpec("demo-a.jpg", 10), new SourceSpec("demo-b.jpg", 10)],
+    [new SourceSpec("generated-demo.png", 20)],
     new PaperSpec(),
     new LayoutSpec(
         LayoutMode.Grid,

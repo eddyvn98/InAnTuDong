@@ -118,6 +118,17 @@ public partial class MainWindow : Window
                         root.GetProperty("frontPageIndex").GetInt32(),
                         root.GetProperty("backPageIndex").GetInt32());
                     break;
+                case "applyCustomLabelSheet":
+                    _session.ApplyCustomLabelSheet(
+                        root.GetProperty("itemWidthMm").GetDouble(),
+                        root.GetProperty("itemHeightMm").GetDouble(),
+                        root.GetProperty("copies").GetInt32(),
+                        root.GetProperty("gapMm").GetDouble(),
+                        root.GetProperty("marginMm").GetDouble(),
+                        root.GetProperty("allowRotate").GetBoolean(),
+                        root.GetProperty("cutMarks").GetBoolean(),
+                        root.GetProperty("fit").GetString() ?? "Contain");
+                    break;
                 case "deleteRecipe":
                     _session.DeleteRecipe(root.GetProperty("recipeId").GetString() ?? "");
                     break;

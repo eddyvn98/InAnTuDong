@@ -17,8 +17,10 @@ public sealed class SourceInspectorTests
             bitmap.Erase(SKColors.CornflowerBlue);
             using var image = SKImage.FromBitmap(bitmap);
             using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-            using var stream = File.OpenWrite(path);
-            data.SaveTo(stream);
+            using (var stream = File.OpenWrite(path))
+            {
+                data.SaveTo(stream);
+            }
 
             var metadata = SourceInspector.Inspect(path);
 

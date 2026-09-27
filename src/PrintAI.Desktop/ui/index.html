@@ -55,6 +55,21 @@
     <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ.</div>
     <div id="fileList"></div>
 
+    <h3>Scanner WIA</h3>
+    <label>Scanner</label>
+    <select id="scanner"></select>
+    <div class="row">
+      <div><label>DPI</label><select id="scanDpi"><option>150</option><option selected>300</option><option>600</option></select></div>
+      <div><label>Màu</label><select id="scanColor"><option>Color</option><option>Grayscale</option><option>BlackAndWhite</option></select></div>
+    </div>
+    <div class="row">
+      <div><label>Output</label><select id="scanFormat"><option>Png</option><option>Pdf</option></select></div>
+      <div></div>
+    </div>
+    <label class="check"><input id="autoCrop" type="checkbox" checked> Auto crop</label>
+    <label class="check"><input id="autoDeskew" type="checkbox" checked> Auto deskew</label>
+    <button class="primary" id="scan" style="margin-top:8px;width:100%">Scan một trang</button>
+
     <h3>AI planner</h3>
     <label>Endpoint chat-completions compatible</label>
     <input id="endpoint" placeholder="https://.../chat/completions">
@@ -107,6 +122,18 @@
       <button class="full" id="applySettings">Áp dụng & render lại</button>
     </div>
 
+    <h3>Recipes</h3>
+    <label>Tên recipe</label>
+    <input id="recipeName" placeholder="Ví dụ: Ảnh 4x6 có cut marks">
+    <label class="check"><input id="recipeDirect" type="checkbox"> Cho phép direct-print khi profile đã verify</label>
+    <div class="row" style="margin-top:8px">
+      <button id="saveRecipe">Lưu recipe</button>
+      <button class="danger" id="deleteRecipe">Xóa recipe</button>
+    </div>
+    <label>Recipe đã lưu</label>
+    <select id="recipe"></select>
+    <button id="applyRecipe" style="margin-top:8px;width:100%">Áp dụng recipe</button>
+
     <h3>Máy in</h3>
     <select id="printer"></select>
     <div class="status" id="status">Chưa có job.</div>
@@ -132,6 +159,24 @@ document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
+document.querySelector('#scanner').onchange=e=>post('selectScanner',{scanner:e.target.value});
+document.querySelector('#scan').onclick=()=>post('scan',{
+  dpi:Number(document.querySelector('#scanDpi').value),
+  colorMode:document.querySelector('#scanColor').value,
+  outputFormat:document.querySelector('#scanFormat').value,
+  autoCrop:document.querySelector('#autoCrop').checked,
+  autoDeskew:document.querySelector('#autoDeskew').checked
+});
+document.querySelector('#saveRecipe').onclick=()=>post('saveRecipe',{
+  name:document.querySelector('#recipeName').value.trim(),
+  directPrintEligible:document.querySelector('#recipeDirect').checked
+});
+document.querySelector('#applyRecipe').onclick=()=>post('applyRecipe',{
+  recipeId:document.querySelector('#recipe').value
+});
+document.querySelector('#deleteRecipe').onclick=()=>post('deleteRecipe',{
+  recipeId:document.querySelector('#recipe').value
+});
 document.querySelector('#saveAi').onclick=()=>post('configurePlanner',{
   endpoint:document.querySelector('#endpoint').value.trim(),
   model:document.querySelector('#model').value.trim(),
@@ -191,6 +236,24 @@ function render(s){
   document.querySelector('#previewWrap').innerHTML=s.PreviewDataUrl
     ?'<img class="preview" alt="A4 preview" src="'+s.PreviewDataUrl+'">'
     :'<div class="empty">Không có preview khả dụng.</div>';
+
+  const scanner=document.querySelector('#scanner');
+  scanner.innerHTML=s.Scanners.length?s.Scanners.map(x=>
+    '<option value="'+esc(x.Id)+'" '+(x.Id===s.SelectedScanner?'selected':'')+'>'+esc(x.Name)+'</option>'
+  ).join(''):'<option value="">Không có scanner WIA</option>';
+  document.querySelector('#scan').disabled=!s.Scanners.length;
+
+  const recipe=document.querySelector('#recipe');
+  recipe.innerHTML=s.Recipes.length?s.Recipes.map(x=>
+    '<option value="'+esc(x.Id)+'" '+(x.Id===s.SelectedRecipeId?'selected':'')+'>'+esc(x.Name)+(x.DirectPrintEligible?' · direct':'')+'</option>'
+  ).join(''):'<option value="">Chưa có recipe</option>';
+  document.querySelector('#applyRecipe').disabled=!s.Recipes.length;
+  document.querySelector('#deleteRecipe').disabled=!s.Recipes.length;
+  const selectedRecipe=s.Recipes.find(x=>x.Id===s.SelectedRecipeId);
+  if(selectedRecipe){
+    set('#recipeName',selectedRecipe.Name);
+    document.querySelector('#recipeDirect').checked=!!selectedRecipe.DirectPrintEligible;
+  }
 
   const printer=document.querySelector('#printer');
   printer.innerHTML=s.Printers.length?s.Printers.map(p=>

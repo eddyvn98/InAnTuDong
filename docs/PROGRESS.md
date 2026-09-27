@@ -4,7 +4,7 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M3 - Planner contract/policy complete; desktop planning integration next**
+**M3 - Interactive desktop AI flow complete; packaging next**
 
 ## Completed milestones
 
@@ -12,146 +12,151 @@ Last updated: 2026-09-27
 Complete.
 
 ### M1 - Deterministic A4 engine
-Complete:
-
-- millimetre-based domain/layout
-- validation
-- grid/repeat + rotation
-- exact-size mode
-- contain/cover
-- cut marks
-- SkiaSharp A4 rendering
-- JPG/PNG/PDF inspection
-- golden preview coverage
+Complete.
 
 ### M2 - Windows print path
-Physically complete on Epson L3310:
+Physically complete on Epson L3310, including exact-size PrintAI spooler verification.
 
-- installed printer enumeration/capabilities
-- A4 printable area/hard margins
-- calibrated Epson L3310 identity profile
-- Windows spooler submission
-- spooler job status/errors
-- physical calibration measured correct
-- exact-size PrintAI spooler output measured correct
+## M3 completed capabilities
 
-## M3 deterministic desktop/source pipeline
-
-Complete:
+### Deterministic source/desktop pipeline
 
 - WPF + WebView2 desktop shell
 - file/folder input + drag/drop
 - JPG/JPEG/PNG/PDF inspection
-- PDFium rasterization through PDFtoImage
-- flattened multi-source/multi-page navigation
-- current-page and print-all flows
-- 300 DPI render immediately before spooler submission
-- explicit preview approval
+- PDFium rasterization
+- multi-source / multi-source-page navigation
+- deterministic A4 preview
+- Windows printer selection
+- current-page / job / all-source printing
 
-## M3 planner + policy slice in PR #7
+### Provider-neutral AI planner
 
-### Versioned PrintJobSpec
+- versioned PrintJobSpec 1.0
+- strict JSON parsing
+- unknown-field rejection
+- confidence/questions/warnings
+- Safe / Smart / Auto policy
+- provider-independent `IPlannerModelClient`
 
-`PrintJobSpec` now carries `schemaVersion = "1.0"`.
+### Configurable desktop AI transport
 
-Validation rejects:
+PR #9 adds a chat-completions-compatible HTTP adapter.
 
-- unsupported schema version
-- empty job name
-- null/empty source set
-- existing invalid physical/layout/print values
+Configuration can come from:
 
-### Provider-neutral planner
+- desktop UI: endpoint + model + optional API key
+- environment:
+  - `PRINTAI_AI_ENDPOINT`
+  - `PRINTAI_AI_MODEL`
+  - `PRINTAI_AI_API_KEY`
 
-New `PrintAI.Planning` project.
+API keys entered in the UI are process-memory only and are not persisted.
 
-`IPlannerModelClient` is the provider boundary. Core planning code does not depend on OpenAI, Anthropic, Google, OpenRouter or another vendor SDK.
+### Planner source allowlist
 
-`PrintPlanner` sends:
+Planner output may reference only source paths already selected/inspected by the desktop app.
 
-- a fixed system contract
-- user natural-language request
-- inspected source metadata
+Invented or rewritten local file paths are rejected before rendering.
 
-The model is allowed to propose intent only. It never receives authority to submit a print job or calculate printer/device coordinates.
+### Natural-language desktop flow
 
-### Strict structured parsing
+The desktop can now execute:
 
-Planner response must be a JSON envelope with:
+```text
+select source
+-> enter natural-language request
+-> AI returns strict PrintJobSpec
+-> bind source allowlist
+-> deterministic validation
+-> Safe/Smart/Auto policy
+-> render preview
+-> optional deterministic user edits
+-> print
+```
 
-- `job`
-- `confidence`
-- `questions`
-- `warnings`
+### Deterministic job editor
 
-Strict parser behavior:
+The user can edit:
 
-- JSON only
-- case-sensitive camelCase contract
-- unknown fields rejected
-- enum integers rejected
-- confidence must be 0..1
-- schemaVersion must be 1.0
-- resulting `PrintJobSpec` passes deterministic domain validation again
+- Grid / ExactSize
+- Contain / Cover
+- item width/height in mm
+- gap
+- margin
+- source copies
+- rotation
+- cut marks
 
-### Safe / Smart / Auto policy
+Edits are validated by the deterministic domain validator and immediately re-rendered.
 
-`PrintPolicyEngine` is deterministic code.
+### Output pagination
 
-- invalid spec -> Rejected
-- material planner question -> QuestionRequired
-- Safe -> PreviewRequired
-- unverified printer -> PreviewRequired
-- confidence below 0.90 or warnings -> PreviewRequired
-- Smart unknown/unapproved job -> PreviewRequired
-- Smart known verified high-confidence job -> Direct
-- Auto can be Direct only after all gates pass
+Source pagination and physical A4 output pagination are now separate.
 
-AI cannot override these decisions.
+Example:
+
+- one JPG source page
+- 20 copies at 40 x 60 mm
+- layout generates 2 physical A4 output pages
+
+The desktop exposes both A4 pages and **Print toàn bộ job hiện tại** submits all physical output pages in order.
+
+### Job history
+
+New `PrintAI.History` project stores a capped local history.
+
+- newest first
+- maximum 100 entries
+- plan/print status
+- printer/job metadata
+- malformed history fails closed to an empty list
+- API keys are never stored
+- UI shows the latest 20 entries
+- user can clear local history
 
 ## Verification
 
-PR #7 CI run #42 is green on Ubuntu and Windows.
+PR #9 implementation CI run #50 passed all meaningful code checkpoints before the final documentation commit:
 
-Latest shared suite: 28 tests pass, including:
+Shared Ubuntu/Windows suite:
 
-- strict planner JSON parsing
-- unknown-field rejection
-- schema-version rejection
-- provider-neutral fake model client flow
-- Safe/Smart/Auto policy decisions
-- PDF rasterization and A4 preview
-- all previous layout/rendering tests
+- 35 tests pass
+- planner transport request/response tests
+- transport HTTP failure behavior
+- planner source allowlist tests
+- job-history tests
+- multi-output renderer test
+- all previous planner/layout/PDF/render tests
 
-Windows also passes:
+Windows:
 
-- printer tests
-- probe build/smoke-run
-- WebView2 desktop build
+- 5 printer tests pass
+- printer probe builds
+- printer probe smoke-run succeeds
+- WebView2 desktop build succeeds
 
-## Exact next work
+The first iterations exposed only integration/import fixture issues, all corrected before merge.
 
-1. Add natural-language request input to desktop.
-2. Add a configurable model-client transport without coupling core to a vendor.
-3. Convert desktop source metadata into `PlanningSource`.
-4. Run Plan -> strict parse -> policy decision.
-5. Show proposed settings/questions/warnings before preview/print.
-6. Allow deterministic user edits to layout/print settings.
-7. Add job history.
-8. Package/publish desktop app.
+## Remaining M3 work
 
-## Important design rule
+1. Package/publish the Windows desktop app for normal use.
+2. Add an installable/release artifact in CI.
+3. Then move to M4 scan + recipes.
 
-AI may propose a `PrintJobSpec`, but never:
+## Important execution boundary
 
-- computes final device coordinates
-- bypasses deterministic validation
-- decides printer execution outside the policy gate
-- submits directly to the printer
+AI still cannot:
+
+- calculate final device coordinates
+- bypass PrintJobSpec validation
+- access unapproved source paths
+- bypass Safe/Smart/Auto policy
+- directly call the Windows printer adapter
 
 Execution remains:
 
-source -> inspection -> planner/spec -> validation -> deterministic layout -> preview -> policy/user approval -> Windows print adapter.
+source -> inspection -> planner/spec -> allowlist -> validation -> layout -> preview -> policy/user approval -> Windows print adapter.
 
 ## Session rule
 

@@ -58,7 +58,7 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] deterministic user-editable job settings
 - [x] multi-output A4 preview/print
 - [x] job history
-- [ ] desktop package/publish
+- [x] desktop package/publish
 
 ## M4 - Scan + recipes
 

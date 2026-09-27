@@ -11,7 +11,8 @@ public static class SpoolerJobMonitor
         ArgumentException.ThrowIfNullOrWhiteSpace(printerName);
         ArgumentException.ThrowIfNullOrWhiteSpace(documentName);
 
-        using var queue = OpenQueue(printerName);
+        using var server = new LocalPrintServer();
+        using var queue = server.GetPrintQueue(printerName);
         queue.Refresh();
 
         var job = queue.GetPrintJobInfoCollection()
@@ -27,7 +28,8 @@ public static class SpoolerJobMonitor
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(printerName);
 
-        using var queue = OpenQueue(printerName);
+        using var server = new LocalPrintServer();
+        using var queue = server.GetPrintQueue(printerName);
         queue.Refresh();
 
         try
@@ -40,12 +42,6 @@ public static class SpoolerJobMonitor
         {
             return null;
         }
-    }
-
-    private static PrintQueue OpenQueue(string printerName)
-    {
-        var server = new LocalPrintServer();
-        return server.GetPrintQueue(printerName);
     }
 
     private static SpoolerJobSnapshot Snapshot(
@@ -77,7 +73,7 @@ public static class SpoolerJobMonitor
         if (job.IsCompleted || job.IsPrinted)
             return SpoolerJobState.Completed;
 
-        if (job.IsSpooling || job.IsQueued || job.IsRetained)
+        if (job.IsSpooling || job.IsRetained)
             return SpoolerJobState.Queued;
 
         return SpoolerJobState.Unknown;

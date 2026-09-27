@@ -34,6 +34,12 @@ PDF rendering stays behind the rendering boundary; Domain/Layout remain PDF-agno
 
 Used by `PrintAI.SourceInspection` to read available JPG/PNG metadata such as EXIF, JFIF and PNG metadata directories without hand-parsing file formats.
 
+### LibreOffice (optional external runtime)
+
+Used by `PrintAI.DocumentConversion` for DOC/DOCX/XLS/XLSX/PPT/PPTX -> PDF conversion through the headless `soffice` command-line interface.
+
+LibreOffice is not bundled with PrintAI. The adapter discovers an explicit `PRINTAI_LIBREOFFICE_PATH`, standard Windows install paths or PATH. If it is unavailable, image/PDF/HEIC workflows continue to work and Office import returns a clear error.
+
 ### Microsoft.Web.WebView2
 
 Planned desktop UI host for the future Windows app.

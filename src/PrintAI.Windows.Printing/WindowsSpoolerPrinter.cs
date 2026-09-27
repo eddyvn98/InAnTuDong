@@ -1,7 +1,6 @@
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Printing;
-using System.Runtime.InteropServices;
 
 namespace PrintAI.Windows.Printing;
 
@@ -94,13 +93,7 @@ public static class WindowsSpoolerPrinter
                 DocumentName: documentName,
                 JobId: job?.JobId);
         }
-        catch (Exception ex) when (
-            ex is InvalidPrinterException or
-            PrintSystemException or
-            ExternalException or
-            ArgumentException or
-            InvalidOperationException or
-            SystemException)
+        catch (SystemException ex)
         {
             return Failed(printerName, documentName, ex.Message);
         }

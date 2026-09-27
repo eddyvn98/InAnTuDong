@@ -4,16 +4,14 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M3 - Source pipeline complete; AI planner next**
+**M3 - Planner contract/policy complete; desktop planning integration next**
 
 ## Completed milestones
 
 ### M0 - Foundation
-
 Complete.
 
 ### M1 - Deterministic A4 engine
-
 Complete:
 
 - millimetre-based domain/layout
@@ -27,7 +25,6 @@ Complete:
 - golden preview coverage
 
 ### M2 - Windows print path
-
 Physically complete on Epson L3310:
 
 - installed printer enumeration/capabilities
@@ -35,104 +32,121 @@ Physically complete on Epson L3310:
 - calibrated Epson L3310 identity profile
 - Windows spooler submission
 - spooler job status/errors
-- calibration page
-- physical calibration measured correct by the user
-- exact-size output submitted through PrintAI measured correct by the user
+- physical calibration measured correct
+- exact-size PrintAI spooler output measured correct
 
 ## M3 deterministic desktop/source pipeline
 
-### Desktop shell
+Complete:
 
-Implemented and merged previously:
-
-- WPF + WebView2
-- file/folder input
-- drag/drop
-- source inspection
-- installed-printer selection
+- WPF + WebView2 desktop shell
+- file/folder input + drag/drop
+- JPG/JPEG/PNG/PDF inspection
+- PDFium rasterization through PDFtoImage
+- flattened multi-source/multi-page navigation
+- current-page and print-all flows
+- 300 DPI render immediately before spooler submission
 - explicit preview approval
-- 300 DPI print rendering
-- Windows spooler submission
 
-### PDF rasterization
+## M3 planner + policy slice in PR #7
 
-PR #6 adds `PDFtoImage 5.4.0` / PDFium behind `PrintAI.Rendering`.
+### Versioned PrintJobSpec
 
-`PdfPageRasterizer`:
+`PrintJobSpec` now carries `schemaVersion = "1.0"`.
 
-- rasterizes one PDF page at a requested DPI
-- returns an SKBitmap
-- supports the Windows/Linux/macOS desktop runtime path
-- keeps PDF-specific code out of Domain/Layout
+Validation rejects:
 
-`SourcePagePreview` now provides one shared entry point for:
+- unsupported schema version
+- empty job name
+- null/empty source set
+- existing invalid physical/layout/print values
 
-- JPG/JPEG
-- PNG
-- PDF page N
+### Provider-neutral planner
 
-The same A4 renderer is used after source decoding.
+New `PrintAI.Planning` project.
 
-### Multi-source / multi-page orchestration
+`IPlannerModelClient` is the provider boundary. Core planning code does not depend on OpenAI, Anthropic, Google, OpenRouter or another vendor SDK.
 
-Desktop inputs are flattened into ordered `DesktopPage` items:
+`PrintPlanner` sends:
 
-- raster image = one page
-- PDF = one item per PDF page
-- multiple files preserve input order
+- a fixed system contract
+- user natural-language request
+- inspected source metadata
 
-The desktop UI now:
+The model is allowed to propose intent only. It never receives authority to submit a print job or calculate printer/device coordinates.
 
-- shows all source files
-- shows a horizontal page strip
-- allows selecting any source page
-- previews the selected page
-- prints the current page
-- prints all flattened pages in order
+### Strict structured parsing
 
-For Print All, each page is rendered at 300 DPI immediately before spooler submission.
+Planner response must be a JSON envelope with:
 
-### Verification
+- `job`
+- `confidence`
+- `questions`
+- `warnings`
 
-PR #6 CI run #35 is green.
+Strict parser behavior:
 
-Ubuntu:
+- JSON only
+- case-sensitive camelCase contract
+- unknown fields rejected
+- enum integers rejected
+- confidence must be 0..1
+- schemaVersion must be 1.0
+- resulting `PrintJobSpec` passes deterministic domain validation again
 
-- shared restore/tests
-- PDFium PDF page rasterization tests execute successfully
-- source-page-to-A4 PDF preview test succeeds
-- web build succeeds
+### Safe / Smart / Auto policy
 
-Windows:
+`PrintPolicyEngine` is deterministic code.
 
-- shared tests including PDF rasterization
-- web build
-- Windows printer tests
-- Windows printer probe build/smoke-run
-- WebView2 desktop shell build
+- invalid spec -> Rejected
+- material planner question -> QuestionRequired
+- Safe -> PreviewRequired
+- unverified printer -> PreviewRequired
+- confidence below 0.90 or warnings -> PreviewRequired
+- Smart unknown/unapproved job -> PreviewRequired
+- Smart known verified high-confidence job -> Direct
+- Auto can be Direct only after all gates pass
 
-The first PDF implementation attempt was blocked by CA1416 platform analysis. The final implementation keeps an explicit runtime OS guard and a narrowly scoped analyzer suppression around the PDFtoImage call.
+AI cannot override these decisions.
 
-## Remaining M3 work
+## Verification
 
-The deterministic source -> preview -> print path is now ready for AI integration.
+PR #7 CI run #42 is green on Ubuntu and Windows.
 
-Next:
+Latest shared suite: 28 tests pass, including:
 
-1. provider-neutral AI planner interface
-2. strict structured output -> `PrintJobSpec` parsing
-3. planner validation/fallback behavior
-4. Safe / Smart / Auto policy engine
-5. user-editable print/layout controls around planner output
-6. job history
-7. package/publish desktop app for normal Windows installation
+- strict planner JSON parsing
+- unknown-field rejection
+- schema-version rejection
+- provider-neutral fake model client flow
+- Safe/Smart/Auto policy decisions
+- PDF rasterization and A4 preview
+- all previous layout/rendering tests
+
+Windows also passes:
+
+- printer tests
+- probe build/smoke-run
+- WebView2 desktop build
+
+## Exact next work
+
+1. Add natural-language request input to desktop.
+2. Add a configurable model-client transport without coupling core to a vendor.
+3. Convert desktop source metadata into `PlanningSource`.
+4. Run Plan -> strict parse -> policy decision.
+5. Show proposed settings/questions/warnings before preview/print.
+6. Allow deterministic user edits to layout/print settings.
+7. Add job history.
+8. Package/publish desktop app.
 
 ## Important design rule
 
-AI may propose a `PrintJobSpec`, but it never:
+AI may propose a `PrintJobSpec`, but never:
 
 - computes final device coordinates
 - bypasses deterministic validation
+- decides printer execution outside the policy gate
 - submits directly to the printer
 
 Execution remains:

@@ -2,6 +2,8 @@
 
 `PrintJobSpec` is the canonical boundary between AI intent understanding and deterministic execution.
 
+Current schema version: `1.0`.
+
 ## Rules
 
 - physical values use millimetres
@@ -14,6 +16,7 @@
 
 ```json
 {
+  "schemaVersion": "1.0",
   "jobName": "4x6 photos",
   "sources": [
     { "path": "D:/print/a.jpg", "copies": 2 },
@@ -56,4 +59,4 @@
 - layout must fit printable bounds
 - unsupported capabilities surface before print
 
-A `schemaVersion` will be added before this contract becomes externally versioned.
+`schemaVersion` is mandatory for AI planner output. The current runtime accepts only `1.0`; unsupported versions are rejected before layout or printing.

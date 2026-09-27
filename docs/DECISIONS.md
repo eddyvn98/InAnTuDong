@@ -59,3 +59,13 @@ Printer paper sizes, printable area, hard margins, color and duplex capability a
 Status: accepted
 
 Printer enumeration and capability inspection live in a Windows-only project. Shared domain/layout/rendering remain cross-platform and the Railway web demo does not reference the Windows printing assembly.
+
+## ADR-013 - AI planner returns a versioned structured proposal
+Status: accepted
+
+The AI boundary returns a strict JSON envelope containing a versioned `PrintJobSpec`, confidence, questions and warnings. Unknown JSON fields, unsupported enum values, unsupported schema versions and domain-invalid jobs are rejected before layout.
+
+## ADR-014 - Policy engine is independent from the model provider
+Status: accepted
+
+Safe/Smart/Auto execution decisions are deterministic code. The model may report confidence/questions/warnings, but cannot bypass validation, preview policy or the Windows print adapter.

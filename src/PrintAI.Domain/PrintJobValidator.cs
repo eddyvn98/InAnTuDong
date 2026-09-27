@@ -16,6 +16,18 @@ public static class PrintJobValidator
     {
         var errors = new List<ValidationError>();
 
+        if (!string.Equals(job.SchemaVersion, "1.0", StringComparison.Ordinal))
+            errors.Add(new("schema.version", "Only PrintJobSpec schemaVersion 1.0 is supported."));
+
+        if (string.IsNullOrWhiteSpace(job.JobName))
+            errors.Add(new("job.name", "Job name is required."));
+
+        if (job.Sources is null)
+        {
+            errors.Add(new("sources.null", "Sources are required."));
+            return new(errors);
+        }
+
         if (job.Sources.Count == 0)
             errors.Add(new("sources.empty", "At least one source is required."));
 

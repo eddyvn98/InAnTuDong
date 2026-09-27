@@ -75,7 +75,8 @@ public static class A4PreviewRenderer
         var destinationRect = ToDestinationRect(target, geometry.Destination);
 
         canvas.ClipRect(target);
-        canvas.DrawBitmap(source, sourceRect, destinationRect);
+        var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
+        canvas.DrawBitmap(source, sourceRect, destinationRect, sampling);
         canvas.Restore();
     }
 

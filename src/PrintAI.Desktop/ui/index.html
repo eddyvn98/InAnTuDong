@@ -10,16 +10,17 @@
     main{height:100vh;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
     header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:#fff;border-bottom:1px solid #e3e7ef}
     h1{font-size:22px;margin:0}.sub{font-size:13px;color:#6c7484;margin-top:3px}
-    .layout{display:grid;grid-template-columns:340px minmax(360px,1fr) 300px;gap:16px;padding:16px;min-height:0}
+    .layout{display:grid;grid-template-columns:330px minmax(360px,1fr) 340px;gap:16px;padding:16px;min-height:0}
     .panel{background:#fff;border:1px solid #e2e7ef;border-radius:16px;padding:16px;min-height:0;overflow:auto}
     h2{font-size:16px;margin:0 0 14px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-    button,select{border-radius:10px;border:1px solid #ccd3df;padding:10px 12px;font:inherit;background:#fff}
+    button,select,textarea{border-radius:10px;border:1px solid #ccd3df;padding:10px 12px;font:inherit;background:#fff}
     button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;border-color:#182033}.danger{color:#a12d2d}
     button:disabled{opacity:.45;cursor:not-allowed}
-    .drop{margin-top:12px;border:1px dashed #aeb8c8;border-radius:12px;padding:16px;text-align:center;color:#6b7280;font-size:13px}
+    textarea{width:100%;min-height:105px;resize:vertical;line-height:1.45}
+    .drop{margin-top:12px;border:1px dashed #aeb8c8;border-radius:12px;padding:14px;text-align:center;color:#6b7280;font-size:13px}
     .file{padding:10px 0;border-bottom:1px solid #edf0f4}.file:last-child{border-bottom:0}
     .file b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .meta{font-size:12px;color:#70798a;margin-top:3px}
+    .meta{font-size:12px;color:#70798a;margin-top:3px;line-height:1.45}
     .previewPanel{display:grid;grid-template-rows:auto 1fr;gap:12px;overflow:hidden}
     .pageStrip{display:flex;gap:7px;overflow:auto;padding-bottom:2px}
     .pageChip{white-space:nowrap;padding:7px 10px;font-size:12px}
@@ -28,17 +29,18 @@
     .preview{max-height:100%;max-width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
     .empty{color:#7b8493;text-align:center;max-width:340px;line-height:1.5}
     label{display:block;font-size:12px;color:#687184;margin:14px 0 6px}
-    select{width:100%}.status{margin-top:16px;padding:12px;border-radius:10px;background:#f3f5f8;font-size:13px;line-height:1.45}
+    select{width:100%}.status,.planCard{margin-top:12px;padding:12px;border-radius:10px;background:#f3f5f8;font-size:13px;line-height:1.5}
+    .planCard b{display:block;margin-bottom:4px}.warn{color:#985c00}.question{color:#7a3bb2}.error{color:#a12d2d}
     .pill{font-size:12px;padding:6px 9px;border-radius:999px;background:#e9fff1;color:#147147}
-    .printStack{display:grid;gap:8px;margin-top:12px}
-    @media(max-width:980px){.layout{grid-template-columns:320px 1fr}.right{grid-column:1/-1}}
+    .printStack{display:grid;gap:8px;margin-top:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:1000px){.layout{grid-template-columns:310px 1fr}.right{grid-column:1/-1}}
   </style>
 </head>
 <body>
 <main>
 <header>
-  <div><h1>Print AI</h1><div class="sub">Desktop · JPG / PNG / PDF · multi-page</div></div>
-  <span class="pill">M3 source pipeline</span>
+  <div><h1>Print AI</h1><div class="sub">Desktop · deterministic preview + AI planning gate</div></div>
+  <span class="pill">M3 planner</span>
 </header>
 <div class="layout">
   <section class="panel">
@@ -48,7 +50,7 @@
       <button id="folder">+ Thư mục</button>
       <button class="danger" id="clear">Xóa</button>
     </div>
-    <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ. PDF nhiều trang sẽ được tách thành từng trang preview.</div>
+    <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ.</div>
     <div id="fileList"></div>
   </section>
 
@@ -63,7 +65,19 @@
   </section>
 
   <section class="panel right">
-    <h2>In</h2>
+    <h2>AI Planner</h2>
+    <textarea id="request" placeholder="Ví dụ: In ảnh này 4x6 cm, 6 bản, xếp tiết kiệm A4 và có đường cắt."></textarea>
+    <label>Chế độ an toàn</label>
+    <select id="safety">
+      <option value="Safe">Safe · luôn preview</option>
+      <option value="Smart" selected>Smart · mặc định</option>
+      <option value="Auto">Auto · chỉ direct khi qua đủ gate</option>
+    </select>
+    <button class="primary" id="plan" style="width:100%;margin-top:10px">Plan</button>
+    <div id="plannerConfig" class="meta"></div>
+    <div id="planCard"></div>
+
+    <h2 style="margin-top:22px">In</h2>
     <label>Máy in</label>
     <select id="printer"></select>
     <div class="status" id="status">Chưa có job.</div>
@@ -71,58 +85,85 @@
       <button class="primary" id="print" disabled>Print trang đang xem</button>
       <button id="printAll" disabled>Print tất cả trang</button>
     </div>
-    <p class="meta">Preview dùng DPI nhẹ. Khi in, từng trang được render lại ở 300 DPI rồi gửi qua Windows spooler.</p>
+    <p class="meta">AI chỉ đề xuất PrintJobSpec. Preview/layout và lệnh in vẫn do code deterministic xử lý.</p>
   </section>
 </div>
 </main>
 <script>
-const post = (action, extra={}) => chrome.webview.postMessage({action, ...extra});
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const post=(action,extra={})=>chrome.webview.postMessage({action,...extra});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#print').onclick=()=>post('print');
 document.querySelector('#printAll').onclick=()=>post('printAll');
+document.querySelector('#plan').onclick=()=>post('plan',{
+  request:document.querySelector('#request').value,
+  safetyMode:document.querySelector('#safety').value
+});
 document.querySelector('#printer').onchange=e=>post('selectPrinter',{printer:e.target.value});
 
-chrome.webview.addEventListener('message', e => {
+chrome.webview.addEventListener('message',e=>{
   const msg=e.data;
   if(msg.type==='error'){
     document.querySelector('#status').textContent='Lỗi: '+msg.message;
     return;
   }
-  if(msg.type==='state') render(msg.data);
+  if(msg.type==='state')render(msg.data);
 });
 
 function render(s){
   const list=document.querySelector('#fileList');
-  list.innerHTML=s.Files.length ? s.Files.map(f=>{
-    const detail=f.Error ? f.Error :
-      f.PageCount ? `${f.Kind} · ${f.PageCount} trang` :
-      `${f.Kind} · ${f.PixelWidth ?? '?'}×${f.PixelHeight ?? '?'} px`;
+  list.innerHTML=s.Files.length?s.Files.map(f=>{
+    const detail=f.Error?f.Error:f.PageCount?`${f.Kind} · ${f.PageCount} trang`:`${f.Kind} · ${f.PixelWidth??'?'}×${f.PixelHeight??'?'} px`;
     return `<div class="file"><b title="${esc(f.Path)}">${esc(f.Name)}</b><div class="meta">${esc(detail)}</div></div>`;
-  }).join('') : '<div class="meta" style="margin-top:16px">Chưa có file.</div>';
+  }).join(''):'<div class="meta" style="margin-top:16px">Chưa có file.</div>';
 
   const pages=document.querySelector('#pageStrip');
-  pages.innerHTML=s.Pages.length ? s.Pages.map((p,i)=>
-    `<button class="pageChip ${i===s.SelectedPage?'active':''}" data-page="${i}" title="${esc(p.SourceName)}">${i+1}. ${esc(p.SourceName)} · ${esc(p.PageLabel)}</button>`
-  ).join('') : '<span class="meta">Chưa có trang.</span>';
+  pages.innerHTML=s.Pages.length?s.Pages.map((p,i)=>
+    `<button class="pageChip ${i===s.SelectedPage?'active':''}" data-page="${i}">${i+1}. ${esc(p.SourceName)} · ${esc(p.PageLabel)}</button>`
+  ).join(''):'<span class="meta">Chưa có trang.</span>';
   pages.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>post('selectPage',{index:Number(b.dataset.page)}));
 
-  const wrap=document.querySelector('#previewWrap');
-  wrap.innerHTML=s.PreviewDataUrl
-    ? `<img class="preview" alt="A4 preview" src="${s.PreviewDataUrl}">`
-    : '<div class="empty">Không có preview khả dụng.</div>';
+  document.querySelector('#previewWrap').innerHTML=s.PreviewDataUrl
+    ?`<img class="preview" alt="A4 preview" src="${s.PreviewDataUrl}">`
+    :'<div class="empty">Không có preview khả dụng.</div>';
 
   const printer=document.querySelector('#printer');
-  printer.innerHTML=s.Printers.length
-    ? s.Printers.map(p=>`<option value="${esc(p.Name)}" ${p.Name===s.SelectedPrinter?'selected':''}>${esc(p.Name)}${p.IsDefault?' · default':''}</option>`).join('')
-    : '<option value="">Không có printer</option>';
+  printer.innerHTML=s.Printers.length?s.Printers.map(p=>
+    `<option value="${esc(p.Name)}" ${p.Name===s.SelectedPrinter?'selected':''}>${esc(p.Name)}${p.IsDefault?' · default':''}</option>`
+  ).join(''):'<option value="">Không có printer</option>';
 
-  document.querySelector('#status').textContent=s.Status || 'Chưa có job.';
+  const planButton=document.querySelector('#plan');
+  planButton.disabled=!s.PlannerAvailable;
+  document.querySelector('#plannerConfig').textContent=s.PlannerAvailable
+    ?'Planner gateway đã cấu hình.'
+    :'Chưa cấu hình PRINTAI_PLANNER_URL nên Plan đang tắt.';
+
+  document.querySelector('#planCard').innerHTML=renderPlan(s.Plan);
+  document.querySelector('#status').textContent=s.Status||'Chưa có job.';
   document.querySelector('#print').disabled=!s.CanPrint;
   document.querySelector('#printAll').disabled=!s.CanPrintAll;
+}
+
+function renderPlan(p){
+  if(!p)return '';
+  if(p.Error)return `<div class="planCard error"><b>Plan lỗi</b>${esc(p.Error)}</div>`;
+
+  const questions=(p.Questions||[]).map(x=>`<div class="question">? ${esc(x)}</div>`).join('');
+  const warnings=(p.Warnings||[]).map(x=>`<div class="warn">! ${esc(x)}</div>`).join('');
+  const apply=p.CanApplyPreview?'Đã áp dụng proposal vào preview hiện tại.':'Proposal nhiều nguồn/chưa khớp nguồn nên chưa tự áp vào preview.';
+
+  return `<div class="planCard">
+    <b>${esc(p.JobName||'Print plan')}</b>
+    <div>${esc(p.Layout||'')}</div>
+    <div>Confidence: ${p.Confidence==null?'?':Math.round(p.Confidence*100)+'%'}</div>
+    <div>Policy: <strong>${esc(p.Decision||'')}</strong></div>
+    <div class="meta">${esc(p.DecisionReason||'')}</div>
+    <div class="meta">${esc(apply)}</div>
+    ${questions}${warnings}
+  </div>`;
 }
 
 post('ready');

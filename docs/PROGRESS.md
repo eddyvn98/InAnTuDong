@@ -4,7 +4,7 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M3 - Interactive desktop AI flow complete; packaging next**
+**M4 - Scan + recipes**
 
 ## Completed milestones
 
@@ -17,146 +17,135 @@ Complete.
 ### M2 - Windows print path
 Physically complete on Epson L3310, including exact-size PrintAI spooler verification.
 
-## M3 completed capabilities
+### M3 - AI planner + desktop UX
+Complete.
 
-### Deterministic source/desktop pipeline
+M3 now includes:
 
 - WPF + WebView2 desktop shell
-- file/folder input + drag/drop
-- JPG/JPEG/PNG/PDF inspection
+- JPG/JPEG/PNG/PDF source inspection
 - PDFium rasterization
-- multi-source / multi-source-page navigation
-- deterministic A4 preview
-- Windows printer selection
-- current-page / job / all-source printing
+- multi-source / multi-page navigation
+- multi-output physical A4 pagination
+- provider-neutral AI planner
+- strict PrintJobSpec 1.0 parsing/validation
+- source-path allowlist
+- Safe / Smart / Auto policy gate
+- configurable chat-completions transport
+- natural-language planning UI
+- deterministic editable layout/print settings
+- Windows printer selection/submission
+- local capped job history
+- self-contained Windows x64 package workflow
 
-### Provider-neutral AI planner
+## Windows package
 
-- versioned PrintJobSpec 1.0
-- strict JSON parsing
-- unknown-field rejection
-- confidence/questions/warnings
-- Safe / Smart / Auto policy
-- provider-independent `IPlannerModelClient`
+PR #10 adds `.github/workflows/package-windows.yml`.
 
-### Configurable desktop AI transport
-
-PR #9 adds a chat-completions-compatible HTTP adapter.
-
-Configuration can come from:
-
-- desktop UI: endpoint + model + optional API key
-- environment:
-  - `PRINTAI_AI_ENDPOINT`
-  - `PRINTAI_AI_MODEL`
-  - `PRINTAI_AI_API_KEY`
-
-API keys entered in the UI are process-memory only and are not persisted.
-
-### Planner source allowlist
-
-Planner output may reference only source paths already selected/inspected by the desktop app.
-
-Invented or rewritten local file paths are rejected before rendering.
-
-### Natural-language desktop flow
-
-The desktop can now execute:
+It publishes:
 
 ```text
-select source
--> enter natural-language request
--> AI returns strict PrintJobSpec
--> bind source allowlist
--> deterministic validation
--> Safe/Smart/Auto policy
--> render preview
--> optional deterministic user edits
--> print
+dotnet publish
+  src/PrintAI.Desktop/PrintAI.Desktop.csproj
+  Release
+  win-x64
+  self-contained
 ```
 
-### Deterministic job editor
+The package intentionally remains a folder-based publish instead of forcing a single executable because WebView2, PDFium and other native assets must remain beside the app.
 
-The user can edit:
+Desktop executable:
 
-- Grid / ExactSize
-- Contain / Cover
-- item width/height in mm
-- gap
-- margin
-- source copies
-- rotation
-- cut marks
+```text
+PrintAI.exe
+```
 
-Edits are validated by the deterministic domain validator and immediately re-rendered.
+Package also includes:
 
-### Output pagination
+- `ui/`
+- `INSTALL_WINDOWS.md`
+- `BUILD.txt` with product/version/runtime/commit
+- all .NET self-contained runtime files
+- WebView2 managed/native support files
+- PDFium/native dependencies
 
-Source pagination and physical A4 output pagination are now separate.
+PR #10 package workflow run #1 successfully:
 
-Example:
+- published the app
+- verified required package files
+- measured 248.2 MB uncompressed output
+- created the ZIP
+- uploaded the `PrintAI-win-x64` GitHub Actions artifact
+- final uploaded ZIP size: 98,099,691 bytes
+- artifact SHA-256: `fd23fce532842ce6a21c4234afd249aed3dc54f7296decd7ffa99226a191f67a`
 
-- one JPG source page
-- 20 copies at 40 x 60 mm
-- layout generates 2 physical A4 output pages
+The normal CI run #57 is also green.
 
-The desktop exposes both A4 pages and **Print toàn bộ job hiện tại** submits all physical output pages in order.
+After merge, the same package workflow runs on `main` so the canonical main commit gets its own downloadable artifact.
 
-### Job history
+## AI configuration
 
-New `PrintAI.History` project stores a capped local history.
+Optional planner configuration can be entered in the desktop UI or supplied through:
 
-- newest first
-- maximum 100 entries
-- plan/print status
-- printer/job metadata
-- malformed history fails closed to an empty list
-- API keys are never stored
-- UI shows the latest 20 entries
-- user can clear local history
+```text
+PRINTAI_AI_ENDPOINT
+PRINTAI_AI_MODEL
+PRINTAI_AI_API_KEY
+```
 
-## Verification
+UI-entered API keys remain process-memory only and are not persisted in history.
 
-PR #9 implementation CI run #50 passed all meaningful code checkpoints before the final documentation commit:
+See `docs/AI_PLANNER.md`.
 
-Shared Ubuntu/Windows suite:
+## Physical verification
 
-- 35 tests pass
-- planner transport request/response tests
-- transport HTTP failure behavior
-- planner source allowlist tests
-- job-history tests
-- multi-output renderer test
-- all previous planner/layout/PDF/render tests
+Epson L3310:
 
-Windows:
+- calibration page measured correct by the user
+- exact-size output submitted through the PrintAI spooler path measured correct by the user
+- identity device profile remains ScaleX=1, ScaleY=1, OffsetX=0 mm, OffsetY=0 mm
+
+## Current test baseline
+
+Shared suite:
+
+- 35 tests pass on Ubuntu and Windows
+
+Windows-specific suite:
 
 - 5 printer tests pass
-- printer probe builds
-- printer probe smoke-run succeeds
+- printer probe builds/smoke-runs
 - WebView2 desktop build succeeds
 
-The first iterations exposed only integration/import fixture issues, all corrected before merge.
+Packaging:
 
-## Remaining M3 work
+- self-contained win-x64 publish succeeds
+- required package layout verification succeeds
+- ZIP artifact upload succeeds
 
-1. Package/publish the Windows desktop app for normal use.
-2. Add an installable/release artifact in CI.
-3. Then move to M4 scan + recipes.
+## Exact next work - M4
+
+1. Define scanner abstraction.
+2. Implement first WIA scanner adapter on Windows.
+3. Scan to image/PDF.
+4. Add crop/deskew boundary.
+5. Add reusable recipe model/store.
+6. Connect recipes to planner/policy confidence/direct-print rules.
+7. Validate the first real scan -> preview -> print workflow.
 
 ## Important execution boundary
 
-AI still cannot:
+AI cannot:
 
-- calculate final device coordinates
+- calculate final printer/device coordinates
 - bypass PrintJobSpec validation
-- access unapproved source paths
+- access unapproved local source paths
 - bypass Safe/Smart/Auto policy
 - directly call the Windows printer adapter
 
 Execution remains:
 
-source -> inspection -> planner/spec -> allowlist -> validation -> layout -> preview -> policy/user approval -> Windows print adapter.
+source -> inspection -> planner/spec -> allowlist -> validation -> deterministic layout -> preview -> policy/user approval -> Windows print adapter.
 
 ## Session rule
 

@@ -79,3 +79,24 @@ The second M5 slice adds a mixed-source CCCD workflow:
 - printing still goes through the existing Windows spooler path
 
 Mixed rendering is not CCCD-specific. Each layout placement now references its source index, and each source can reference a specific page within a PDF.
+
+
+## Custom label / sticker sheets
+
+The label workflow now accepts deterministic physical parameters:
+
+- item width and height in millimetres
+- requested copy count
+- gap and A4 margin
+- optional 90-degree rotation for better capacity
+- cut marks on/off
+- Contain or Cover fit
+
+The requested physical label size is never reduced to force everything onto one sheet. If the requested quantity exceeds one A4 page, the normal layout engine creates additional A4 output pages.
+
+Guardrails:
+
+- dimensions must be positive
+- copy count is limited to 1-1000 per job
+- gap and margin cannot be negative
+- at least one normal/rotated orientation must fit the A4 printable layout area

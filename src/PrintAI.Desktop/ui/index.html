@@ -137,6 +137,25 @@
       <button class="primary" id="composeCccd" style="width:100%;margin-top:8px">Ghép 2 mặt trên A4</button>
     </div>
 
+    <div class="box" style="margin-top:10px">
+      <b>Label / sticker tùy chỉnh</b>
+      <div class="row">
+        <div><label>Rộng mm</label><input id="labelWidth" type="number" min="1" step="0.1" value="40"></div>
+        <div><label>Cao mm</label><input id="labelHeight" type="number" min="1" step="0.1" value="60"></div>
+      </div>
+      <div class="row">
+        <div><label>Số lượng</label><input id="labelCopies" type="number" min="1" max="1000" value="12"></div>
+        <div><label>Fit</label><select id="labelFit"><option>Contain</option><option>Cover</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Gap mm</label><input id="labelGap" type="number" min="0" step="0.1" value="2"></div>
+        <div><label>Margin mm</label><input id="labelMargin" type="number" min="0" step="0.1" value="5"></div>
+      </div>
+      <label class="check"><input id="labelRotate" type="checkbox" checked> Tự xoay để xếp được nhiều hơn</label>
+      <label class="check"><input id="labelCutMarks" type="checkbox" checked> Cut marks</label>
+      <button class="primary" id="applyLabelSheet" style="width:100%;margin-top:8px">Tạo label sheet</button>
+    </div>
+
     <h3>Recipes</h3>
     <label>Tên recipe</label>
     <input id="recipeName" placeholder="Ví dụ: Ảnh 4x6 có cut marks">
@@ -188,6 +207,16 @@ document.querySelector('#applyWorkflow').onclick=()=>post('applyBuiltInWorkflow'
 document.querySelector('#composeCccd').onclick=()=>post('composeCccdFrontBack',{
   frontPageIndex:Number(document.querySelector('#cccdFrontPage').value),
   backPageIndex:Number(document.querySelector('#cccdBackPage').value)
+});
+document.querySelector('#applyLabelSheet').onclick=()=>post('applyCustomLabelSheet',{
+  itemWidthMm:Number(document.querySelector('#labelWidth').value),
+  itemHeightMm:Number(document.querySelector('#labelHeight').value),
+  copies:Number(document.querySelector('#labelCopies').value),
+  gapMm:Number(document.querySelector('#labelGap').value),
+  marginMm:Number(document.querySelector('#labelMargin').value),
+  allowRotate:document.querySelector('#labelRotate').checked,
+  cutMarks:document.querySelector('#labelCutMarks').checked,
+  fit:document.querySelector('#labelFit').value
 });
 document.querySelector('#saveRecipe').onclick=()=>post('saveRecipe',{
   name:document.querySelector('#recipeName').value.trim(),
@@ -279,6 +308,7 @@ function render(s){
   if(oldBack!==''&&Number(oldBack)<s.Pages.length)cccdBack.value=oldBack;
   else if(s.Pages.length>1)cccdBack.value=String(s.SelectedPage===0?1:0);
   document.querySelector('#composeCccd').disabled=s.Pages.length<2;
+  document.querySelector('#applyLabelSheet').disabled=!s.Pages.length;
 
   const workflow=document.querySelector('#workflow');
   workflow.innerHTML=s.BuiltInWorkflows.length?s.BuiltInWorkflows.map(x=>

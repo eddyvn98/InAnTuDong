@@ -22,10 +22,7 @@ public static class DesktopJobEditor
         ArgumentNullException.ThrowIfNull(current);
 
         var sources = current.Sources
-            .Select((source, index) =>
-                index == 0
-                    ? source with { Copies = edits.Copies }
-                    : source)
+            .Select(source => source with { Copies = edits.Copies })
             .ToArray();
 
         var updated = current with

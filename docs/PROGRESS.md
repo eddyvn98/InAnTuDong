@@ -123,15 +123,32 @@ Packaging:
 - required package layout verification succeeds
 - ZIP artifact upload succeeds
 
+## M4 implementation in progress
+
+Branch `m4-scan-recipes` now implements:
+
+- replaceable `IScannerAdapter` boundary
+- Windows WIA scanner enumeration and one-page capture
+- 150/300/600 DPI desktop controls
+- color / grayscale / black-and-white scan intent
+- PNG or single-page A4 PDF scan output
+- deterministic auto-crop and lightweight deskew processing
+- reusable local recipe store
+- apply/save/delete recipe desktop controls
+- recipe source copies/layout/print/policy persistence
+- direct-print recipe opt-in gated by verified printer profile and policy engine
+- shared tests for crop, PDF scan output and recipe round-trip
+
+The Windows desktop UI feeds a completed scan back into the existing source -> preview -> planner/policy -> spooler pipeline.
+
 ## Exact next work - M4
 
-1. Define scanner abstraction.
-2. Implement first WIA scanner adapter on Windows.
-3. Scan to image/PDF.
-4. Add crop/deskew boundary.
-5. Add reusable recipe model/store.
-6. Connect recipes to planner/policy confidence/direct-print rules.
-7. Validate the first real scan -> preview -> print workflow.
+1. Run PR CI on Windows + Linux and fix any compile/test failures.
+2. Build the self-contained Windows package from the M4 branch.
+3. On a Windows machine with Epson L3310 driver installed, perform one real WIA scan.
+4. Validate scan -> crop/deskew -> preview -> print physically.
+5. Tune WIA property handling/crop thresholds only if real hardware requires it.
+6. Merge M4 after CI and physical validation are green.
 
 ## Important execution boundary
 

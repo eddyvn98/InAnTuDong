@@ -9,7 +9,9 @@ public sealed record Placement(
     double YMm,
     double WidthMm,
     double HeightMm,
-    bool Rotated);
+    bool Rotated,
+    int SourceIndex = 0,
+    int SourceCopyIndex = 0);
 
 public sealed record LayoutResult(
     int Columns,
@@ -26,7 +28,8 @@ public static class GridLayoutEngine
         if (!validation.IsValid)
             throw new ArgumentException(string.Join("; ", validation.Errors.Select(e => e.Message)));
 
-        var totalItems = job.Sources.Sum(s => s.Copies);
+        var sourceItems = ExpandSources(job);
+        var totalItems = sourceItems.Count;
         var normal = CalculateCandidate(job, rotated: false);
 
         var selected = normal;
@@ -51,6 +54,8 @@ public static class GridLayoutEngine
             var x = job.Layout.MarginMm + col * (selected.ItemWidth + job.Layout.GapMm);
             var y = job.Layout.MarginMm + row * (selected.ItemHeight + job.Layout.GapMm);
 
+            var sourceItem = sourceItems[index];
+
             placements.Add(new(
                 index,
                 page,
@@ -58,10 +63,31 @@ public static class GridLayoutEngine
                 y,
                 selected.ItemWidth,
                 selected.ItemHeight,
-                selected.Rotated));
+                selected.Rotated,
+                sourceItem.SourceIndex,
+                sourceItem.SourceCopyIndex));
         }
 
         return new(selected.Columns, selected.Rows, selected.Capacity, selected.Rotated, placements);
+    }
+
+    private static IReadOnlyList<SourceItem> ExpandSources(PrintJobSpec job)
+    {
+        var items = new List<SourceItem>();
+
+        for (var sourceIndex = 0;
+             sourceIndex < job.Sources.Count;
+             sourceIndex++)
+        {
+            for (var copyIndex = 0;
+                 copyIndex < job.Sources[sourceIndex].Copies;
+                 copyIndex++)
+            {
+                items.Add(new(sourceIndex, copyIndex));
+            }
+        }
+
+        return items;
     }
 
     private static Candidate CalculateCandidate(PrintJobSpec job, bool rotated)
@@ -90,6 +116,10 @@ public static class GridLayoutEngine
 
         return (int)Math.Floor((available + gap) / (item + gap));
     }
+
+    private sealed record SourceItem(
+        int SourceIndex,
+        int SourceCopyIndex);
 
     private sealed record Candidate(
         int Columns,

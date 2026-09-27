@@ -203,8 +203,14 @@ public sealed partial class DesktopSession
                 p.CanDuplex))
             .ToArray();
 
+        var scanners = GetScanners();
         var page = CurrentPage();
         var job = page is null ? null : CurrentJob(page);
+        var planner = BuildPlannerView(job);
+        var readiness = BuildReadiness(
+            printers.Length,
+            scanners.Count,
+            planner.Configured);
 
         return new(
             Files: _paths.Select(DesktopSourceCatalog.InspectSafe).ToArray(),
@@ -214,7 +220,7 @@ public sealed partial class DesktopSession
             SelectedOutputPage: _selectedOutputPage,
             Printers: printers,
             SelectedPrinter: _selectedPrinter,
-            Scanners: GetScanners(),
+            Scanners: scanners,
             SelectedScanner: _selectedScanner,
             Recipes: GetRecipes(),
             SelectedRecipeId: _selectedRecipeId,
@@ -228,7 +234,8 @@ public sealed partial class DesktopSession
                          !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintAllSources: _pages.Count > 0 &&
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
-            Planner: BuildPlannerView(job),
+            Planner: planner,
+            Readiness: readiness,
             History: _history.Read().Take(20).ToArray());
     }
 

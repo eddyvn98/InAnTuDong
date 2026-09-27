@@ -53,7 +53,7 @@ public sealed partial class DesktopSession
         {
             Title = "Chọn file để in",
             Multiselect = true,
-            Filter = "Supported files|*.jpg;*.jpeg;*.png;*.pdf|All files|*.*"
+            Filter = "Supported files|*.jpg;*.jpeg;*.png;*.heic;*.heif;*.pdf|All files|*.*"
         };
 
         if (dialog.ShowDialog(owner) == true)

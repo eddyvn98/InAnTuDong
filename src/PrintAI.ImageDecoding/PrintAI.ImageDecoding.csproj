@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="PhotoSauce.MagicScaler" Version="0.15.0" />
+    <PackageReference Include="PhotoSauce.NativeCodecs.Libheif" Version="1.19.5-preview1" />
+    <PackageReference Include="PhotoSauce.NativeCodecs.Libpng" Version="1.6.44-preview1" />
+  </ItemGroup>
+</Project>

@@ -6,6 +6,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../PrintAI.Domain/PrintAI.Domain.csproj" />
+    <ProjectReference Include="../PrintAI.ImageDecoding/PrintAI.ImageDecoding.csproj" />
     <ProjectReference Include="../PrintAI.Layout/PrintAI.Layout.csproj" />
   </ItemGroup>
 </Project>

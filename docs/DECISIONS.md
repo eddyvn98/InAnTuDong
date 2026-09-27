@@ -108,3 +108,13 @@ For PrintJobSpec schema 1.0, a mixed composition may contain many source pages w
 The existing mixed-source renderer remains responsible for resolving each placement to its explicit source/page. The deterministic grid engine remains responsible for A4 packing and pagination.
 
 Per-source copy counts are preserved when common layout settings are edited. Irregular per-item physical dimensions are deferred until a future schema revision demonstrates a concrete need; schema 1.0 is not expanded prematurely.
+
+
+## ADR-021 - HEIC decode is an adapter before inspection/rendering
+Status: accepted
+
+HEIC/HEIF support lives behind `PrintAI.ImageDecoding`. The first adapter uses PhotoSauce MagicScaler with libheif to decode the source into PNG bytes.
+
+Source inspection and rendering consume the decoded raster through their existing Skia paths. Domain, Layout, PrintJobSpec, policy and printer execution remain file-format independent.
+
+The app does not depend on the Windows HEIF/HEVC Store codec because availability differs by machine. The decoder adapter can be replaced later without changing physical-layout or printer code.

@@ -1,4 +1,5 @@
 using PrintAI.Domain;
+using PrintAI.ImageDecoding;
 using PrintAI.Layout;
 using SkiaSharp;
 
@@ -93,6 +94,14 @@ public static class SourceJobRenderer
             throw new ArgumentOutOfRangeException(
                 nameof(sourcePageIndex),
                 "Raster image sources only have source page index 0.");
+        }
+
+        if (extension.Equals(".heic", StringComparison.OrdinalIgnoreCase) ||
+            extension.Equals(".heif", StringComparison.OrdinalIgnoreCase))
+        {
+            var png = HeicDecoder.DecodeToPng(sourcePath);
+            return SKBitmap.Decode(png)
+                ?? throw new InvalidDataException("The decoded HEIC image could not be rendered.");
         }
 
         return SKBitmap.Decode(sourcePath)

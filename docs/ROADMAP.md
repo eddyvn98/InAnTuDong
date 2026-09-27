@@ -100,7 +100,7 @@ These are validation tasks, not missing software architecture.
 - [x] representative core regression fixtures — raster/PDF/mixed pipeline; real HEIC remains field validation
 - [x] packaged Windows smoke test — published EXE self-test verified in package CI
 - [x] install / upgrade / rollback flow — lifecycle scripts verified by Windows package CI
-- [~] support diagnostics / error export — privacy-safe support report implemented; CI verification pending
+- [x] support diagnostics / error export — privacy-safe support report verified
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 

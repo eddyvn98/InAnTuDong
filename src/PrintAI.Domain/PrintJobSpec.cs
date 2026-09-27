@@ -31,7 +31,8 @@ public sealed record PrintJobSpec(
     PaperSpec Paper,
     LayoutSpec Layout,
     PrintSettings Print,
-    PolicySpec Policy);
+    PolicySpec Policy,
+    string SchemaVersion = "1.0");
 
 public enum PageOrientation { Portrait, Landscape }
 public enum LayoutMode { Grid, ExactSize }

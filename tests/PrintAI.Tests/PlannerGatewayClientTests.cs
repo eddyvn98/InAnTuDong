@@ -27,7 +27,11 @@ public sealed class PlannerGatewayClientTests
         var body = await client.CompleteAsync(
             new PlannerModelRequest("system", "payload"));
 
-        Assert.Contains(""confidence":0.9", body);
+        using var responseJson = JsonDocument.Parse(body);
+        Assert.Equal(
+            0.9,
+            responseJson.RootElement.GetProperty("confidence").GetDouble(),
+            2);
         Assert.Equal(
             "Bearer secret-token",
             handler.Authorization);

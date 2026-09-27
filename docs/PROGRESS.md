@@ -4,7 +4,7 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M4 - Scan + recipes**
+**M5 - Advanced workflows**
 
 ## Completed milestones
 
@@ -123,15 +123,62 @@ Packaging:
 - required package layout verification succeeds
 - ZIP artifact upload succeeds
 
-## Exact next work - M4
+## M4 - Scan + recipes
 
-1. Define scanner abstraction.
-2. Implement first WIA scanner adapter on Windows.
-3. Scan to image/PDF.
-4. Add crop/deskew boundary.
-5. Add reusable recipe model/store.
-6. Connect recipes to planner/policy confidence/direct-print rules.
-7. Validate the first real scan -> preview -> print workflow.
+Software implementation complete and ready to merge.
+
+Physical Epson L3310 scan validation is intentionally deferred and remains a post-merge hardware verification item.
+
+### Implemented
+
+Branch `m4-scan-recipes` now implements:
+
+- replaceable `IScannerAdapter` boundary
+- Windows WIA scanner enumeration and one-page capture
+- 150/300/600 DPI desktop controls
+- color / grayscale / black-and-white scan intent
+- PNG or single-page A4 PDF scan output
+- deterministic auto-crop and lightweight deskew processing
+- reusable local recipe store
+- apply/save/delete recipe desktop controls
+- recipe source copies/layout/print/policy persistence
+- direct-print recipe opt-in gated by verified printer profile and policy engine
+- shared tests for crop, PDF scan output and recipe round-trip
+
+The Windows desktop UI feeds a completed scan back into the existing source -> preview -> planner/policy -> spooler pipeline.
+
+## M4 verification
+
+PR #12 verification on commit `78fc1279b7d19cd14b8b27fa61a543cf374f6575`:
+
+- CI run #65: Ubuntu + Windows success
+- shared suite: 38/38 tests pass
+- Windows printer tests/probe remain green
+- WebView2 desktop build succeeds
+- Windows package run #9: success
+- `PrintAI-win-x64` artifact: 98,128,342 bytes
+- artifact SHA-256: `9d28480867b795515e4242554d42332bae54358d9d6717f61d422c5df40bb064`
+
+## Deferred hardware verification
+
+When convenient on a Windows machine with the Epson L3310 driver installed:
+
+1. Run a real WIA scan at 300 DPI.
+2. Validate scan -> crop/deskew -> preview -> print physically.
+3. Test PDF scan output and one saved recipe.
+4. Tune WIA property handling/crop thresholds only if real hardware requires it.
+
+This verification no longer blocks M5 development.
+
+## Exact next work - M5
+
+Start with deterministic workflow presets that build on the completed layout/recipe engine:
+
+1. CCCD copy workflow.
+2. ID photo presets.
+3. Label/sticker presets.
+4. Then content-to-layout and mixed jobs.
+5. HEIC/Office conversion and additional printer profiles follow after the preset workflows.
 
 ## Important execution boundary
 

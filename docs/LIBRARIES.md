@@ -40,9 +40,15 @@ The package is Windows-only for this product and is not referenced by the Railwa
 
 The capability probe is now implemented. The next step is spooler submission through the installed Windows driver rather than rebuilding the printing stack.
 
-### Scanner adapter
+### Windows Image Acquisition (WIA)
 
-Prefer WIA for the first Epson L3310 implementation; keep the boundary replaceable with TWAIN if needed.
+The first scanner adapter is implemented through the Windows WIA COM API in `PrintAI.Windows.Scanning`.
+
+WIA stays behind the shared `IScannerAdapter` boundary so a TWAIN adapter can replace it later without changing scan processing, recipes, planner or printing.
+
+### Scan processing
+
+`PrintAI.Scanning` uses SkiaSharp for deterministic scanned-image crop/deskew processing and PDFsharp for A4 PDF output from scanned pages.
 
 ## Intentionally custom
 

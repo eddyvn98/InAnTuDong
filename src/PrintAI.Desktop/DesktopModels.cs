@@ -11,6 +11,10 @@ public sealed record DesktopState(
     int SelectedOutputPage,
     IReadOnlyList<DesktopPrinter> Printers,
     string? SelectedPrinter,
+    IReadOnlyList<DesktopScanner> Scanners,
+    string? SelectedScanner,
+    IReadOnlyList<DesktopRecipe> Recipes,
+    string? SelectedRecipeId,
     string? PreviewDataUrl,
     string? Status,
     bool CanPrint,
@@ -75,3 +79,13 @@ public sealed record DesktopPrinter(
     bool IsDefault,
     bool SupportsColor,
     bool CanDuplex);
+
+public sealed record DesktopScanner(
+    string Id,
+    string Name);
+
+public sealed record DesktopRecipe(
+    string Id,
+    string Name,
+    bool DirectPrintEligible,
+    DateTimeOffset? UpdatedAt);

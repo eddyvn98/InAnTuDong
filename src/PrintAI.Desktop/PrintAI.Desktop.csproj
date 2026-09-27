@@ -4,6 +4,11 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <UseWPF>true</UseWPF>
+    <AssemblyName>PrintAI</AssemblyName>
+    <Version>0.3.0</Version>
+    <Product>Print AI</Product>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishSingleFile>false</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +28,11 @@
   <ItemGroup>
     <Content Include="ui\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="../../docs/INSTALL_WINDOWS.md"
+             Link="INSTALL_WINDOWS.md">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 </Project>

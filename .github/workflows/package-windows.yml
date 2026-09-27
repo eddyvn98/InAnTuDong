@@ -1,0 +1,79 @@
+name: package-windows
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-win-x64:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish self-contained desktop
+        run: >
+          dotnet publish src/PrintAI.Desktop/PrintAI.Desktop.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+          -o artifacts/PrintAI-win-x64
+
+      - name: Add build manifest
+        shell: pwsh
+        run: |
+          @(
+            "product=Print AI"
+            "version=0.3.0"
+            "runtime=win-x64"
+            "commit=$env:GITHUB_SHA"
+          ) | Set-Content artifacts/PrintAI-win-x64/BUILD.txt
+
+      - name: Verify package layout
+        shell: pwsh
+        run: |
+          $required = @(
+            "artifacts/PrintAI-win-x64/PrintAI.exe",
+            "artifacts/PrintAI-win-x64/ui/index.html",
+            "artifacts/PrintAI-win-x64/INSTALL_WINDOWS.md",
+            "artifacts/PrintAI-win-x64/BUILD.txt"
+          )
+
+          foreach ($path in $required) {
+            if (-not (Test-Path $path)) {
+              throw "Missing package file: $path"
+            }
+          }
+
+          $sizeMb = [Math]::Round(
+            ((Get-ChildItem artifacts/PrintAI-win-x64 -Recurse -File |
+              Measure-Object Length -Sum).Sum / 1MB),
+            1)
+
+          Write-Host "Published package size: $sizeMb MB"
+
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive             -Path artifacts/PrintAI-win-x64/*             -DestinationPath artifacts/PrintAI-win-x64.zip             -CompressionLevel Optimal
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PrintAI-win-x64
+          path: artifacts/PrintAI-win-x64.zip
+          if-no-files-found: error
+          retention-days: 14

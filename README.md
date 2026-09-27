@@ -54,6 +54,16 @@ Windows desktop shell:
 dotnet run --project src/PrintAI.Desktop/PrintAI.Desktop.csproj
 ```
 
-The desktop app currently supports JPG/PNG preview + printing and JPG/PNG/PDF source inspection. PDF raster preview/printing is still a later slice.
+The desktop app supports JPG/PNG/PDF preview and printing, multi-page sources, AI-assisted PrintJobSpec planning, deterministic user edits, Windows printer submission and local job history.
 
-See `docs/PROGRESS.md` for the exact current state.
+Optional AI configuration:
+
+```text
+PRINTAI_AI_ENDPOINT=https://your-endpoint/chat/completions
+PRINTAI_AI_MODEL=your-model
+PRINTAI_AI_API_KEY=optional-key
+```
+
+The same values can be entered in the desktop UI; UI-entered API keys are session-only.
+
+See `docs/AI_PLANNER.md` for the AI flow and `docs/PROGRESS.md` for the exact current state.

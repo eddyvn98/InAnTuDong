@@ -50,9 +50,9 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 - [x] source inspection
 - [x] PDF rasterization
 - [x] multi-source/multi-page preview
-- [ ] provider-neutral AI planner
-- [ ] structured output parsing
-- [ ] Safe/Smart/Auto policy
+- [x] provider-neutral AI planner
+- [x] structured output parsing
+- [x] Safe/Smart/Auto policy
 - [x] preview approval
 - [ ] job history
 

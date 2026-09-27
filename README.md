@@ -67,3 +67,12 @@ PRINTAI_AI_API_KEY=optional-key
 The same values can be entered in the desktop UI; UI-entered API keys are session-only.
 
 See `docs/AI_PLANNER.md` for the AI flow and `docs/PROGRESS.md` for the exact current state.
+
+
+## Windows packaged build
+
+GitHub Actions workflow `package-windows` creates a self-contained `win-x64` ZIP named `PrintAI-win-x64`.
+
+Extract the complete ZIP and run `PrintAI.exe`. Do not copy the executable by itself because WebView2/PDFium/runtime assets are shipped beside it.
+
+See `docs/INSTALL_WINDOWS.md` for package requirements and startup instructions.

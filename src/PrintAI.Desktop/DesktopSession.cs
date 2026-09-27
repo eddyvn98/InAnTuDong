@@ -168,6 +168,10 @@ public sealed partial class DesktopSession
             SelectedOutputPage: _selectedOutputPage,
             Printers: printers,
             SelectedPrinter: _selectedPrinter,
+            Scanners: GetScanners(),
+            SelectedScanner: _selectedScanner,
+            Recipes: GetRecipes(),
+            SelectedRecipeId: _selectedRecipeId,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,
             CanPrint: _printPath is not null &&

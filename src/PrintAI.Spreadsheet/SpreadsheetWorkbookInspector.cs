@@ -202,7 +202,7 @@ public static class SpreadsheetWorkbookInspector
         return value;
     }
 
-    internal static string GetColumnName(int index)
+    public static string GetColumnName(int index)
     {
         if (index <= 0)
             throw new ArgumentOutOfRangeException(nameof(index));

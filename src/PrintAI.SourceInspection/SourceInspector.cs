@@ -1,5 +1,6 @@
 using MetadataExtractor;
 using PdfSharp.Pdf.IO;
+using PrintAI.ImageDecoding;
 using SkiaSharp;
 
 namespace PrintAI.SourceInspection;
@@ -17,8 +18,10 @@ public static class SourceInspector
         {
             ".jpg" or ".jpeg" => InspectImage(path, SourceKind.Jpeg),
             ".png" => InspectImage(path, SourceKind.Png),
+            ".heic" or ".heif" => InspectHeic(path),
             ".pdf" => InspectPdf(path),
-            _ => throw new NotSupportedException("Only JPG, JPEG, PNG and PDF are supported in M1.")
+            _ => throw new NotSupportedException(
+                "Only JPG, JPEG, PNG, HEIC, HEIF and PDF are supported.")
         };
     }
 
@@ -47,6 +50,21 @@ public static class SourceInspector
             PixelHeight: codec.Info.Height,
             Orientation: codec.EncodedOrigin.ToString(),
             RawMetadata: rawMetadata);
+    }
+
+    private static SourceMetadata InspectHeic(string path)
+    {
+        var png = HeicDecoder.DecodeToPng(path);
+        using var data = SKData.CreateCopy(png);
+        using var codec = SKCodec.Create(data)
+            ?? throw new InvalidDataException("The decoded HEIC image could not be inspected.");
+
+        return new(
+            Path: path,
+            Kind: SourceKind.Heic,
+            PixelWidth: codec.Info.Width,
+            PixelHeight: codec.Info.Height,
+            Orientation: codec.EncodedOrigin.ToString());
     }
 
     private static SourceMetadata InspectPdf(string path)

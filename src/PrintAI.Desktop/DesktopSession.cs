@@ -163,8 +163,15 @@ public sealed partial class DesktopSession
 
     public void SelectPrinter(string? printerName)
     {
-        if (!string.IsNullOrWhiteSpace(printerName))
-            _selectedPrinter = printerName;
+        if (string.IsNullOrWhiteSpace(printerName))
+            return;
+
+        _selectedPrinter = printerName;
+        var profile = PrinterProfileCatalog.Resolve(printerName);
+
+        _status = profile.IsPhysicallyVerified
+            ? $"Profile {profile.Id} đã được hiệu chuẩn vật lý."
+            : $"Profile {profile.Id} chưa được hiệu chuẩn vật lý; hãy kiểm tra preview và bản in thử.";
     }
 
     public void Clear()
@@ -334,9 +341,8 @@ public sealed partial class DesktopSession
     }
 
     private bool IsVerifiedPrinter() =>
-        _selectedPrinter?.Contains(
-            "L3310",
-            StringComparison.OrdinalIgnoreCase) == true;
+        !string.IsNullOrWhiteSpace(_selectedPrinter) &&
+        PrinterProfileCatalog.Resolve(_selectedPrinter).IsPhysicallyVerified;
 
     private static PrintJobSpec CreateDefaultJob(string path) =>
         new(

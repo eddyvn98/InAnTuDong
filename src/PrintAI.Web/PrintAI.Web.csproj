@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="../PrintAI.Domain/PrintAI.Domain.csproj" />
+    <ProjectReference Include="../PrintAI.Layout/PrintAI.Layout.csproj" />
+  </ItemGroup>
+</Project>

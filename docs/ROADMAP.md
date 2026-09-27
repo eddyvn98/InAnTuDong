@@ -62,11 +62,12 @@ Exit: JSON PrintJobSpec creates a trustworthy A4 preview.
 
 ## M4 - Scan + recipes
 
-- [ ] WIA adapter
-- [ ] scan image/PDF
-- [ ] crop/deskew
-- [ ] reusable recipes
-- [ ] confidence/direct-print rules
+- [x] WIA adapter implementation
+- [x] scan image/PDF pipeline
+- [x] crop/deskew processing
+- [x] reusable recipes
+- [x] confidence/direct-print recipe rules
+- [ ] physical Epson L3310 scan validation
 
 ## M5 - Advanced workflows
 

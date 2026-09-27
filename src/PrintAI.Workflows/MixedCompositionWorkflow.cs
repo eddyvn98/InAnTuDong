@@ -55,7 +55,7 @@ public static class MixedCompositionWorkflow
         if (sources.Any(source => source.Copies < 1))
             throw new ArgumentOutOfRangeException(nameof(sources), "Số bản của mỗi source phải từ 1 trở lên.");
 
-        var totalItems = sources.Sum(source => source.Copies);
+        var totalItems = sources.Sum(source => (long)source.Copies);
         if (totalItems > MaxItemsPerJob)
         {
             throw new ArgumentOutOfRangeException(

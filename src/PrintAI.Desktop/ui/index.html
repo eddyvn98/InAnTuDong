@@ -38,6 +38,8 @@
     .compositionList{display:grid;gap:6px;margin-top:8px;max-height:180px;overflow:auto}
     .compositionItem{display:grid;grid-template-columns:auto 1fr 76px;gap:7px;align-items:center;padding:7px;border:1px solid #e2e7ef;border-radius:9px;background:#fff}
     .compositionItem input[type="checkbox"]{width:auto}.compositionItem input[type="number"]{padding:6px 7px}
+    .readiness{display:grid;gap:6px;margin-top:8px}.readinessItem{border:1px solid #e2e7ef;border-radius:9px;padding:8px}
+    .readinessItem.pass{background:#effbf3}.readinessItem.warning{background:#fff8eb}.readinessItem.fail{background:#fff0f0}
     @media(max-width:1050px){.layout{grid-template-columns:330px 1fr}.right{grid-column:1/-1}}
   </style>
 </head>
@@ -45,7 +47,7 @@
 <main>
 <header>
   <div><h1>Print AI</h1><div class="sub">Nguồn → AI plan → deterministic preview → policy → Windows printer</div></div>
-  <span class="pill">M5 workflows</span>
+  <span class="pill">M6 release readiness</span>
 </header>
 <div class="layout">
   <section class="panel">
@@ -55,7 +57,7 @@
       <button id="folder">+ Thư mục</button>
       <button class="danger" id="clear">Xóa nguồn</button>
     </div>
-    <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ.</div>
+    <div class="drop">Kéo JPG / PNG / HEIC / PDF / Office vào cửa sổ.</div>
     <div id="fileList"></div>
 
     <h3>Scanner WIA</h3>
@@ -196,6 +198,11 @@
     <select id="recipe"></select>
     <button id="applyRecipe" style="margin-top:8px;width:100%">Áp dụng recipe</button>
 
+    <h3>M6 · Kiểm tra hệ thống</h3>
+    <div class="box" id="readinessSummary">Đang kiểm tra...</div>
+    <div class="readiness" id="readinessList"></div>
+    <button id="refreshReadiness" style="margin-top:8px;width:100%">Kiểm tra lại</button>
+
     <h3>Máy in</h3>
     <select id="printer"></select>
     <div class="status" id="status">Chưa có job.</div>
@@ -222,6 +229,7 @@ document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
 document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
+document.querySelector('#refreshReadiness').onclick=()=>post('refreshReadiness');
 document.querySelector('#scanner').onchange=e=>post('selectScanner',{scanner:e.target.value});
 document.querySelector('#scan').onclick=()=>post('scan',{
   dpi:Number(document.querySelector('#scanDpi').value),
@@ -433,6 +441,18 @@ function render(s){
     set('#recipeName',selectedRecipe.Name);
     document.querySelector('#recipeDirect').checked=!!selectedRecipe.DirectPrintEligible;
   }
+
+  const readiness=s.Readiness;
+  const readinessSummary=document.querySelector('#readinessSummary');
+  readinessSummary.className='box '+(readiness.ReadyForCorePrinting?'':'warn');
+  readinessSummary.innerHTML=readiness.ReadyForCorePrinting
+    ?'<b>Sẵn sàng cho luồng in cốt lõi</b><br><span class="meta">'+readiness.PassCount+' pass · '+readiness.WarningCount+' warning</span>'
+    :'<b>Chưa sẵn sàng để in</b><br><span class="meta">'+readiness.FailureCount+' lỗi · '+readiness.WarningCount+' warning</span>';
+  document.querySelector('#readinessList').innerHTML=readiness.Checks.map(x=>{
+    const cls=String(x.State).toLowerCase();
+    const mark=x.State==='Pass'?'✓':(x.State==='Warning'?'!':'×');
+    return '<div class="readinessItem '+cls+'"><b>'+mark+' '+esc(x.Name)+'</b><div class="meta">'+esc(x.Detail)+'</div></div>';
+  }).join('');
 
   const printer=document.querySelector('#printer');
   printer.innerHTML=s.Printers.length?s.Printers.map(p=>

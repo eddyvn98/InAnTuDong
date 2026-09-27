@@ -4,75 +4,128 @@ Last updated: 2026-09-27
 
 ## Current milestone
 
-**M1 - Deterministic A4 engine**
+**M2 - Windows print path**
 
 ## Verified foundation
 
-- Repository source-of-truth docs are in place.
-- .NET 10 domain/layout/web skeleton is on `main`.
-- GitHub Actions baseline CI is green on Ubuntu and Windows.
-- Railway project `InAnTuDong` and service `printai-web` deploy from `eddyvn98/InAnTuDong/main`.
-- Previous Railway deployment reached `SUCCESS` and ASP.NET Core listened on `0.0.0.0:8080`.
-- Public domain: `https://printai-web-production.up.railway.app`.
+- M0 foundation is complete.
+- M1 deterministic A4 engine is complete, including semantic golden preview coverage.
+- GitHub Actions runs on Ubuntu and Windows.
+- Railway project `InAnTuDong` / service `printai-web` deploys from `main`.
+- Public web domain: `https://printai-web-production.up.railway.app`.
 
-## M1 implementation completed in PR #2
+## M1 completed
 
-Branch: `feat/m1-rendering-inspection`
+- canonical millimetre geometry
+- validation
+- grid/repeat layout
+- capacity-based 90-degree rotation
+- exact-size mode
+- contain/cover geometry
+- cut marks
+- SkiaSharp raster A4 preview
+- JPG/PNG metadata inspection
+- PDF page metadata inspection
+- semantic golden preview test
 
-- `PrintAI.Layout`
-  - grid/repeat placement
-  - capacity-based automatic 90-degree rotation
-  - exact-size mode preserving requested millimetres
-  - exact-size one-item-per-page placement, centered on paper
-  - contain/cover source-to-placement geometry
-  - deterministic cut-mark geometry in millimetres
-- `PrintAI.Rendering`
-  - SkiaSharp A4 raster renderer
-  - millimetres converted to pixels only at the rendering boundary
-  - contain/cover drawing
-  - 90-degree rotated placement rendering
-  - cut-mark rendering
-- `PrintAI.SourceInspection`
-  - JPG/JPEG/PNG pixel dimensions and encoded orientation
-  - JPG/PNG raw metadata via MetadataExtractor
-  - PDF page count
-  - PDF physical page dimensions in millimetres via PDFsharp
-- `PrintAI.Web`
-  - `/health`
-  - `/api/demo-layout`
-  - `/api/demo-preview.png`
-  - browser now shows an actual SkiaSharp-generated A4 raster preview instead of CSS-only boxes
+## M2 capability probe implemented in PR #3
+
+Branch: `feat/m2-printer-probe-calibration`
+
+### Windows printer boundary
+
+`PrintAI.Windows.Printing` now provides:
+
+- installed-printer enumeration
+- default-printer detection
+- printer validity
+- color capability
+- duplex capability
+- supported paper sizes converted to millimetres
+- advertised printer resolutions
+- A4 portrait printable area
+- A4 hard margins
+- printer-name matching, including an `L3310` model-token match
+
+`PrintAI.WindowsProbe` outputs the capability snapshot as JSON.
+
+Example:
+
+```powershell
+dotnet run --project src/PrintAI.WindowsProbe/PrintAI.WindowsProbe.csproj -- L3310
+```
+
+### Calibration
+
+`PrintAI.Rendering` now generates an A4 calibration raster with:
+
+- 10 mm inset outer frame
+- 100 x 100 mm reference square
+- 50 x 50 mm reference square
+- 100 mm horizontal ruler with 1/5/10 mm ticks
+- 100 mm vertical ruler with 1/5/10 mm ticks
+- center cross
+
+Web endpoints:
+
+- `/api/calibration-a4.png?dpi=300`
+- `/api/calibration-info`
+
+The home page links to the 300 DPI calibration page.
 
 ## Verification
 
-Implementation commit CI run #10 is green on both:
+PR #3 CI run #16 is green on both operating systems.
 
-- Ubuntu: restore -> 12 tests -> web build
-- Windows: restore -> 12 tests -> web build
+Ubuntu:
 
-The CI sequence also caught and fixed:
-- obsolete SkiaSharp bitmap sampling API
-- a PNG test fixture that attempted inspection before its write stream was closed
+- restore shared tests
+- shared tests
+- web build
+
+Windows:
+
+- restore shared tests
+- shared tests
+- web build
+- restore Windows printer tests
+- Windows printer tests
+- Windows printer probe build
+- Windows printer probe smoke-run
+
+The smoke-run verifies the executable printer enumeration path starts and exits successfully on a real Windows GitHub runner.
+
+## Physical verification required before spooler implementation
+
+The software boundary is ready, but no CI environment has the user's Epson L3310.
+
+On a Windows machine with the Epson driver installed:
+
+1. run the printer probe with `L3310`
+2. save the JSON output
+3. open/print the calibration image at 100% / Actual Size
+4. measure the 100 mm horizontal ruler
+5. measure the 100 mm vertical ruler
+6. measure the 100 x 100 mm square
+7. record visible left/top edge offset or clipping
+
+Do not implement production spooler submission until those physical measurements are known.
 
 ## Exact next engineering tasks
 
-1. Add golden/snapshot preview coverage for stable renderer output.
-2. Start M2 Windows printer capability probe:
-   - enumerate installed printers
-   - identify Epson L3310
-   - query paper/media/duplex/color capabilities
-   - query printable area
-3. Add an Epson L3310 calibration page with known physical rulers/boxes.
-4. Print calibration output on real hardware and measure it with a ruler.
-5. Only after physical sizing is verified, implement spooler submission.
+1. Capture the real Epson L3310 capability JSON.
+2. Record physical calibration measurements.
+3. Define a device profile from measured driver + physical behavior.
+4. Implement Windows spooler submission using the validated profile.
+5. Add job status/errors.
+6. Verify an exact-size physical print with a ruler.
 
 ## Deferred / known gaps
 
-- `DpiX` / `DpiY` are modeled but not yet normalized from all possible EXIF/JFIF/PNG metadata combinations; raw metadata is retained so normalization can be added without losing source information.
-- PDF metadata inspection is implemented, but PDF page rasterization is not.
-- renderer demo currently uses one generated raster source; multi-source file loading/orchestration belongs to the source-to-render pipeline.
-- exact-size correctness still requires physical printer calibration because driver printable-area behavior can vary by media/quality/borderless settings.
-- real Windows spooler submission is not started.
+- `DpiX` / `DpiY` are modeled but not normalized from every EXIF/JFIF/PNG combination.
+- PDF page rasterization is not implemented.
+- multi-source file loading/orchestration is not implemented.
+- real spooler submission is intentionally gated on physical calibration.
 - AI provider integration, WebView2 desktop shell, scanner control and recipes are not started.
 
 ## Session rule

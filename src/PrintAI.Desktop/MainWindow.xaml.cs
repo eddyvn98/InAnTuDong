@@ -158,6 +158,9 @@ public partial class MainWindow : Window
                 case "refreshReadiness":
                     _session.RefreshReadiness();
                     break;
+                case "exportSupportReport":
+                    _session.ExportSupportReport(this);
+                    break;
                 case "clear":
                     _session.Clear();
                     break;

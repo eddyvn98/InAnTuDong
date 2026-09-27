@@ -70,7 +70,15 @@ Upgrade stages the new release before moving the current install to `.previous`.
 
 The package workflow exercises this lifecycle in a sandbox before upload. The portable ZIP remains supported.
 
-### 6. Field validation matrix
+### 6. Support diagnostics
+
+The desktop app can export a JSON support report from the System Readiness panel.
+
+The report contains version/runtime, OS, non-content source counts, printer/profile state, scanner names, optional-capability availability and readiness checks.
+
+It deliberately excludes credentials, AI endpoint configuration, user source paths, job history and document content.
+
+### 7. Field validation matrix
 
 Track real-machine results separately from automated tests:
 
@@ -89,4 +97,5 @@ M6 can close when:
 4. packaged smoke test passes.
 5. representative format regression coverage is present.
 6. install/upgrade/rollback instructions are documented and exercised.
-7. real-world validation results are recorded without overstating unverified hardware.
+7. support diagnostics can be exported without exposing source content or credentials.
+8. real-world validation results are recorded without overstating unverified hardware.

@@ -99,8 +99,8 @@ These are validation tasks, not missing software architecture.
 - [~] versioned Windows package manifest + SHA-256 checksum
 - [x] representative core regression fixtures — raster/PDF/mixed pipeline; real HEIC remains field validation
 - [x] packaged Windows smoke test — published EXE self-test verified in package CI
-- [~] install / upgrade / rollback flow — per-user scripts + lifecycle smoke test implemented; CI verification pending
-- [ ] support diagnostics / error export
+- [x] install / upgrade / rollback flow — lifecycle scripts verified by Windows package CI
+- [x] support diagnostics / error export — privacy-safe support report verified
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 

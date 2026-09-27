@@ -363,9 +363,17 @@ The merged slice adds:
 - self-test JSON is uploaded beside the ZIP/checksum as release evidence
 - shared regression tests for raster source, generated two-page PDF and mixed image+PDF rendering
 
-## M6 install lifecycle in progress
+## M6 install lifecycle verification
 
-Branch `m6-install-lifecycle` adds:
+PR #23 is merged into `main` at `d75978064f3d5de4d08cdd52e1458c44390c9cc8`.
+
+Verification:
+
+- CI run #95: Ubuntu + Windows success
+- Windows package run #39: success
+- install -> installed self-test -> upgrade -> rollback -> uninstall: success
+
+The merged slice adds:
 
 - per-user `Install-PrintAI.ps1` with no admin requirement
 - staged upgrade before replacing the current install
@@ -377,12 +385,32 @@ Branch `m6-install-lifecycle` adds:
 - portable ZIP usage remains supported
 - Windows package CI exercises install -> installed self-test -> upgrade -> rollback -> uninstall in a sandbox
 
-Exact next M6 work after this slice is verified:
+## M6 support report verification
 
-1. support diagnostics export
-2. tagged preview release + release notes
-3. real iPhone HEIC field validation
-4. real-machine scanner/Office/printer validation matrix
+PR #24 verification:
+
+- CI run #97: Ubuntu + Windows success
+- Windows package run #41: success
+- packaged self-test + install lifecycle remain green
+
+The slice adds a user-exportable JSON support report containing:
+
+- Print AI version and runtime
+- OS description
+- loaded source/page counts only
+- printer capability summary + resolved profile ID/physical-verification flag
+- scanner names
+- Office conversion availability
+- AI planner configured/not-configured flag
+- current System Readiness checks
+
+Privacy boundary: the report intentionally excludes API keys, AI endpoint, source file paths, job history and document content.
+
+Exact next M6 work:
+
+1. tagged preview release + release notes
+2. real iPhone HEIC field validation
+3. real-machine scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

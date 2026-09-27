@@ -211,13 +211,27 @@ Branch `m5-mixed-cccd` adds:
 - synchronized copy edits across mixed sources
 - shared tests for source ordering, page indexes, validation and mixed rendering
 
+## M5 custom label implementation in progress
+
+Branch `m5-custom-label-sheets` adds:
+
+- deterministic custom label/sticker sheet factory
+- width/height in millimetres
+- copy count, gap and margin controls
+- Contain/Cover
+- optional rotation and cut marks
+- automatic A4 pagination without shrinking requested physical size
+- input guardrails for invalid sizes, margins and excessive copy counts
+- desktop controls integrated with the existing preview/print pipeline
+- shared tests for geometry, pagination, source-page preservation and invalid input
+
 ## Exact next work - M5
 
-1. Verify mixed CCCD on Linux + Windows CI and package build.
-2. Add customizable label/sticker sheet presets.
-3. Generalize the CCCD two-source controls into a reusable mixed composition UI.
-4. Implement content-to-layout.
-5. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
+1. Verify custom label sheets in Linux + Windows CI and package build.
+2. Generalize the CCCD two-source controls into a reusable mixed composition UI.
+3. Implement content-to-layout.
+4. Add HEIC support.
+5. Add Office conversion and additional printer profiles after workflow composition is stable.
 
 ## Important execution boundary
 

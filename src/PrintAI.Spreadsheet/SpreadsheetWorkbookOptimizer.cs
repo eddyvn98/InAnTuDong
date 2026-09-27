@@ -361,7 +361,7 @@ public static class SpreadsheetWorkbookOptimizer
             Name = "_xlnm.Print_Area",
             LocalSheetId = (uint)sheetIndex,
             Text =
-                ${sheetName} + "!$A$1:$" + lastColumn + "$" + maxRow
+                sheetName + "!$A$1:$" + lastColumn + "$" + maxRow
         });
 
         var titleParts = new List<string>();

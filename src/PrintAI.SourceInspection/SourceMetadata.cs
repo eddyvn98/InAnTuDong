@@ -16,7 +16,8 @@ public sealed record SourceMetadata(
     double? DpiY = null,
     string? Orientation = null,
     int? PageCount = null,
-    IReadOnlyList<PdfPageMetadata>? Pages = null);
+    IReadOnlyList<PdfPageMetadata>? Pages = null,
+    IReadOnlyDictionary<string, string>? RawMetadata = null);
 
 public sealed record PdfPageMetadata(
     int Page,

@@ -172,6 +172,8 @@ public sealed partial class DesktopSession
             SelectedScanner: _selectedScanner,
             Recipes: GetRecipes(),
             SelectedRecipeId: _selectedRecipeId,
+            BuiltInWorkflows: GetBuiltInWorkflows(),
+            SelectedWorkflowId: _selectedWorkflowId,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,
             CanPrint: _printPath is not null &&

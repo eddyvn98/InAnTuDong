@@ -109,7 +109,7 @@ Epson L3310:
 
 Shared suite:
 
-- 35 tests pass on Ubuntu and Windows
+- 45 tests pass on Ubuntu and Windows
 
 Windows-specific suite:
 
@@ -186,13 +186,24 @@ Branch `m5-workflow-presets` adds the first deterministic preset layer:
 
 See `docs/M5_WORKFLOWS.md`.
 
+## M5 preset verification
+
+PR #13 verification on commit `7fdf21b5aff58684f10f6dfd0247bf7651032e3d`:
+
+- CI run #69: Ubuntu + Windows success
+- shared suite: 45/45 tests pass
+- Windows printer tests/probe remain green
+- WebView2 desktop build succeeds
+- Windows package run #13: success
+- `PrintAI-win-x64` artifact: 98,137,222 bytes
+- artifact SHA-256: `0cf6b70c5cf128aff7c86987166d22ad190b5d8cc57484ebe2e681c1625fe833`
+
 ## Exact next work - M5
 
-1. Verify the workflow preset PR in Linux + Windows CI and package build.
-2. Extend CCCD from single-side 1:1 to front/back composition using the mixed-job model.
-3. Add customizable label/sticker sheet presets.
-4. Implement content-to-layout and general mixed jobs.
-5. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
+1. Extend CCCD from single-side 1:1 to front/back composition using the mixed-job model.
+2. Add customizable label/sticker sheet presets.
+3. Implement content-to-layout and general mixed jobs.
+4. Add HEIC/Office conversion and additional printer profiles after workflow composition is stable.
 
 ## Important execution boundary
 

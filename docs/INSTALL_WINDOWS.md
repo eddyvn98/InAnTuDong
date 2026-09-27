@@ -10,6 +10,24 @@
 
 The package is self-contained for .NET. You do not need the .NET SDK to run it.
 
+## Verify the download
+
+The GitHub Actions artifact includes:
+
+- `PrintAI-win-x64.zip`
+- `PrintAI-win-x64.sha256.txt`
+
+Before extracting, verify the ZIP:
+
+```powershell
+$actual = (Get-FileHash .\PrintAI-win-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+$expected = ((Get-Content .\PrintAI-win-x64.sha256.txt) -split "\s+")[0].ToLowerInvariant()
+if ($actual -ne $expected) { throw "PrintAI package checksum mismatch." }
+"Checksum OK: $actual"
+```
+
+`BUILD.txt` inside the ZIP identifies the product version, runtime, build configuration and source commit.
+
 ## Start
 
 1. Extract the whole ZIP to a normal folder.

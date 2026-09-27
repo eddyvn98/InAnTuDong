@@ -155,6 +155,9 @@ public partial class MainWindow : Window
                 case "clearHistory":
                     _session.ClearHistory();
                     break;
+                case "refreshReadiness":
+                    _session.RefreshReadiness();
+                    break;
                 case "clear":
                     _session.Clear();
                     break;

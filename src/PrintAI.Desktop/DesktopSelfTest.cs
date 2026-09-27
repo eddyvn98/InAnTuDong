@@ -5,6 +5,7 @@ using PrintAI.Domain;
 using PrintAI.Rendering;
 using PrintAI.SourceInspection;
 using PrintAI.Windows.Printing;
+using SkiaSharp;
 
 namespace PrintAI.Desktop;
 
@@ -21,9 +22,6 @@ internal sealed record DesktopSelfTestReport(
 
 internal static class DesktopSelfTest
 {
-    private const string TinyPngBase64 =
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlWQAAAAASUVORK5CYII=";
-
     public static int Run(string? outputPath)
     {
         var checks = new List<DesktopSelfTestCheck>();
@@ -98,9 +96,7 @@ internal static class DesktopSelfTest
             tempDirectory,
             "tiny.png");
 
-        File.WriteAllBytes(
-            sourcePath,
-            Convert.FromBase64String(TinyPngBase64));
+        WriteSmokePng(sourcePath);
 
         var metadata = SourceInspector.Inspect(sourcePath);
         if (metadata.Kind != SourceKind.Png ||
@@ -139,6 +135,32 @@ internal static class DesktopSelfTest
             "raster-pipeline",
             rendered.Length > 100,
             $"PNG {metadata.PixelWidth}x{metadata.PixelHeight} -> A4 preview {rendered.Length} bytes."));
+    }
+
+    private static void WriteSmokePng(string path)
+    {
+        using var bitmap = new SKBitmap(32, 32);
+        using var canvas = new SKCanvas(bitmap);
+        canvas.Clear(SKColors.White);
+
+        using var paint = new SKPaint
+        {
+            Color = SKColors.Black,
+            Style = SKPaintStyle.Fill
+        };
+
+        canvas.DrawRect(8, 8, 16, 16, paint);
+        canvas.Flush();
+
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(
+            SKEncodedImageFormat.Png,
+            100);
+
+        if (data is null)
+            throw new InvalidOperationException("Could not encode self-test PNG.");
+
+        File.WriteAllBytes(path, data.ToArray());
     }
 
     private static void CheckPrinterProbe(

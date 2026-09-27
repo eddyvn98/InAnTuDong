@@ -33,8 +33,8 @@ public sealed class PrintJobPlanParserTests
     public void Parse_RejectsUnsupportedSchemaVersion()
     {
         var json = ValidJson().Replace(
-            ""schemaVersion":"1.0"",
-            ""schemaVersion":"2.0"");
+            @"""schemaVersion"":""1.0""",
+            @"""schemaVersion"":""2.0""");
 
         var error = Assert.Throws<PlanningFormatException>(() =>
             PrintJobPlanParser.Parse(json));

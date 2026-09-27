@@ -71,6 +71,12 @@ public partial class MainWindow : Window
                         message.RootElement.GetProperty("printer").GetString());
                     await PublishStateAsync();
                     break;
+                case "plan":
+                    await _session.PlanAsync(
+                        message.RootElement.GetProperty("request").GetString() ?? "",
+                        message.RootElement.GetProperty("safetyMode").GetString() ?? "Smart");
+                    await PublishStateAsync();
+                    break;
                 case "selectPage":
                     _session.SelectPage(
                         message.RootElement.GetProperty("index").GetInt32());

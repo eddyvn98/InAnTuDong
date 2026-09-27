@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/PrintAI.Domain/PrintAI.Domain.csproj" />
     <ProjectReference Include="../../src/PrintAI.Layout/PrintAI.Layout.csproj" />
+    <ProjectReference Include="../../src/PrintAI.History/PrintAI.History.csproj" />
     <ProjectReference Include="../../src/PrintAI.Rendering/PrintAI.Rendering.csproj" />
     <ProjectReference Include="../../src/PrintAI.Planning/PrintAI.Planning.csproj" />
     <ProjectReference Include="../../src/PrintAI.SourceInspection/PrintAI.SourceInspection.csproj" />

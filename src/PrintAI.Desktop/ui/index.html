@@ -8,54 +8,83 @@
     :root{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#182033;background:#f4f6fa}
     *{box-sizing:border-box}body{margin:0}
     main{height:100vh;display:grid;grid-template-rows:auto 1fr;overflow:hidden}
-    header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:#fff;border-bottom:1px solid #e3e7ef}
-    h1{font-size:22px;margin:0}.sub{font-size:13px;color:#6c7484;margin-top:3px}
-    .layout{display:grid;grid-template-columns:340px minmax(360px,1fr) 300px;gap:16px;padding:16px;min-height:0}
-    .panel{background:#fff;border:1px solid #e2e7ef;border-radius:16px;padding:16px;min-height:0;overflow:auto}
-    h2{font-size:16px;margin:0 0 14px}.actions{display:flex;gap:8px;flex-wrap:wrap}
-    button,select{border-radius:10px;border:1px solid #ccd3df;padding:10px 12px;font:inherit;background:#fff}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:#fff;border-bottom:1px solid #e3e7ef}
+    h1{font-size:22px;margin:0}.sub{font-size:12px;color:#6c7484;margin-top:3px}
+    .layout{display:grid;grid-template-columns:350px minmax(360px,1fr) 330px;gap:14px;padding:14px;min-height:0}
+    .panel{background:#fff;border:1px solid #e2e7ef;border-radius:16px;padding:15px;min-height:0;overflow:auto}
+    h2{font-size:15px;margin:0 0 12px}h3{font-size:13px;margin:16px 0 8px}
+    button,input,select,textarea{font:inherit;border:1px solid #ccd3df;border-radius:9px;background:#fff;padding:9px 10px}
     button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;border-color:#182033}.danger{color:#a12d2d}
     button:disabled{opacity:.45;cursor:not-allowed}
-    .drop{margin-top:12px;border:1px dashed #aeb8c8;border-radius:12px;padding:16px;text-align:center;color:#6b7280;font-size:13px}
-    .file{padding:10px 0;border-bottom:1px solid #edf0f4}.file:last-child{border-bottom:0}
-    .file b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .meta{font-size:12px;color:#70798a;margin-top:3px}
-    .previewPanel{display:grid;grid-template-rows:auto 1fr;gap:12px;overflow:hidden}
-    .pageStrip{display:flex;gap:7px;overflow:auto;padding-bottom:2px}
-    .pageChip{white-space:nowrap;padding:7px 10px;font-size:12px}
-    .pageChip.active{background:#182033;color:#fff;border-color:#182033}
-    .previewWrap{min-height:0;display:flex;align-items:center;justify-content:center;background:#eef1f5;border-radius:12px;padding:20px;overflow:hidden}
+    textarea,input,select{width:100%}textarea{min-height:84px;resize:vertical}
+    .actions{display:flex;gap:7px;flex-wrap:wrap}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .drop{margin-top:10px;border:1px dashed #aeb8c8;border-radius:11px;padding:13px;text-align:center;color:#6b7280;font-size:12px}
+    .file{padding:8px 0;border-bottom:1px solid #edf0f4}.file:last-child{border-bottom:0}
+    .file b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta{font-size:11px;color:#70798a;margin-top:3px}
+    .previewPanel{display:grid;grid-template-rows:auto auto 1fr;gap:10px;overflow:hidden}
+    .strip{display:flex;gap:6px;overflow:auto;padding-bottom:2px}
+    .chip{white-space:nowrap;padding:6px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
+    .previewWrap{min-height:0;display:flex;align-items:center;justify-content:center;background:#eef1f5;border-radius:12px;padding:16px;overflow:hidden}
     .preview{max-height:100%;max-width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
     .empty{color:#7b8493;text-align:center;max-width:340px;line-height:1.5}
-    label{display:block;font-size:12px;color:#687184;margin:14px 0 6px}
-    select{width:100%}.status{margin-top:16px;padding:12px;border-radius:10px;background:#f3f5f8;font-size:13px;line-height:1.45}
-    .pill{font-size:12px;padding:6px 9px;border-radius:999px;background:#e9fff1;color:#147147}
-    .printStack{display:grid;gap:8px;margin-top:12px}
-    @media(max-width:980px){.layout{grid-template-columns:320px 1fr}.right{grid-column:1/-1}}
+    label{display:block;font-size:11px;color:#687184;margin:9px 0 5px}
+    .status,.box{margin-top:10px;padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45}
+    .pill{font-size:11px;padding:6px 9px;border-radius:999px;background:#e9fff1;color:#147147}
+    .warn{background:#fff5e8;color:#875300}.question{background:#eef5ff;color:#234c87}
+    .history{display:grid;gap:7px}.historyItem{border:1px solid #e5e9f0;border-radius:9px;padding:8px}
+    .settings{display:grid;grid-template-columns:1fr 1fr;gap:7px}.check{display:flex;align-items:center;gap:7px;font-size:12px}
+    .check input{width:auto}.full{grid-column:1/-1}.stack{display:grid;gap:7px}
+    @media(max-width:1050px){.layout{grid-template-columns:330px 1fr}.right{grid-column:1/-1}}
   </style>
 </head>
 <body>
 <main>
 <header>
-  <div><h1>Print AI</h1><div class="sub">Desktop · JPG / PNG / PDF · multi-page</div></div>
-  <span class="pill">M3 source pipeline</span>
+  <div><h1>Print AI</h1><div class="sub">Nguồn → AI plan → deterministic preview → policy → Windows printer</div></div>
+  <span class="pill">M3 AI desktop</span>
 </header>
 <div class="layout">
   <section class="panel">
     <h2>Nguồn in</h2>
     <div class="actions">
-      <button class="primary" id="files">+ Chọn file</button>
+      <button class="primary" id="files">+ File</button>
       <button id="folder">+ Thư mục</button>
-      <button class="danger" id="clear">Xóa</button>
+      <button class="danger" id="clear">Xóa nguồn</button>
     </div>
-    <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ. PDF nhiều trang sẽ được tách thành từng trang preview.</div>
+    <div class="drop">Kéo JPG / PNG / PDF vào cửa sổ.</div>
     <div id="fileList"></div>
+
+    <h3>AI planner</h3>
+    <label>Endpoint chat-completions compatible</label>
+    <input id="endpoint" placeholder="https://.../chat/completions">
+    <div class="row">
+      <div><label>Model</label><input id="model" placeholder="model-name"></div>
+      <div><label>API key (không lưu)</label><input id="apiKey" type="password" placeholder="optional"></div>
+    </div>
+    <button id="saveAi" style="margin-top:8px">Lưu AI cho phiên này</button>
+
+    <label>Yêu cầu</label>
+    <textarea id="request" placeholder="Ví dụ: In ảnh này 4x6 cm, xếp nhiều nhất trên A4, có đường cắt."></textarea>
+    <div class="row">
+      <select id="safety">
+        <option>Safe</option>
+        <option selected>Smart</option>
+        <option>Auto</option>
+      </select>
+      <button class="primary" id="plan">AI lập kế hoạch</button>
+    </div>
+    <div id="planInfo"></div>
   </section>
 
   <section class="panel previewPanel">
     <div>
-      <h2>Preview A4</h2>
-      <div class="pageStrip" id="pageStrip"></div>
+      <h2>Source page</h2>
+      <div class="strip" id="pageStrip"></div>
+    </div>
+    <div>
+      <h2>Output A4</h2>
+      <div class="strip" id="outputStrip"></div>
     </div>
     <div class="previewWrap" id="previewWrap">
       <div class="empty">Chọn ảnh hoặc PDF để tạo preview.</div>
@@ -63,68 +92,143 @@
   </section>
 
   <section class="panel right">
-    <h2>In</h2>
-    <label>Máy in</label>
+    <h2>Thiết lập job</h2>
+    <div class="settings">
+      <div><label>Mode</label><select id="jobMode"><option>Grid</option><option>ExactSize</option></select></div>
+      <div><label>Fit</label><select id="fit"><option>Contain</option><option>Cover</option></select></div>
+      <div><label>Rộng mm</label><input id="width" type="number" step="0.1"></div>
+      <div><label>Cao mm</label><input id="height" type="number" step="0.1"></div>
+      <div><label>Gap mm</label><input id="gap" type="number" step="0.1"></div>
+      <div><label>Margin mm</label><input id="margin" type="number" step="0.1"></div>
+      <div><label>Số bản</label><input id="copies" type="number" min="1"></div>
+      <div></div>
+      <label class="check"><input id="rotate" type="checkbox"> Cho phép xoay</label>
+      <label class="check"><input id="cutMarks" type="checkbox"> Cut marks</label>
+      <button class="full" id="applySettings">Áp dụng & render lại</button>
+    </div>
+
+    <h3>Máy in</h3>
     <select id="printer"></select>
     <div class="status" id="status">Chưa có job.</div>
-    <div class="printStack">
-      <button class="primary" id="print" disabled>Print trang đang xem</button>
-      <button id="printAll" disabled>Print tất cả trang</button>
+    <div class="stack" style="margin-top:10px">
+      <button class="primary" id="print" disabled>Print output đang xem</button>
+      <button id="printJob" disabled>Print toàn bộ job hiện tại</button>
+      <button id="printAllSources" disabled>Print tất cả source page</button>
     </div>
-    <p class="meta">Preview dùng DPI nhẹ. Khi in, từng trang được render lại ở 300 DPI rồi gửi qua Windows spooler.</p>
+
+    <h3>Lịch sử</h3>
+    <button class="danger" id="clearHistory">Xóa lịch sử local</button>
+    <div class="history" id="history"></div>
   </section>
 </div>
 </main>
 <script>
-const post = (action, extra={}) => chrome.webview.postMessage({action, ...extra});
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const post=(action,extra={})=>chrome.webview.postMessage({action,...extra});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=id=>Number(document.querySelector(id).value);
+const set=(id,v)=>{const e=document.querySelector(id);if(e)e.value=v??''};
 
 document.querySelector('#files').onclick=()=>post('pickFiles');
 document.querySelector('#folder').onclick=()=>post('pickFolder');
 document.querySelector('#clear').onclick=()=>post('clear');
+document.querySelector('#clearHistory').onclick=()=>post('clearHistory');
+document.querySelector('#saveAi').onclick=()=>post('configurePlanner',{
+  endpoint:document.querySelector('#endpoint').value.trim(),
+  model:document.querySelector('#model').value.trim(),
+  apiKey:document.querySelector('#apiKey').value
+});
+document.querySelector('#plan').onclick=()=>post('plan',{
+  request:document.querySelector('#request').value.trim(),
+  mode:document.querySelector('#safety').value
+});
+document.querySelector('#applySettings').onclick=()=>post('applyJobSettings',{
+  mode:document.querySelector('#jobMode').value,
+  fit:document.querySelector('#fit').value,
+  itemWidthMm:num('#width'),
+  itemHeightMm:num('#height'),
+  gapMm:num('#gap'),
+  marginMm:num('#margin'),
+  copies:Number(document.querySelector('#copies').value),
+  allowRotate:document.querySelector('#rotate').checked,
+  cutMarks:document.querySelector('#cutMarks').checked
+});
 document.querySelector('#print').onclick=()=>post('print');
-document.querySelector('#printAll').onclick=()=>post('printAll');
+document.querySelector('#printJob').onclick=()=>post('printJob');
+document.querySelector('#printAllSources').onclick=()=>post('printAllSources');
 document.querySelector('#printer').onchange=e=>post('selectPrinter',{printer:e.target.value});
 
-chrome.webview.addEventListener('message', e => {
+chrome.webview.addEventListener('message',e=>{
   const msg=e.data;
   if(msg.type==='error'){
     document.querySelector('#status').textContent='Lỗi: '+msg.message;
     return;
   }
-  if(msg.type==='state') render(msg.data);
+  if(msg.type==='state')render(msg.data);
 });
 
 function render(s){
-  const list=document.querySelector('#fileList');
-  list.innerHTML=s.Files.length ? s.Files.map(f=>{
-    const detail=f.Error ? f.Error :
-      f.PageCount ? `${f.Kind} · ${f.PageCount} trang` :
-      `${f.Kind} · ${f.PixelWidth ?? '?'}×${f.PixelHeight ?? '?'} px`;
-    return `<div class="file"><b title="${esc(f.Path)}">${esc(f.Name)}</b><div class="meta">${esc(detail)}</div></div>`;
-  }).join('') : '<div class="meta" style="margin-top:16px">Chưa có file.</div>';
+  const files=s.Files.map(f=>{
+    const detail=f.Error?f.Error:(f.PageCount?(f.Kind+' · '+f.PageCount+' trang'):(f.Kind+' · '+(f.PixelWidth??'?')+'×'+(f.PixelHeight??'?')+' px'));
+    return '<div class="file"><b title="'+esc(f.Path)+'">'+esc(f.Name)+'</b><div class="meta">'+esc(detail)+'</div></div>';
+  }).join('');
+  document.querySelector('#fileList').innerHTML=files||'<div class="meta" style="margin-top:12px">Chưa có file.</div>';
 
-  const pages=document.querySelector('#pageStrip');
-  pages.innerHTML=s.Pages.length ? s.Pages.map((p,i)=>
-    `<button class="pageChip ${i===s.SelectedPage?'active':''}" data-page="${i}" title="${esc(p.SourceName)}">${i+1}. ${esc(p.SourceName)} · ${esc(p.PageLabel)}</button>`
-  ).join('') : '<span class="meta">Chưa có trang.</span>';
-  pages.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>post('selectPage',{index:Number(b.dataset.page)}));
+  const pages=s.Pages.map((p,i)=>
+    '<button class="chip '+(i===s.SelectedPage?'active':'')+'" data-source="'+i+'">'+(i+1)+'. '+esc(p.SourceName)+' · '+esc(p.PageLabel)+'</button>'
+  ).join('');
+  const pageStrip=document.querySelector('#pageStrip');
+  pageStrip.innerHTML=pages||'<span class="meta">Chưa có source page.</span>';
+  pageStrip.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>post('selectPage',{index:Number(b.dataset.source)}));
 
-  const wrap=document.querySelector('#previewWrap');
-  wrap.innerHTML=s.PreviewDataUrl
-    ? `<img class="preview" alt="A4 preview" src="${s.PreviewDataUrl}">`
-    : '<div class="empty">Không có preview khả dụng.</div>';
+  let outputs='';
+  for(let i=0;i<s.OutputPageCount;i++){
+    outputs+='<button class="chip '+(i===s.SelectedOutputPage?'active':'')+'" data-output="'+i+'">A4 '+(i+1)+'/'+s.OutputPageCount+'</button>';
+  }
+  const outputStrip=document.querySelector('#outputStrip');
+  outputStrip.innerHTML=outputs||'<span class="meta">Chưa có output.</span>';
+  outputStrip.querySelectorAll('[data-output]').forEach(b=>b.onclick=()=>post('selectOutputPage',{index:Number(b.dataset.output)}));
+
+  document.querySelector('#previewWrap').innerHTML=s.PreviewDataUrl
+    ?'<img class="preview" alt="A4 preview" src="'+s.PreviewDataUrl+'">'
+    :'<div class="empty">Không có preview khả dụng.</div>';
 
   const printer=document.querySelector('#printer');
-  printer.innerHTML=s.Printers.length
-    ? s.Printers.map(p=>`<option value="${esc(p.Name)}" ${p.Name===s.SelectedPrinter?'selected':''}>${esc(p.Name)}${p.IsDefault?' · default':''}</option>`).join('')
-    : '<option value="">Không có printer</option>';
+  printer.innerHTML=s.Printers.length?s.Printers.map(p=>
+    '<option value="'+esc(p.Name)+'" '+(p.Name===s.SelectedPrinter?'selected':'')+'>'+esc(p.Name)+(p.IsDefault?' · default':'')+'</option>'
+  ).join(''):'<option value="">Không có printer</option>';
 
-  document.querySelector('#status').textContent=s.Status || 'Chưa có job.';
+  if(s.Planner.Endpoint&&!document.querySelector('#endpoint').value)set('#endpoint',s.Planner.Endpoint);
+  if(s.Planner.Model&&!document.querySelector('#model').value)set('#model',s.Planner.Model);
+  if(s.Planner.Request)set('#request',s.Planner.Request);
+
+  const info=[];
+  if(!s.Planner.Configured)info.push('<div class="box warn">AI chưa cấu hình. Manual preview/print vẫn hoạt động.</div>');
+  if(s.Planner.Decision){
+    const confidence=s.Planner.Confidence!=null?' · '+Math.round(s.Planner.Confidence*100)+'%':'';
+    info.push('<div class="box">Decision: <b>'+esc(s.Planner.Decision)+'</b>'+confidence+'</div>');
+  }
+  if(s.Planner.Questions.length)info.push('<div class="box question"><b>Cần trả lời:</b><br>'+s.Planner.Questions.map(esc).join('<br>')+'</div>');
+  if(s.Planner.Warnings.length)info.push('<div class="box warn"><b>Warning:</b><br>'+s.Planner.Warnings.map(esc).join('<br>')+'</div>');
+  document.querySelector('#planInfo').innerHTML=info.join('');
+
+  if(s.Planner.Job){
+    const j=s.Planner.Job;
+    set('#jobMode',j.Mode);set('#fit',j.Fit);set('#width',j.ItemWidthMm);set('#height',j.ItemHeightMm);
+    set('#gap',j.GapMm);set('#margin',j.MarginMm);set('#copies',j.Copies);
+    document.querySelector('#rotate').checked=j.AllowRotate;
+    document.querySelector('#cutMarks').checked=j.CutMarks;
+  }
+
+  document.querySelector('#status').textContent=s.Status||'Chưa có job.';
   document.querySelector('#print').disabled=!s.CanPrint;
-  document.querySelector('#printAll').disabled=!s.CanPrintAll;
-}
+  document.querySelector('#printJob').disabled=!s.CanPrintJob;
+  document.querySelector('#printAllSources').disabled=!s.CanPrintAllSources;
 
+  const history=s.History.map(h=>
+    '<div class="historyItem"><b>'+esc(h.Action)+' · '+esc(h.Status)+'</b><div class="meta">'+new Date(h.CreatedAt).toLocaleString()+'</div><div class="meta">'+esc(h.JobName||'')+(h.Printer?' · '+esc(h.Printer):'')+'</div></div>'
+  ).join('');
+  document.querySelector('#history').innerHTML=history||'<div class="meta">Chưa có lịch sử.</div>';
+}
 post('ready');
 </script>
 </body>

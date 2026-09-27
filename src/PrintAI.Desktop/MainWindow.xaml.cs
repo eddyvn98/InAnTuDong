@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using Microsoft.Web.WebView2.Core;
+using PrintAI.Domain;
 
 namespace PrintAI.Desktop;
 
@@ -51,44 +52,62 @@ public partial class MainWindow : Window
         try
         {
             using var message = JsonDocument.Parse(e.WebMessageAsJson);
-            var action = message.RootElement.GetProperty("action").GetString();
+            var root = message.RootElement;
+            var action = root.GetProperty("action").GetString();
 
             switch (action)
             {
                 case "ready":
-                    await PublishStateAsync();
                     break;
                 case "pickFiles":
                     _session.PickFiles(this);
-                    await PublishStateAsync();
                     break;
                 case "pickFolder":
                     _session.PickFolder(this);
-                    await PublishStateAsync();
                     break;
                 case "selectPrinter":
-                    _session.SelectPrinter(
-                        message.RootElement.GetProperty("printer").GetString());
-                    await PublishStateAsync();
+                    _session.SelectPrinter(root.GetProperty("printer").GetString());
                     break;
                 case "selectPage":
-                    _session.SelectPage(
-                        message.RootElement.GetProperty("index").GetInt32());
-                    await PublishStateAsync();
+                    _session.SelectPage(root.GetProperty("index").GetInt32());
+                    break;
+                case "selectOutputPage":
+                    _session.SelectOutputPage(root.GetProperty("index").GetInt32());
+                    break;
+                case "configurePlanner":
+                    _session.ConfigurePlanner(
+                        root.GetProperty("endpoint").GetString() ?? "",
+                        root.GetProperty("model").GetString() ?? "",
+                        root.TryGetProperty("apiKey", out var key)
+                            ? key.GetString()
+                            : null);
+                    break;
+                case "plan":
+                    await _session.PlanAsync(
+                        root.GetProperty("request").GetString() ?? "",
+                        root.GetProperty("mode").GetString() ?? "Safe");
+                    break;
+                case "applyJobSettings":
+                    _session.ApplyJobEdits(ReadEdits(root));
                     break;
                 case "print":
                     _session.PrintCurrent();
-                    await PublishStateAsync();
                     break;
-                case "printAll":
-                    _session.PrintAll();
-                    await PublishStateAsync();
+                case "printJob":
+                    _session.PrintJob();
+                    break;
+                case "printAllSources":
+                    _session.PrintAllSources();
+                    break;
+                case "clearHistory":
+                    _session.ClearHistory();
                     break;
                 case "clear":
                     _session.Clear();
-                    await PublishStateAsync();
                     break;
             }
+
+            await PublishStateAsync();
         }
         catch (Exception ex)
         {
@@ -97,6 +116,8 @@ public partial class MainWindow : Window
                 type = "error",
                 message = ex.Message
             });
+
+            await PublishStateAsync();
         }
     }
 
@@ -125,5 +146,35 @@ public partial class MainWindow : Window
         var json = JsonSerializer.Serialize(payload);
         WebView.CoreWebView2.PostWebMessageAsJson(json);
         return Task.CompletedTask;
+    }
+
+    private static DesktopJobEdits ReadEdits(JsonElement root)
+    {
+        if (!Enum.TryParse<LayoutMode>(
+                root.GetProperty("mode").GetString(),
+                ignoreCase: true,
+                out var mode))
+        {
+            throw new ArgumentException("Invalid layout mode.");
+        }
+
+        if (!Enum.TryParse<FitMode>(
+                root.GetProperty("fit").GetString(),
+                ignoreCase: true,
+                out var fit))
+        {
+            throw new ArgumentException("Invalid fit mode.");
+        }
+
+        return new(
+            Mode: mode,
+            ItemWidthMm: root.GetProperty("itemWidthMm").GetDouble(),
+            ItemHeightMm: root.GetProperty("itemHeightMm").GetDouble(),
+            GapMm: root.GetProperty("gapMm").GetDouble(),
+            MarginMm: root.GetProperty("marginMm").GetDouble(),
+            Copies: root.GetProperty("copies").GetInt32(),
+            AllowRotate: root.GetProperty("allowRotate").GetBoolean(),
+            CutMarks: root.GetProperty("cutMarks").GetBoolean(),
+            Fit: fit);
     }
 }

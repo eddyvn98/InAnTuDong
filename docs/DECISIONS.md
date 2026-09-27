@@ -69,3 +69,18 @@ The AI boundary returns a strict JSON envelope containing a versioned `PrintJobS
 Status: accepted
 
 Safe/Smart/Auto execution decisions are deterministic code. The model may report confidence/questions/warnings, but cannot bypass validation, preview policy or the Windows print adapter.
+
+## ADR-015 - Planner source paths are allowlisted
+Status: accepted
+
+AI planner output may reference only source paths that the desktop app already selected and inspected. A proposal that invents or rewrites a source path is rejected before preview/rendering.
+
+## ADR-016 - Desktop AI credentials are session-only by default
+Status: accepted
+
+The desktop UI may accept an API key for the active process, but it does not persist that key to job history or app settings. Environment variables are also supported for managed/local configuration.
+
+## ADR-017 - One source page may create multiple A4 output pages
+Status: accepted
+
+Planner/layout output pagination is distinct from source pagination. The desktop UI exposes both source-page navigation and A4 output-page navigation, and a planned job can submit all output pages in deterministic order.

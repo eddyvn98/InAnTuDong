@@ -12,6 +12,7 @@ public sealed class PrintPlanner(IPlannerModelClient modelClient)
         Physical values are millimetres.
         Paper must not exceed A4 (210 x 297 mm).
         If a material choice is ambiguous, put a concise question in questions rather than guessing.
+        Source paths must be copied exactly from the provided sources. Never invent or rewrite a path.
         The output must have exactly: job, confidence, questions, warnings.
         job.schemaVersion must be "1.0".
         Enum strings use camelCase.

@@ -1,3 +1,4 @@
+using MetadataExtractor;
 using PdfSharp.Pdf.IO;
 using SkiaSharp;
 
@@ -23,16 +24,29 @@ public static class SourceInspector
 
     private static SourceMetadata InspectImage(string path, SourceKind kind)
     {
-        using var data = SKData.Create(path);
-        using var codec = SKCodec.Create(data)
+        using var stream = File.OpenRead(path);
+        using var codec = SKCodec.Create(stream)
             ?? throw new InvalidDataException("The image could not be decoded.");
+
+        var rawMetadata = ImageMetadataReader.ReadMetadata(path)
+            .SelectMany(directory => directory.Tags.Select(tag => new
+            {
+                Key = $"{directory.Name}.{tag.Name}",
+                Value = tag.Description ?? string.Empty
+            }))
+            .GroupBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                group => group.Key,
+                group => string.Join(" | ", group.Select(item => item.Value)),
+                StringComparer.OrdinalIgnoreCase);
 
         return new(
             Path: path,
             Kind: kind,
             PixelWidth: codec.Info.Width,
             PixelHeight: codec.Info.Height,
-            Orientation: codec.EncodedOrigin.ToString());
+            Orientation: codec.EncodedOrigin.ToString(),
+            RawMetadata: rawMetadata);
     }
 
     private static SourceMetadata InspectPdf(string path)

@@ -98,6 +98,10 @@ public partial class MainWindow : Window
                         root.GetProperty("request").GetString() ?? "",
                         root.GetProperty("mode").GetString() ?? "Safe");
                     break;
+                case "applyExcelSmartPrint":
+                    await _session.ApplyExcelSmartPrintAsync(
+                        root.GetProperty("request").GetString() ?? "");
+                    break;
                 case "applyJobSettings":
                     _session.ApplyJobEdits(ReadEdits(root));
                     break;

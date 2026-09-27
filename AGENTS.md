@@ -1,0 +1,36 @@
+# AGENTS.md
+
+This file prevents project drift between AI/chat sessions.
+
+## Before changing code
+
+1. Read `docs/PROGRESS.md`.
+2. Read `docs/ROADMAP.md`.
+3. Read the relevant specifications under `docs/`.
+4. Inspect existing code before proposing a rewrite.
+5. Continue the current milestone unless a documented decision changes direction.
+
+## Before ending a session
+
+1. Update `docs/PROGRESS.md` with what is actually complete.
+2. Record blockers and the exact next task.
+3. Put architecture/product decisions in `docs/DECISIONS.md`.
+4. Do not mark work complete without tests, CI, or manual verification as appropriate.
+
+## Engineering rules
+
+- Prefer mature libraries/platform APIs over hand-written commodity infrastructure.
+- Keep physical print geometry deterministic.
+- AI may produce `PrintJobSpec`; AI may not directly issue arbitrary print commands.
+- Store physical dimensions in millimetres.
+- A4 is the maximum paper size for the first printer profile.
+- Epson L3310 is a device profile, not a domain dependency.
+- Unknown/risky jobs require preview or clarification.
+- Avoid Epson UI automation except as a documented fallback.
+- Keep source files focused and reasonably small.
+- New meaningful dependencies must be documented in `docs/LIBRARIES.md`.
+- Web/Railway is a test/demo surface; Windows printer/scanner control stays in the native agent.
+
+## Definition of done
+
+A milestone is done only when acceptance criteria are met, tests are green where practical, progress docs are current, and the next concrete task is recorded.

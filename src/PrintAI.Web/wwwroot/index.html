@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print AI</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f6fa}
+    *{box-sizing:border-box} body{margin:0}
+    main{max-width:1100px;margin:0 auto;padding:32px 20px 56px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    h1{font-size:28px;margin:0}.badge{background:#e8fff1;color:#087a43;padding:8px 12px;border-radius:999px;font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr .9fr;gap:20px}
+    .card{background:white;border:1px solid #e3e7ef;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(20,30,55,.05)}
+    textarea{width:100%;min-height:120px;border:1px solid #ccd3df;border-radius:12px;padding:14px;font:inherit;resize:vertical}
+    button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;background:#172033;color:white}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.chip{background:#f0f3f8;padding:7px 10px;border-radius:999px;font-size:13px}
+    .paper{aspect-ratio:210/297;background:white;border:1px solid #cbd2df;box-shadow:0 10px 35px rgba(20,30,55,.12);position:relative;margin:0 auto;max-height:520px}
+    .item{position:absolute;border:1px dashed #6b7280;background:#eef3ff;font-size:9px;display:grid;place-items:center;overflow:hidden}
+    .muted{color:#6b7280;font-size:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+    .stat{background:#f6f8fb;border-radius:10px;padding:10px}.stat b{display:block;font-size:18px}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}.paper{max-height:none}}
+  </style>
+</head>
+<body>
+<main>
+  <header><div><h1>Print AI</h1><div class="muted">A4 layout engine · Railway demo</div></div><span class="badge" id="health">checking…</span></header>
+  <div class="grid">
+    <section class="card">
+      <h2>Yêu cầu in</h2>
+      <div class="chips"><span class="chip">demo-a.jpg ×10</span><span class="chip">demo-b.jpg ×10</span></div>
+      <textarea>Ảnh 4x6cm, mỗi ảnh 10 bản, xếp tiết kiệm A4 nhất, chừa khe 3mm và có đường cắt.</textarea>
+      <p class="muted">Demo hiện tại chưa gọi LLM. Nó kiểm tra core deterministic: kích thước mm, xoay và số lượng trên A4.</p>
+      <button id="run">Tính layout demo</button>
+      <div class="stats">
+        <div class="stat"><span class="muted">Lưới</span><b id="gridStat">-</b></div>
+        <div class="stat"><span class="muted">Mỗi trang</span><b id="capStat">-</b></div>
+        <div class="stat"><span class="muted">Số trang</span><b id="pageStat">-</b></div>
+      </div>
+      <div class="muted" id="rotation"></div>
+    </section>
+    <section class="card">
+      <h2>Preview A4</h2>
+      <div class="paper" id="paper"></div>
+      <p class="muted">Đang hiển thị trang đầu. Renderer ảnh thật sẽ được thêm ở M1.</p>
+    </section>
+  </div>
+</main>
+<script>
+const paper=document.querySelector('#paper');
+async function checkHealth(){
+  try{const r=await fetch('/health'); const j=await r.json(); const el=document.querySelector('#health'); el.textContent=j.status==='ok'?'service online':'degraded';}
+  catch{document.querySelector('#health').textContent='offline'}
+}
+async function run(){
+  const r=await fetch('/api/demo-layout'); const j=await r.json();
+  document.querySelector('#gridStat').textContent=j.columns+' × '+j.rows;
+  document.querySelector('#capStat').textContent=j.capacityPerPage;
+  document.querySelector('#pageStat').textContent=j.pages;
+  document.querySelector('#rotation').textContent=j.rotated?'Engine chọn xoay 90° vì chứa được nhiều item hơn.':'Không cần xoay.';
+  paper.innerHTML='';
+  for(const p of j.placements.filter(x=>x.page===0)){
+    const d=document.createElement('div'); d.className='item'; d.textContent=(p.index+1);
+    d.style.left=(p.xMm/210*100)+'%'; d.style.top=(p.yMm/297*100)+'%';
+    d.style.width=(p.widthMm/210*100)+'%'; d.style.height=(p.heightMm/297*100)+'%';
+    paper.appendChild(d);
+  }
+}
+document.querySelector('#run').addEventListener('click',run);
+checkHealth(); run();
+</script>
+</body>
+</html>

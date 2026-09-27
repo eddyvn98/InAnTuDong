@@ -165,11 +165,7 @@ public sealed partial class DesktopSession
                 Error: "Không tìm thấy máy in.");
         }
 
-        var profile = IsVerifiedPrinter()
-            ? PrinterDeviceProfile.EpsonL3310Calibrated
-            : new PrinterDeviceProfile(
-                "default",
-                _selectedPrinter);
+        var profile = PrinterProfileCatalog.Resolve(_selectedPrinter);
 
         return WindowsSpoolerPrinter.SubmitA4Png(
             _selectedPrinter,

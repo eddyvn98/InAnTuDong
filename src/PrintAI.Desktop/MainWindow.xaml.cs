@@ -9,11 +9,13 @@ namespace PrintAI.Desktop;
 public partial class MainWindow : Window
 {
     private DesktopSession? _session;
+    private LocalWebHost? _localWebHost;
 
     public MainWindow()
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Closed += OnClosed;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -29,6 +31,24 @@ public partial class MainWindow : Window
                 CoreWebView2HostResourceAccessKind.DenyCors);
 
             _session = new DesktopSession();
+
+            try
+            {
+                _localWebHost = await LocalWebHost.StartAsync(
+                    _session,
+                    Dispatcher);
+
+                Title = $"Print AI · {_localWebHost.BaseUri}";
+            }
+            catch (Exception localWebError)
+            {
+                MessageBox.Show(
+                    $"Desktop vẫn dùng được, nhưng local web không khởi động được.\n\n{localWebError.Message}",
+                    "Print AI local web",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+
             WebView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
             WebView.Source = new Uri("https://app.printai/index.html");
         }
@@ -40,6 +60,17 @@ public partial class MainWindow : Window
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }
+    }
+
+    private async void OnClosed(
+        object? sender,
+        EventArgs e)
+    {
+        if (_localWebHost is null)
+            return;
+
+        await _localWebHost.DisposeAsync();
+        _localWebHost = null;
     }
 
     private async void OnWebMessageReceived(

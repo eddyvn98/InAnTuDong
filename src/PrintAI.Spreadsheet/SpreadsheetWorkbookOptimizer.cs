@@ -136,7 +136,7 @@ public static class SpreadsheetWorkbookOptimizer
                     continue;
 
                 var min = (int)(column.Min?.Value ?? 1u);
-                var max = (int)(column.Max?.Value ?? min);
+                var max = (int)(column.Max?.Value ?? (uint)min);
 
                 for (var index = min;
                      index <= Math.Min(max, profile.MaxColumn);

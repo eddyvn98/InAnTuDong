@@ -475,6 +475,7 @@ function render(s){
     (x.Crop?' · '+esc(x.Crop):'')+
     (x.Booklet?' · '+esc(x.Booklet):'')+
     (x.Poster?' · '+esc(x.Poster):'')+
+    (x.VariableItems?' · '+esc(x.VariableItems):'')+
     ' · '+esc(x.ColorMode)+' · '+esc(x.Duplex)+'</button>'
   ).join('');
   planBatchStrip.querySelectorAll('[data-plan-batch]').forEach(b=>

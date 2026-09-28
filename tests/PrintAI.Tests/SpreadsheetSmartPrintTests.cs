@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using PrintAI.Planning;
@@ -48,13 +49,15 @@ public sealed class SpreadsheetSmartPrintTests
 
         using var document = SpreadsheetDocument.Open(output, false);
         var workbookPart = Assert.IsType<WorkbookPart>(document.WorkbookPart);
-        var sheet = Assert.Single(
-            workbookPart.Workbook.Sheets!.Elements<Sheet>());
+        var workbook = Assert.IsType<Workbook>(workbookPart.Workbook);
+        var sheets = Assert.IsType<Sheets>(workbook.Sheets);
+        var sheet = Assert.Single(sheets.Elements<Sheet>());
         var worksheetPart = Assert.IsType<WorksheetPart>(
             workbookPart.GetPartById(sheet.Id!.Value!));
+        var worksheet = Assert.IsType<Worksheet>(worksheetPart.Worksheet);
 
         var pageSetup = Assert.IsType<PageSetup>(
-            worksheetPart.Worksheet.GetFirstChild<PageSetup>());
+            worksheet.GetFirstChild<PageSetup>());
 
         Assert.Equal(
             OrientationValues.Landscape,
@@ -64,7 +67,7 @@ public sealed class SpreadsheetSmartPrintTests
         Assert.Equal((uint)0, pageSetup.FitToHeight?.Value);
 
         var columns = Assert.IsType<Columns>(
-            worksheetPart.Worksheet.GetFirstChild<Columns>());
+            worksheet.GetFirstChild<Columns>());
 
         Assert.Equal(12, columns.Elements<Column>().Count());
         Assert.All(
@@ -93,7 +96,7 @@ public sealed class SpreadsheetSmartPrintTests
                 item.Text.Contains("$1:$1") &&
                 item.Text.Contains("$A:$B"));
 
-        var firstCell = worksheetPart.Worksheet
+        var firstCell = worksheet
             .Descendants<Cell>()
             .First();
 

@@ -637,7 +637,7 @@ function render(s){
   duplexBox.style.display=duplex.Pending?'block':'none';
   document.querySelector('#continueManualDuplex').disabled=!duplex.CanContinueBack;
   document.querySelector('#manualDuplexInfo').innerHTML=duplex.Pending
-    ?esc(duplex.PrinterName)+' · '+duplex.SheetCount+' tờ · '+esc(duplex.Mode)+
+    ?esc(duplex.PrinterName)+' · '+duplex.SheetCount+' tờ · '+esc(duplex.Mode)+' · '+esc(duplex.Phase)+
       '<br>'+(duplex.ProfileVerified
         ?'<b>Profile manual duplex đã verify.</b>'
         :'<b>Profile manual duplex chưa verify bằng giấy thật.</b>')+

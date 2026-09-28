@@ -1692,11 +1692,11 @@
       "category": "poster_tile",
       "request": "In ảnh này kích thước 60x90 cm bằng nhiều tờ A4.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-002",
@@ -1704,11 +1704,11 @@
       "category": "poster_tile",
       "request": "Chia poster A2 thành nhiều tờ A4 để ghép.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-003",
@@ -1716,11 +1716,11 @@
       "category": "poster_tile",
       "request": "In ảnh 50x70 cm dạng tiled trên A4.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-004",
@@ -1728,11 +1728,11 @@
       "category": "poster_tile",
       "request": "Chia bản vẽ lớn thành 3x3 tờ A4.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-005",
@@ -1740,11 +1740,11 @@
       "category": "poster_tile",
       "request": "In poster bằng nhiều tờ, chồng mép 5 mm.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-006",
@@ -1752,11 +1752,11 @@
       "category": "poster_tile",
       "request": "In ảnh lớn 1 mét ngang bằng các tờ A4 ghép lại.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-007",
@@ -1764,11 +1764,11 @@
       "category": "poster_tile",
       "request": "Chia file này thành nhiều tờ A4 có dấu căn ghép.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-008",
@@ -1776,11 +1776,11 @@
       "category": "poster_tile",
       "request": "In poster 70x100 cm với overlap 10 mm.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-009",
@@ -1788,11 +1788,11 @@
       "category": "poster_tile",
       "request": "Tự chia bản đồ lớn thành số tờ A4 ít nhất.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "POSTER-010",
@@ -1800,11 +1800,11 @@
       "category": "poster_tile",
       "request": "In tiled poster có số thứ tự từng tờ để dễ ghép.",
       "sourceProfile": "largeImage",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "posterTile"
       ],
-      "gapCapability": "posterTiling"
+      "gapCapability": null
     },
     {
       "id": "VAR-001",

@@ -1196,11 +1196,11 @@
       "category": "scaling",
       "request": "Thu nhỏ cho vừa trang nếu lớn hơn, nhưng không phóng lớn nếu nhỏ hơn.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "shrinkOnly"
+      "gapCapability": null
     },
     {
       "id": "SCALE-004",
@@ -1208,11 +1208,11 @@
       "category": "scaling",
       "request": "In ở 80% kích thước gốc.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "customScalePercent"
+      "gapCapability": null
     },
     {
       "id": "SCALE-005",
@@ -1220,11 +1220,11 @@
       "category": "scaling",
       "request": "Phóng lên 125%.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "customScalePercent"
+      "gapCapability": null
     },
     {
       "id": "SCALE-006",
@@ -1256,11 +1256,11 @@
       "category": "scaling",
       "request": "Chỉ thu nhỏ các trang vượt A4, trang nhỏ giữ nguyên.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "shrinkOnly"
+      "gapCapability": null
     },
     {
       "id": "SCALE-009",
@@ -1268,11 +1268,11 @@
       "category": "scaling",
       "request": "In theo tỉ lệ 1:2 so với bản gốc.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "customScalePercent"
+      "gapCapability": null
     },
     {
       "id": "SCALE-010",
@@ -1280,11 +1280,11 @@
       "category": "scaling",
       "request": "Phóng tối đa nhưng vẫn giữ toàn bộ nội dung trong lề.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "scaling"
       ],
-      "gapCapability": "maxFitWithMargin"
+      "gapCapability": null
     },
     {
       "id": "POS-001",

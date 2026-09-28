@@ -10,19 +10,19 @@
 header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 22px;background:#fff;border-bottom:1px solid #e1e6ef}
 h1{font-size:21px;margin:0}.sub{font-size:12px;color:#6e7685;margin-top:3px}
 .badge{font-size:12px;padding:7px 10px;border-radius:999px;background:#eafff0;color:#176b3a}
-main{display:grid;grid-template-columns:330px minmax(360px,1fr) 320px;gap:14px;padding:14px;height:calc(100vh - 73px)}
-.panel{background:#fff;border:1px solid #e1e6ef;border-radius:15px;padding:14px;overflow:auto}
+main{display:grid;grid-template-columns:360px minmax(0,1fr) 320px;gap:14px;padding:14px;height:calc(100vh - 73px);min-height:0}
+.panel{background:#fff;border:1px solid #e1e6ef;border-radius:15px;padding:14px;overflow:auto;min-width:0;min-height:0}
 h2{font-size:15px;margin:0 0 11px}h3{font-size:13px;margin:16px 0 8px}
 button,input,select,textarea{border:1px solid #ccd4e0;border-radius:9px;background:#fff;padding:9px 10px;width:100%}
 button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;border-color:#182033}.danger{color:#a42b2b}
 button:disabled{opacity:.45;cursor:not-allowed}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-textarea{min-height:92px;resize:vertical}.box{padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45;margin-top:9px}
+textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45;margin-top:9px}
 .ok{background:#effbf3;color:#17683a}.warn{background:#fff6e9;color:#855600}.err{background:#fff0f0;color:#9b2727}
-.file{padding:8px 0;border-bottom:1px solid #edf0f4}.file b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.source-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.source-card{position:relative;flex:0 0 96px;border:1px solid #dce2eb;border-radius:10px;padding:6px;background:#fff;cursor:pointer}.source-card.active{border:2px solid #182033;padding:5px}.source-thumb{width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f5;overflow:hidden}.source-thumb img{width:100%;height:100%;object-fit:cover}.source-name{font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-remove{position:absolute;right:3px;top:3px;width:24px;height:24px;padding:0;border-radius:999px;background:#fff;color:#a42b2b;box-shadow:0 1px 5px rgba(0,0,0,.18)}
 .meta{font-size:11px;color:#70798a;margin-top:3px}.chips{display:flex;gap:6px;overflow:auto;padding-bottom:5px}
 .chip{width:auto;white-space:nowrap;padding:7px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
-.preview{display:flex;align-items:center;justify-content:center;min-height:360px;height:calc(100% - 95px);background:#eef1f5;border-radius:12px;padding:14px;overflow:hidden}
-.preview img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
+.preview{display:flex;align-items:center;justify-content:center;width:100%;min-height:0;height:calc(100% - 95px);max-height:calc(100vh - 190px);background:#eef1f5;border-radius:12px;padding:14px;overflow:hidden}
+.preview img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
 .empty{color:#737c8c;text-align:center;line-height:1.5}.drop{border:1px dashed #aab5c5;border-radius:11px;padding:14px;text-align:center;color:#6d7583;margin:8px 0}
 .status{white-space:pre-wrap}.stack{display:grid;gap:8px}.manual{display:none}
 @media(max-width:1000px){main{grid-template-columns:1fr;height:auto}.panel{min-height:0}.preview{height:520px}}
@@ -41,8 +41,8 @@ textarea{min-height:92px;resize:vertical}.box{padding:10px;border-radius:10px;ba
   <h2>Nguồn in</h2>
   <input id="files" type="file" multiple disabled accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
   <div class="drop" id="drop">Kéo thả file vào đây hoặc bấm chọn file.</div>
-  <button class="danger" id="clear">Xóa nguồn</button>
-  <div id="fileList"></div>
+  <button class="danger" id="clear">Xóa tất cả nguồn</button>
+  <div id="fileList" class="source-strip"></div>
 
   <h3>Source page</h3>
   <div class="chips" id="pages"></div>
@@ -174,9 +174,20 @@ function showError(e){
 function render(s){
   currentState=s;
 
-  $("#fileList").innerHTML=s.files.length?s.files.map(f=>
-    '<div class="file"><b>'+esc(f.name)+'</b><div class="meta">'+esc(f.kind)+(f.pageCount?' · '+f.pageCount+' trang':'')+'</div></div>'
-  ).join(""):'<div class="meta">Chưa có file.</div>';
+  const selectedPath=s.pages[s.selectedPage]?.sourcePath||"";
+  $("#fileList").innerHTML=s.files.length?s.files.map((f,i)=>{
+    const active=f.path===selectedPath;
+    const page=s.pages.find(p=>p.sourcePath===f.path);
+    const thumb=active&&s.previewDataUrl
+      ?'<img alt="" src="'+s.previewDataUrl+'">'
+      :'<span class="meta">'+esc(f.kind)+'</span>';
+    return '<div class="source-card '+(active?'active':'')+'" data-source="'+i+'" title="'+esc(f.name)+'">'+
+      '<button class="source-remove" data-remove-source="'+i+'" title="Xóa file" aria-label="Xóa '+esc(f.name)+'">×</button>'+
+      '<div class="source-thumb">'+thumb+'</div>'+
+      '<div class="source-name">'+esc(f.name)+'</div>'+
+      (page?'<div class="meta">'+(f.pageCount?f.pageCount+' trang':'Ảnh')+'</div>':'')+
+      '</div>';
+  }).join(""):'<div class="meta">Chưa có file.</div>';
 
   $("#pages").innerHTML=s.pages.map((p,i)=>
     '<button class="chip '+(i===s.selectedPage?'active':'')+'" data-page="'+i+'">'+esc(p.pageLabel)+'</button>'
@@ -239,6 +250,10 @@ $("#drop").ondrop=e=>{e.preventDefault();upload(e.dataTransfer.files)};
 $("#clear").onclick=()=>action("clear");
 $("#retryAgy").onclick=()=>action("configureAntigravity",{});
 $("#plan").onclick=()=>action("plan",{request:$("#request").value.trim(),mode:$("#mode").value});
+$("#request").addEventListener("input",e=>{
+  e.target.style.height="auto";
+  e.target.style.height=Math.min(180,Math.max(48,e.target.scrollHeight))+"px";
+});
 $("#printer").onchange=e=>action("selectPrinter",{printer:e.target.value});
 $("#printPage").onclick=()=>action("print");
 $("#printJob").onclick=()=>action("printJob");
@@ -247,6 +262,14 @@ $("#duplexContinue").onclick=()=>action("continueManualDuplex");
 $("#duplexCancel").onclick=()=>action("cancelManualDuplex");
 
 document.addEventListener("click",e=>{
+  const remove=e.target.closest("[data-remove-source]");
+  if(remove){
+    e.stopPropagation();
+    action("removeSource",{index:Number(remove.dataset.removeSource)});
+    return;
+  }
+  const source=e.target.closest("[data-source]");
+  if(source)action("selectSource",{index:Number(source.dataset.source)});
   const p=e.target.closest("[data-page]");
   if(p)action("selectPage",{index:Number(p.dataset.page)});
   const o=e.target.closest("[data-output]");

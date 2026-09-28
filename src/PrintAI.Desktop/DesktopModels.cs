@@ -23,6 +23,7 @@ public sealed record DesktopState(
     string? Status,
     bool CanPrint,
     bool CanPrintJob,
+    bool CanPrintPlan,
     bool CanPrintAllSources,
     DesktopPlannerView Planner,
     DesktopExcelSmartPrintView ExcelSmartPrint,
@@ -72,7 +73,20 @@ public sealed record DesktopPlannerView(
     double? Confidence,
     IReadOnlyList<string> Questions,
     IReadOnlyList<string> Warnings,
+    bool IsGeneralPlan,
+    int SelectedBatch,
+    IReadOnlyList<DesktopPrintBatchView> Batches,
     DesktopJobView? Job);
+
+public sealed record DesktopPrintBatchView(
+    int Index,
+    string Name,
+    int SetNumber,
+    int SourcePageCount,
+    string ColorMode,
+    string Duplex,
+    string Paper,
+    bool CanAutoSequence);
 
 public sealed record DesktopJobView(
     string Mode,

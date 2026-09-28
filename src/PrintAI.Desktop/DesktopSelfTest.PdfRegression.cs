@@ -1,3 +1,4 @@
+using System.IO;
 using PrintAI.Domain;
 using PrintAI.Rendering;
 using PrintAI.Scanning;

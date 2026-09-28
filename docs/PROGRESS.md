@@ -1218,7 +1218,20 @@ Current local-web limitation:
 
 See `docs/LOCAL_WEB.md`.
 
-Next concrete task after verification:
+Automated verification for commit `f3f923e2e00aa06680b6c1fda09ebff875cbf947`:
+
+- GitHub CI #251: success on Ubuntu + Windows
+- shared suite: 264/264 tests pass
+- Windows printer tests/probe: success
+- Windows desktop shell build: success
+- package-windows #195: success
+- self-contained Windows publish: success
+- package layout including `local-web/index.html`: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+Next concrete task after merge:
 
 1. validate upload → AGY → preview → print in the packaged app on the real Windows target;
 2. measure AGY cold/warm latency through the browser path;

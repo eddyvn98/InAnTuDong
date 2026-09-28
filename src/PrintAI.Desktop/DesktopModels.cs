@@ -26,6 +26,7 @@ public sealed record DesktopState(
     bool CanPrintAllSources,
     DesktopPlannerView Planner,
     DesktopExcelSmartPrintView ExcelSmartPrint,
+    DesktopDuplexView Duplex,
     DesktopReadinessView Readiness,
     IReadOnlyList<JobHistoryEntry> History);
 
@@ -35,6 +36,15 @@ public sealed record DesktopExcelSmartPrintView(
     int SheetCount,
     int WideSheetCount,
     string? LastPlanSummary);
+
+public sealed record DesktopDuplexView(
+    string Mode,
+    bool Pending,
+    int SheetCount,
+    string? PrinterName,
+    bool ProfileVerified,
+    string? Instruction,
+    bool CanContinueBack);
 
 public sealed record DesktopReadinessView(
     bool ReadyForCorePrinting,
@@ -67,6 +77,7 @@ public sealed record DesktopJobView(
     double GapMm,
     double MarginMm,
     int Copies,
+    string Duplex,
     bool AllowRotate,
     bool CutMarks,
     string Fit,
@@ -80,6 +91,7 @@ public sealed record DesktopJobView(
             job.Layout.GapMm,
             job.Layout.MarginMm,
             job.Sources.FirstOrDefault()?.Copies ?? 1,
+            job.Print.Duplex.ToString(),
             job.Layout.AllowRotate,
             job.Layout.CutMarks,
             job.Layout.Fit.ToString(),

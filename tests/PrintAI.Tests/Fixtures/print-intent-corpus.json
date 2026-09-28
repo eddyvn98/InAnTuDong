@@ -1052,11 +1052,11 @@
       "category": "n_up",
       "request": "In 2 trang PDF trên một mặt giấy A4.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-002",
@@ -1064,11 +1064,11 @@
       "category": "n_up",
       "request": "In 4 trang trên một tờ A4.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-003",
@@ -1076,11 +1076,11 @@
       "category": "n_up",
       "request": "In 6 trang tài liệu trên mỗi tờ.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-004",
@@ -1088,11 +1088,11 @@
       "category": "n_up",
       "request": "In 9 trang trên một tờ để xem nhanh.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-005",
@@ -1100,11 +1100,11 @@
       "category": "n_up",
       "request": "In 16 trang trên một tờ A4.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-006",
@@ -1112,11 +1112,11 @@
       "category": "n_up",
       "request": "In 2-up, thứ tự từ trái sang phải rồi xuống hàng.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-007",
@@ -1124,11 +1124,11 @@
       "category": "n_up",
       "request": "In 4-up hai mặt.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-008",
@@ -1136,11 +1136,11 @@
       "category": "n_up",
       "request": "In 8 slide trên một tờ A4 ngang.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-009",
@@ -1148,11 +1148,11 @@
       "category": "n_up",
       "request": "Mỗi tờ chứa 2 trang PDF, có khoảng cách giữa hai trang.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "NUP-010",
@@ -1160,11 +1160,11 @@
       "category": "n_up",
       "request": "In 4 trang trên một tờ và có viền quanh từng trang.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "nUp"
       ],
-      "gapCapability": "generalNUp"
+      "gapCapability": null
     },
     {
       "id": "SCALE-001",

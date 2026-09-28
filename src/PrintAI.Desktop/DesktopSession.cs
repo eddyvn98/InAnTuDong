@@ -32,6 +32,9 @@ public sealed partial class DesktopSession
     private string? _printPath;
     private PrintJobSpec? _activeJob;
     private DesktopPlanResult? _planResult;
+    private DesktopGeneralPlanResult? _generalPlanResult;
+    private CompiledPrintPlan? _compiledPlan;
+    private int _selectedPlanBatch;
     private string? _lastRequest;
 
     public DesktopSession()
@@ -258,6 +261,10 @@ public sealed partial class DesktopSession
                       !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintJob: page is not null &&
                          !string.IsNullOrWhiteSpace(_selectedPrinter),
+            CanPrintPlan: _compiledPlan is { Batches.Count: > 1 } &&
+                          _compiledPlan.Batches.All(batch =>
+                              batch.Job.Print.Duplex == DuplexMode.Off) &&
+                          !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintAllSources: _pages.Count > 0 &&
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
             Planner: planner,
@@ -371,6 +378,9 @@ public sealed partial class DesktopSession
     {
         _activeJob = null;
         _planResult = null;
+        _generalPlanResult = null;
+        _compiledPlan = null;
+        _selectedPlanBatch = 0;
         _lastRequest = null;
         _selectedOutputPage = 0;
         ClearAutoLayouts();

@@ -9,7 +9,6 @@ namespace PrintAI.Desktop;
 
 public sealed class DesktopPlannerSession
 {
-    private IPlannerModelClient? _modelClient;
     private AntigravityPlannerClient? _antigravityClient;
     private PrintPlanner? _planner;
     private GeneralPrintPlanner? _generalPlanner;
@@ -32,7 +31,6 @@ public sealed class DesktopPlannerSession
         Endpoint = resolved;
         Model = $"{options.FastModel} -> {options.DeepModel}";
         _antigravityClient = client;
-        _modelClient = client;
         _planner = new PrintPlanner(client);
         _generalPlanner = new GeneralPrintPlanner(client);
         _spreadsheetPlanner = new SpreadsheetPrintPlanner(client);

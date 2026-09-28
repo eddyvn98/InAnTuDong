@@ -30,7 +30,10 @@ public static class SpreadsheetWorkbookOptimizer
 
         EnsureStyles(workbookPart);
 
-        var sheets = workbookPart.Workbook.Sheets?
+        var workbook = workbookPart.Workbook
+            ?? throw new InvalidDataException("Workbook is missing.");
+
+        var sheets = workbook.Sheets?
             .Elements<Sheet>()
             .ToArray() ?? [];
 
@@ -42,22 +45,25 @@ public static class SpreadsheetWorkbookOptimizer
         {
             var sheet = sheets[sheetIndex];
 
-            if (sheet.Id is null ||
-                sheet.Name is null ||
+            var relationshipId = sheet.Id?.Value;
+            var sheetName = sheet.Name?.Value;
+
+            if (string.IsNullOrWhiteSpace(relationshipId) ||
+                string.IsNullOrWhiteSpace(sheetName) ||
                 !planByName.TryGetValue(
-                    sheet.Name.Value,
+                    sheetName,
                     out var sheetPlan))
             {
                 continue;
             }
 
             var worksheetPart =
-                (WorksheetPart)workbookPart.GetPartById(sheet.Id);
+                (WorksheetPart)workbookPart.GetPartById(relationshipId);
 
             var sheetProfile = profile.Sheets.First(
                 item => string.Equals(
                     item.Name,
-                    sheet.Name.Value,
+                    sheetName,
                     StringComparison.Ordinal));
 
             ApplySheetPlan(
@@ -82,7 +88,8 @@ public static class SpreadsheetWorkbookOptimizer
         SpreadsheetSheetProfile profile,
         SpreadsheetSheetPrintPlan plan)
     {
-        var worksheet = worksheetPart.Worksheet;
+        var worksheet = worksheetPart.Worksheet
+            ?? throw new InvalidDataException("Worksheet is missing.");
         var sheetData = worksheet.GetFirstChild<SheetData>();
 
         if (sheetData is null || profile.MaxColumn == 0)
@@ -128,7 +135,7 @@ public static class SpreadsheetWorkbookOptimizer
                 if (column.Hidden?.Value != true)
                     continue;
 
-                var min = (int)(column.Min?.Value ?? 1);
+                var min = (int)(column.Min?.Value ?? 1u);
                 var max = (int)(column.Max?.Value ?? min);
 
                 for (var index = min;
@@ -172,7 +179,8 @@ public static class SpreadsheetWorkbookOptimizer
         SheetData sheetData,
         SpreadsheetSheetPrintPlan plan)
     {
-        var styles = workbookPart.WorkbookStylesPart!.Stylesheet;
+        var styles = workbookPart.WorkbookStylesPart?.Stylesheet
+            ?? throw new InvalidDataException("Workbook styles are missing.");
         var cellFormats = styles.CellFormats!;
         var fonts = styles.Fonts!;
 
@@ -192,7 +200,7 @@ public static class SpreadsheetWorkbookOptimizer
                 ?? new CellFormat();
 
             var originalFontId =
-                (int)(original.FontId?.Value ?? 0);
+                (int)(original.FontId?.Value ?? 0u);
 
             var originalFont = fonts
                 .Elements<Font>()
@@ -326,7 +334,8 @@ public static class SpreadsheetWorkbookOptimizer
         SpreadsheetSheetProfile profile,
         SpreadsheetSheetPrintPlan plan)
     {
-        var workbook = workbookPart.Workbook;
+        var workbook = workbookPart.Workbook
+            ?? throw new InvalidDataException("Workbook is missing.");
         var definedNames = workbook.DefinedNames;
 
         if (definedNames is null)

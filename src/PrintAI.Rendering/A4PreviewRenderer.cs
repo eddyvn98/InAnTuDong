@@ -474,6 +474,7 @@ public static class A4PreviewRenderer
             text,
             x,
             y,
+            SKTextAlign.Left,
             font,
             paint);
     }

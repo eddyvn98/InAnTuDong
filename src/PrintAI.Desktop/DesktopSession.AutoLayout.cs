@@ -141,6 +141,7 @@ public sealed partial class DesktopSession
             catch (Exception ex) when (
                 ex is PlannerTransportException or
                 PlanningFormatException or
+                HttpRequestException or
                 InvalidOperationException)
             {
                 AddFallbackCollageCandidates(templates, sources);

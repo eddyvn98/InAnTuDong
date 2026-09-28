@@ -117,6 +117,7 @@ public static class PosterTilingResolver
                         CanvasYmm: y,
                         CanvasWidthMm: width,
                         CanvasHeightMm: height,
+                        OverlapMm: poster.OverlapMm,
                         Fit: poster.Fit,
                         RegistrationMarks:
                             poster.RegistrationMarks,

@@ -157,7 +157,9 @@
           <option value="Fill">Lấp đầy giấy</option>
         </select>
         <button class="primary" id="generateAutoLayouts" style="width:100%;margin-top:8px">Tạo grid tự động 4×6</button>
-        <button id="generateSmartCollages" style="width:100%;margin-top:6px">✨ Tạo Smart Collage (đúng 3 ảnh)</button>
+        <label>Yêu cầu AI cho collage</label>
+        <input id="smartCollageInstruction" placeholder="Ví dụ: ưu tiên khuôn mặt, ảnh 1 làm nổi bật">
+        <button id="generateSmartCollages" style="width:100%;margin-top:6px">✨ AI Smart Collage (đúng 3 ảnh)</button>
         <div class="autoLayoutGrid" id="autoLayoutCandidates"></div>
       </div>
 
@@ -287,7 +289,10 @@ document.querySelector('#generateSmartCollages').onclick=()=>{
     pageIndex:Number(box.dataset.composeCheck),
     copies:Number(document.querySelector('[data-compose-copies="'+box.dataset.composeCheck+'"]').value)
   }));
-  post('generateSmartCollages',{items});
+  post('generateSmartCollages',{
+    items,
+    instruction:document.querySelector('#smartCollageInstruction').value.trim()
+  });
 };
 document.querySelector('#generateAutoLayouts').onclick=()=>{
   const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>({

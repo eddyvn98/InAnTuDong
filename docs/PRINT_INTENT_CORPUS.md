@@ -67,26 +67,25 @@ A gap case must name its missing capability.
 
 | Coverage | Cases | Share |
 | --- | ---: | ---: |
-| Supported | 110 | 73.3% |
+| Supported | 120 | 80.0% |
 | Supported with printer capability | 10 | 6.7% |
 | Correct behavior is clarification | 10 | 6.7% |
-| Missing primitive / gap | 20 | 13.3% |
+| Missing primitive / gap | 10 | 6.7% |
 | **Total** | **150** | **100%** |
 
 Two useful interpretations:
 
-- **Immediately/conditionally executable:** 120 / 150 = 80.0%.
-- **Semantically handled correctly, including asking when ambiguous:** 130 / 150 = 86.7%.
+- **Immediately/conditionally executable:** 130 / 150 = 86.7%.
+- **Semantically handled correctly, including asking when ambiguous:** 140 / 150 = 93.3%.
 
 Do not interpret these percentages as real customer traffic share. The corpus gives every category equal weight.
 
 ## Gap families
 
-The 20 current gap cases break down as follows:
+The 10 current gap cases break down as follows:
 
 | Gap family | Cases | Current limitation |
 | --- | ---: | --- |
-| Poster tiling | 10 | no oversized target canvas split across physical sheets |
 | Variable item sizes | 10 | PrintJobSpec grid remains uniform-size; Canvas is a dedicated collage path |
 
 ## Regression protection
@@ -127,6 +126,12 @@ Representative supported requests are also converted into deterministic `PrintPl
 - A4 landscape 2-up booklet sides
 - short-edge duplex booklet execution
 - complete booklet sets and center gutter
+- oversized poster target split across A4 sheets
+- deterministic minimum-sheet orientation
+- explicit rows/columns poster grids
+- physical overlap between adjacent tiles
+- registration marks and per-tile labels
+- partial final tiles without scale distortion
 
 This is intentionally different from testing an LLM live in CI. The deterministic contract/compiler behavior is protected locally; live-model intent quality can be evaluated separately against the same corpus.
 
@@ -152,7 +157,7 @@ Implemented behavior:
 
 The N-up corpus cases moved from `gap` to `supported`, reducing deterministic gaps from 54 to 44.
 
-Verification for this coverage change: CI #204 passed on Ubuntu + Windows and package-windows #148 passed, including packaged self-test and install lifecycle smoke checks.
+Verification for this coverage change: final PR-head CI #206 passed on Ubuntu + Windows and package-windows #150 passed, including packaged self-test and install lifecycle smoke checks.
 
 ### Completed: physical scaling
 
@@ -172,7 +177,7 @@ Implemented behavior:
 
 The 6 scaling cases moved from `gap` to `supported`, reducing deterministic gaps from 44 to 38.
 
-Verification for this coverage change: CI #209 passed on Ubuntu + Windows with 167/167 shared tests, and package-windows #153 passed including packaged self-test and install lifecycle smoke checks.
+Verification for this coverage change: final PR-head CI #213 passed on Ubuntu + Windows and package-windows #157 passed including packaged self-test and install lifecycle smoke checks.
 
 ### Completed: crop / margin / position
 
@@ -214,15 +219,34 @@ Implemented behavior:
 
 The 10 booklet cases moved from `gap` to `supported`, reducing deterministic gaps from 30 to 20.
 
-Verification for this coverage change: CI #221 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #165 passed including packaged self-test and install lifecycle smoke checks.
+Verification for this coverage change: final PR-head CI #225 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #169 passed including packaged self-test and install lifecycle smoke checks.
 
-### Next: poster / tiled printing
+### Completed: poster / tiled printing
 
-Poster/tiled printing is selected next because it is now the largest missing page-space primitive that can still reuse the existing physical-sheet renderer.
+All 10 poster/tile corpus cases now have deterministic execution semantics.
 
-After poster/tile:
+Implemented behavior:
 
-1. variable-size general composition
+- explicit poster target dimensions
+- cm/m -> mm intent mapping
+- A2 physical target
+- width-only/height-only target derivation from trusted source aspect
+- fixed rows/columns such as 3 x 3
+- automatic minimum-sheet portrait/landscape selection
+- per-tile overlap in millimetres
+- correct partial final-tile physical size
+- poster-level Contain/Cover mapping
+- shared-edge registration marks
+- row/column + sequential tile labels
+- trusted oversized PDF physical page size fallback
+- complete multi-set poster batches
+- parser/planner contract and corpus-derived regressions
+
+The 10 poster cases moved from `gap` to `supported`, reducing deterministic gaps from 20 to 10.
+
+### Next: variable-size general composition
+
+The final balanced-corpus gap family is independent per-item physical sizes on one sheet.
 
 Booklet and poster remain important, but both introduce stronger ordering/physical-sheet semantics than N-up. Variable-size layout is last because it changes the current uniform-grid execution contract most substantially.
 

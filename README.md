@@ -58,6 +58,14 @@ dotnet run --project src/PrintAI.Desktop/PrintAI.Desktop.csproj
 
 The desktop app supports JPG/PNG/PDF preview and printing, multi-page sources, AI-assisted PrintJobSpec planning, deterministic user edits, Windows printer submission and local job history.
 
+While `PrintAI.exe` is running it also hosts the core browser workflow at:
+
+```text
+http://127.0.0.1:5271/
+```
+
+The local web uses the same in-process session, AGY planner and Windows printer path. See `docs/LOCAL_WEB.md`.
+
 AI planning uses the locally installed and authenticated Antigravity CLI (`agy.exe`). PrintAI does not require an AI API key.
 
 Optional non-secret tuning:

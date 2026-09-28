@@ -160,3 +160,17 @@ The model may choose only known collage template IDs, assign the three approved 
 A strict parser rejects unknown templates, missing/duplicate sources, invalid frame indices and out-of-range transforms. Accepted proposals are converted into normal CanvasLayoutSpec jobs, validated and rendered locally. If the model is unavailable, malformed or does not support vision, PrintAI falls back to deterministic templates instead of blocking printing.
 
 No local face detector is required by this initial implementation; subject/face awareness from the vision model is advisory and preview remains required.
+
+
+## ADR-026 - Duplex intent resolves to automatic or guided manual execution
+Status: accepted
+
+`PrintJobSpec.Print.Duplex` remains printer-neutral intent. `LongEdge` and `ShortEdge` must never be silently treated as `Off`.
+
+After printer selection, deterministic execution chooses the physical strategy. A printer advertising automatic duplex uses one multi-page driver/spooler job with an orientation-aware duplex setting. A simplex printer uses a guided two-pass manual-duplex workflow.
+
+Manual duplex is modeled by physical sheets. PrintAI submits the complete front pass, persists the approved back-pass plan, blocks unrelated printing while the paper stack is pending, requires an explicit reinsert action, then submits the complete back pass. Restart or a failed back pass must never cause the front sides to be printed again.
+
+Back-pass order, rotation and reinsert instructions are explicit per-printer profile data. Verification is persisted only after a real-paper confirmation and is never inferred from the printer model name.
+
+See `docs/MANUAL_DUPLEX.md`.

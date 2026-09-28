@@ -4,4 +4,7 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PrintAI.Domain/PrintAI.Domain.csproj" />
+  </ItemGroup>
 </Project>

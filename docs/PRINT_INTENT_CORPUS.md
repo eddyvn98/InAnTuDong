@@ -172,6 +172,8 @@ Implemented behavior:
 
 The 6 scaling cases moved from `gap` to `supported`, reducing deterministic gaps from 44 to 38.
 
+Verification for this coverage change: CI #209 passed on Ubuntu + Windows with 167/167 shared tests, and package-windows #153 passed including packaged self-test and install lifecycle smoke checks.
+
 ### Next: crop / margin / position
 
 The next implementation target is asymmetric margins, explicit crop regions, content offsets and anchor positioning.

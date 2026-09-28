@@ -120,7 +120,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             prompt,
             model,
             effort,
-            ResolveSchema(request.SystemInstruction),
+            AntigravityPlannerSchema.Resolve(request.SystemInstruction),
             _options.PrintTimeout);
 
         var result = await _runner.RunAsync(
@@ -145,7 +145,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
     {
         try
         {
-            if (IsGeneralPlan(request.SystemInstruction))
+            if (AntigravityPlannerSchema.IsGeneralPlan(request.SystemInstruction))
             {
                 var outcome = GeneralPrintPlanParser.Parse(payload);
                 if (outcome.Questions.Count > 0)
@@ -156,7 +156,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
                     : new(false, "fast-valid");
             }
 
-            if (IsJob(request.SystemInstruction))
+            if (AntigravityPlannerSchema.IsJob(request.SystemInstruction))
             {
                 var outcome = PrintJobPlanParser.Parse(payload);
                 if (outcome.Questions.Count > 0)
@@ -195,13 +195,13 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
         string payload,
         PlannerModelRequest request)
     {
-        if (IsGeneralPlan(request.SystemInstruction))
+        if (AntigravityPlannerSchema.IsGeneralPlan(request.SystemInstruction))
         {
             _ = GeneralPrintPlanParser.Parse(payload);
             return;
         }
 
-        if (IsJob(request.SystemInstruction))
+        if (AntigravityPlannerSchema.IsJob(request.SystemInstruction))
             _ = PrintJobPlanParser.Parse(payload);
     }
 
@@ -257,42 +257,6 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             "Antigravity CLI returned no planner payload.",
             string.IsNullOrWhiteSpace(stderr) ? stdout : stderr);
     }
-
-    private static string ResolveSchema(string instruction)
-    {
-        if (IsGeneralPlan(instruction))
-            return EnvelopeSchema("plan");
-
-        if (IsJob(instruction))
-            return EnvelopeSchema("job");
-
-        return """{"type":"object"}""";
-    }
-
-    private static string EnvelopeSchema(string payloadProperty) =>
-        $$"""
-        {
-          "type": "object",
-          "properties": {
-            "{{payloadProperty}}": { "type": "object" },
-            "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-            "questions": { "type": "array", "items": { "type": "string" } },
-            "warnings": { "type": "array", "items": { "type": "string" } }
-          },
-          "required": ["{{payloadProperty}}", "confidence", "questions", "warnings"],
-          "additionalProperties": false
-        }
-        """;
-
-    private static bool IsGeneralPlan(string instruction) =>
-        instruction.Contains(
-            "plan.schemaVersion must be \"2.0\"",
-            StringComparison.Ordinal);
-
-    private static bool IsJob(string instruction) =>
-        instruction.Contains(
-            "job.schemaVersion must be \"1.0\"",
-            StringComparison.Ordinal);
 
     private sealed record PlannerInspection(
         bool ShouldEscalate,

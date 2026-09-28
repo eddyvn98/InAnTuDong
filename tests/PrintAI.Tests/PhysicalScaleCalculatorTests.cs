@@ -18,7 +18,7 @@ public sealed class PhysicalScaleCalculatorTests
             targetHeightMm: 100,
             sourceWidthMm: null,
             sourceHeightMm: null,
-            new PhysicalScaleSpec(PhysicalScaleMode.MaxFit));
+            scaling: new PhysicalScaleSpec(PhysicalScaleMode.MaxFit));
 
         Assert.Equal(new NormalizedRect(0, 0, 1, 1), result.Source);
         Assert.Equal(0, result.Destination.X, 6);
@@ -39,7 +39,7 @@ public sealed class PhysicalScaleCalculatorTests
             targetHeightMm: 287,
             sourceWidthMm: 148,
             sourceHeightMm: 210,
-            new PhysicalScaleSpec(PhysicalScaleMode.ShrinkOnly));
+            scaling: new PhysicalScaleSpec(PhysicalScaleMode.ShrinkOnly));
 
         Assert.Equal(148d / 200d, result.Destination.Width, 6);
         Assert.Equal(210d / 287d, result.Destination.Height, 6);
@@ -59,7 +59,7 @@ public sealed class PhysicalScaleCalculatorTests
             targetHeightMm: 287,
             sourceWidthMm: 210,
             sourceHeightMm: 297,
-            new PhysicalScaleSpec(PhysicalScaleMode.ShrinkOnly));
+            scaling: new PhysicalScaleSpec(PhysicalScaleMode.ShrinkOnly));
 
         Assert.Equal(1, result.Destination.Width, 6);
         Assert.True(result.Destination.Height < 1);
@@ -77,7 +77,7 @@ public sealed class PhysicalScaleCalculatorTests
             targetHeightMm: 287,
             sourceWidthMm: 210,
             sourceHeightMm: 297,
-            new PhysicalScaleSpec(
+            scaling: new PhysicalScaleSpec(
                 PhysicalScaleMode.Percent,
                 Percent: 80));
 
@@ -97,7 +97,7 @@ public sealed class PhysicalScaleCalculatorTests
             targetHeightMm: 287,
             sourceWidthMm: 210,
             sourceHeightMm: 297,
-            new PhysicalScaleSpec(
+            scaling: new PhysicalScaleSpec(
                 PhysicalScaleMode.Percent,
                 Percent: 125));
 

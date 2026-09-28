@@ -66,8 +66,9 @@ public sealed partial class DesktopSession
         {
             _selectedPrinter = pending.PrinterName;
             _status =
-                "Có một job 2 mặt đang chờ back pass. " +
-                "Không in lại mặt trước; hãy nạp lại giấy rồi tiếp tục mặt sau.";
+                pending.Phase == ManualDuplexPendingPhase.WaitingForReinsert
+                    ? "Có một job 2 mặt đang chờ back pass. Không in lại mặt trước; hãy nạp lại giấy rồi tiếp tục mặt sau."
+                    : "Có một manual-duplex pass ở trạng thái không chắc chắn từ lần chạy trước. App sẽ không tự in lại; hãy kiểm tra giấy trước khi hủy hoặc tiếp tục xử lý.";
         }
     }
 

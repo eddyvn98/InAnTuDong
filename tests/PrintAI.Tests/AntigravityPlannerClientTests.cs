@@ -1,3 +1,4 @@
+using Xunit;
 using PrintAI.Planning;
 
 namespace PrintAI.Tests;

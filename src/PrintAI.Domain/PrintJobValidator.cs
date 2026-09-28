@@ -100,11 +100,109 @@ public static class PrintJobValidator
         ValidatePhysicalScale(job, errors);
         ValidatePagePlacement(job, errors);
         ValidateSourceCrop(job, errors);
+        ValidatePosterTiles(job, errors);
 
         if (job.Print.Copies < 1)
             errors.Add(new("print.copies", "Print copies must be at least 1."));
 
         return new(errors);
+    }
+
+    private static void ValidatePosterTiles(
+        PrintJobSpec job,
+        List<ValidationError> errors)
+    {
+        var posterSources = job.Sources
+            .Where(source => source.PosterTile is not null)
+            .ToArray();
+
+        if (job.Layout.Mode != LayoutMode.PosterTile)
+        {
+            if (posterSources.Length > 0)
+            {
+                errors.Add(new(
+                    "layout.poster.mode",
+                    "Poster tile source metadata requires PosterTile layout mode."));
+            }
+
+            return;
+        }
+
+        if (posterSources.Length != job.Sources.Count)
+        {
+            errors.Add(new(
+                "layout.poster.sources",
+                "PosterTile layout requires poster metadata on every source."));
+            return;
+        }
+
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            errors.Add(new(
+                "layout.poster.duplex",
+                "Poster tiles must print one-sided."));
+        }
+
+        if (job.Layout.PhysicalScale is not null ||
+            job.Layout.PagePlacement is not null ||
+            job.Layout.SourceCrop is not null ||
+            job.Layout.Canvas is not null)
+        {
+            errors.Add(new(
+                "layout.poster.combination",
+                "PosterTile layout cannot combine with scaling, placement, general crop or Canvas metadata."));
+        }
+
+        foreach (var source in posterSources)
+        {
+            var tile = source.PosterTile!;
+
+            if (source.Copies != 1)
+            {
+                errors.Add(new(
+                    "layout.poster.copies",
+                    "Poster tile sources must use one copy; complete poster sets are separate batches."));
+            }
+
+            if (tile.Rows < 1 ||
+                tile.Columns < 1 ||
+                tile.Row < 0 ||
+                tile.Row >= tile.Rows ||
+                tile.Column < 0 ||
+                tile.Column >= tile.Columns)
+            {
+                errors.Add(new(
+                    "layout.poster.index",
+                    "Poster tile row/column metadata is invalid."));
+            }
+
+            var dimensions = new[]
+            {
+                tile.TargetWidthMm,
+                tile.TargetHeightMm,
+                tile.CanvasXmm,
+                tile.CanvasYmm,
+                tile.CanvasWidthMm,
+                tile.CanvasHeightMm
+            };
+
+            if (dimensions.Any(value => !double.IsFinite(value)) ||
+                tile.TargetWidthMm <= 0 ||
+                tile.TargetHeightMm <= 0 ||
+                tile.CanvasXmm < 0 ||
+                tile.CanvasYmm < 0 ||
+                tile.CanvasWidthMm <= 0 ||
+                tile.CanvasHeightMm <= 0 ||
+                tile.CanvasXmm + tile.CanvasWidthMm >
+                    tile.TargetWidthMm + 0.001 ||
+                tile.CanvasYmm + tile.CanvasHeightMm >
+                    tile.TargetHeightMm + 0.001)
+            {
+                errors.Add(new(
+                    "layout.poster.geometry",
+                    "Poster tile canvas geometry must be finite, positive and inside the poster target."));
+            }
+        }
     }
 
     private static void ValidatePagePlacement(

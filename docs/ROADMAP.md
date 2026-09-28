@@ -115,6 +115,44 @@ Exit: a versioned Windows package can be verified, diagnosed, installed and exer
 
 See `docs/M6_RELEASE_READINESS.md`.
 
+
+## M7 - General Print Intent
+
+**Direction correction: broaden print-language coverage while keeping the product print-only.**
+
+The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan 2.0` above `PrintJobSpec 1.0` so real requests can use multiple page/file/rule groups without rewriting the stable layout/spooler path.
+
+### Foundation slice
+
+- [x] document print-only scope and exclusions
+- [x] add `PrintPlan 2.0` domain model
+- [x] page ranges with include/exclude and odd/even parity
+- [x] ordered output groups
+- [x] explicit sets vs collate semantics
+- [x] mixed color/duplex decomposition
+- [x] deterministic compiler to one or more `PrintJobSpec 1.0` batches
+- [x] strict general-planner JSON parser
+- [x] source path + inspected page-count binding
+- [x] unit tests added for the foundation slice
+- [~] CI verification for the foundation slice
+
+### Next slices
+
+- [ ] desktop integration for complex natural-language requests
+- [ ] multi-batch execution coordinator and preview UX
+- [ ] general N-up / pages-per-sheet intent
+- [ ] actual-size / fit / fill / shrink-only / custom-percent scaling
+- [ ] crop / anchor / offset / asymmetric margins
+- [ ] mixed paper/orientation capability reporting
+- [ ] booklet imposition
+- [ ] poster/tiled printing
+- [ ] independent per-item physical sizes on one sheet
+- [ ] 100-200 real-request print-intent regression corpus
+
+Exit: representative real print requests can be expressed as a validated PrintPlan, compiled deterministically into executable jobs, previewed and printed without adding business-management scope.
+
+See `docs/GENERAL_PRINT_INTENT.md`.
+
 ## Priority
 
 Do not invest heavily in new workflow features during M6 unless a release-blocking defect requires it.

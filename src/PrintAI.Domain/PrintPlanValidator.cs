@@ -356,6 +356,92 @@ public static class PrintPlanValidator
         }
     }
 
+    private static void ValidateVariableItems(
+        PrintPlan plan,
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var spec = group.VariableItems;
+        if (spec is null)
+            return;
+
+        if (!group.Collate)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.collate",
+                $"{prefix} variable-size sets must use collate=true."));
+        }
+
+        if (group.NUp is not null ||
+            group.Scaling is not null ||
+            group.Placement is not null ||
+            group.Crop is not null ||
+            group.Booklet is not null ||
+            group.Poster is not null)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.combination",
+                $"{prefix} variable-size items cannot combine with N-up, scaling, placement, crop, booklet, or poster."));
+        }
+
+        if (spec.Items is null || spec.Items.Count == 0)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.empty",
+                $"{prefix} variable-size items require at least one item."));
+            return;
+        }
+
+        if (!double.IsFinite(spec.GapMm) ||
+            spec.GapMm < 0 ||
+            !double.IsFinite(spec.MarginMm) ||
+            spec.MarginMm < 0)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.spacing",
+                $"{prefix} variable-size gap/margin must be finite and non-negative."));
+        }
+
+        for (var index = 0; index < spec.Items.Count; index++)
+        {
+            var item = spec.Items[index];
+            if (item.SourceIndex < 0 ||
+                item.SourceIndex >= plan.Sources.Count)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.source",
+                    $"{prefix} variable item {index} references unavailable source."));
+                continue;
+            }
+
+            var source = plan.Sources[item.SourceIndex];
+            if (item.Page < 1 || item.Page > source.PageCount)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.page",
+                    $"{prefix} variable item {index} page is outside the source."));
+            }
+
+            if (item.Copies < 1)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.copies",
+                    $"{prefix} variable item {index} copies must be at least 1."));
+            }
+
+            if (item.WidthMm is double width &&
+                (!double.IsFinite(width) || width <= 0) ||
+                item.HeightMm is double height &&
+                (!double.IsFinite(height) || height <= 0))
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.size",
+                    $"{prefix} variable item {index} dimensions must be finite and positive."));
+            }
+        }
+    }
+
     private static void ValidatePoster(
         PrintPlan plan,
         PrintOutputGroupSpec group,

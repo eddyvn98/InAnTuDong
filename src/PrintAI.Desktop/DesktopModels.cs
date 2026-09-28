@@ -5,6 +5,7 @@ namespace PrintAI.Desktop;
 
 public sealed record DesktopState(
     IReadOnlyList<DesktopFile> Files,
+    IReadOnlyList<DesktopQueuedRequestView> RequestQueue,
     IReadOnlyList<DesktopPage> Pages,
     int SelectedPage,
     int OutputPageCount,
@@ -178,3 +179,13 @@ public sealed record DesktopWorkflowPreset(
     double ItemWidthMm,
     double ItemHeightMm,
     int SourceCopies);
+
+
+public sealed record DesktopQueuedRequestView(
+    string Id,
+    int Order,
+    string Request,
+    string Mode,
+    string Status,
+    IReadOnlyList<string> SourcePaths,
+    string? Error);

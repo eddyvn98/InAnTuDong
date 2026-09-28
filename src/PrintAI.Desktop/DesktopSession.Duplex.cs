@@ -20,6 +20,15 @@ public sealed partial class DesktopSession
             return;
         }
 
+        if (pending.Phase != ManualDuplexPendingPhase.WaitingForReinsert)
+        {
+            _status =
+                pending.Phase == ManualDuplexPendingPhase.PrintingFront
+                    ? "Front pass đang ở trạng thái không chắc chắn sau lần chạy trước. Không tự in lại; hãy kiểm tra giấy và hủy job nếu cần bắt đầu lại."
+                    : "Back pass đang ở trạng thái không chắc chắn sau lần chạy trước. Không tự retry để tránh in trùng mặt sau.";
+            return;
+        }
+
         if (!string.Equals(
                 _selectedPrinter,
                 pending.PrinterName,
@@ -49,6 +58,13 @@ public sealed partial class DesktopSession
                 side.RotationDegrees))
             .ToArray();
 
+        pending = pending with
+        {
+            Phase = ManualDuplexPendingPhase.PrintingBack
+        };
+        _manualDuplexStore.Save(pending);
+        _pendingManualDuplex = pending;
+
         var result = WindowsSpoolerPrinter.SubmitPages(
             pending.PrinterName,
             pages,
@@ -61,6 +77,13 @@ public sealed partial class DesktopSession
 
         if (result.State == PrintSubmissionState.Failed)
         {
+            pending = pending with
+            {
+                Phase = ManualDuplexPendingPhase.WaitingForReinsert
+            };
+            _manualDuplexStore.Save(pending);
+            _pendingManualDuplex = pending;
+
             _status =
                 $"In mặt sau lỗi: {result.Error}. " +
                 "Front pass đã hoàn tất; có thể retry mặt sau.";
@@ -262,6 +285,36 @@ public sealed partial class DesktopSession
                 side.RotationDegrees))
             .ToArray();
 
+        PendingManualDuplexJob? pending = null;
+
+        if (plan.BackPass.Count > 0)
+        {
+            pending = new PendingManualDuplexJob(
+                Id: id,
+                JobName: job.JobName,
+                PrinterName: _selectedPrinter!,
+                PrinterProfileId: profile.Id,
+                Mode: job.Print.Duplex,
+                CreatedAt: DateTimeOffset.Now,
+                Phase: ManualDuplexPendingPhase.PrintingFront,
+                SheetCount: plan.Sheets.Count,
+                ProfileVerified: manualProfile.IsVerified,
+                ReinsertInstruction: manualProfile.ReinsertInstruction,
+                PaperWidthMm: job.Paper.WidthMm,
+                PaperHeightMm: job.Paper.HeightMm,
+                Landscape: job.Paper.Orientation == PageOrientation.Landscape,
+                JobFingerprint: Fingerprint(job),
+                ArtifactDirectory: artifactDirectory,
+                BackPass: plan.BackPass
+                    .Select(side => new PendingManualDuplexSide(
+                        outputPaths[side.OutputPageIndex],
+                        side.RotationDegrees))
+                    .ToArray());
+
+            _manualDuplexStore.Save(pending);
+            _pendingManualDuplex = pending;
+        }
+
         var result = WindowsSpoolerPrinter.SubmitPages(
             _selectedPrinter!,
             frontPages,
@@ -276,13 +329,18 @@ public sealed partial class DesktopSession
         {
             _status = $"Front pass lỗi: {result.Error}";
             RecordPrint("manual-duplex-front", result, job);
-            TryDeleteDirectory(artifactDirectory);
+
+            if (pending is not null)
+                ClearPendingManualDuplex(deleteArtifacts: true);
+            else
+                TryDeleteDirectory(artifactDirectory);
+
             return;
         }
 
         RecordPrint("manual-duplex-front", result, job);
 
-        if (plan.BackPass.Count == 0)
+        if (pending is null)
         {
             _status =
                 "Job chỉ có một mặt vật lý; front pass đã hoàn tất và không có back pass.";
@@ -290,27 +348,10 @@ public sealed partial class DesktopSession
             return;
         }
 
-        var pending = new PendingManualDuplexJob(
-            Id: id,
-            JobName: job.JobName,
-            PrinterName: _selectedPrinter!,
-            PrinterProfileId: profile.Id,
-            Mode: job.Print.Duplex,
-            CreatedAt: DateTimeOffset.Now,
-            SheetCount: plan.Sheets.Count,
-            ProfileVerified: manualProfile.IsVerified,
-            ReinsertInstruction: manualProfile.ReinsertInstruction,
-            PaperWidthMm: job.Paper.WidthMm,
-            PaperHeightMm: job.Paper.HeightMm,
-            Landscape: job.Paper.Orientation == PageOrientation.Landscape,
-            JobFingerprint: Fingerprint(job),
-            ArtifactDirectory: artifactDirectory,
-            BackPass: plan.BackPass
-                .Select(side => new PendingManualDuplexSide(
-                    outputPaths[side.OutputPageIndex],
-                    side.RotationDegrees))
-                .ToArray());
-
+        pending = pending with
+        {
+            Phase = ManualDuplexPendingPhase.WaitingForReinsert
+        };
         _manualDuplexStore.Save(pending);
         _pendingManualDuplex = pending;
 
@@ -361,12 +402,22 @@ public sealed partial class DesktopSession
         {
             return new(
                 Mode: pending.Mode.ToString(),
+                Phase: pending.Phase.ToString(),
                 Pending: true,
                 SheetCount: pending.SheetCount,
                 PrinterName: pending.PrinterName,
                 ProfileVerified: pending.ProfileVerified,
-                Instruction: pending.ReinsertInstruction,
+                Instruction:
+                    pending.Phase switch
+                    {
+                        ManualDuplexPendingPhase.PrintingFront =>
+                            "Front pass có thể đã được gửi trước khi app dừng. Không tự in lại. Kiểm tra xấp giấy rồi hủy job nếu cần bắt đầu lại.",
+                        ManualDuplexPendingPhase.PrintingBack =>
+                            "Back pass có thể đã được gửi trước khi app dừng. Không tự retry để tránh in trùng.",
+                        _ => pending.ReinsertInstruction
+                    },
                 CanContinueBack:
+                    pending.Phase == ManualDuplexPendingPhase.WaitingForReinsert &&
                     string.Equals(
                         _selectedPrinter,
                         pending.PrinterName,
@@ -387,6 +438,7 @@ public sealed partial class DesktopSession
 
         return new(
             Mode: (job?.Print.Duplex ?? DuplexMode.Off).ToString(),
+            Phase: "Ready",
             Pending: false,
             SheetCount: 0,
             PrinterName: _selectedPrinter,

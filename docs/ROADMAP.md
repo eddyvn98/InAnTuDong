@@ -251,7 +251,7 @@ Updated corpus: 120 supported, 10 capability-dependent, 10 clarification, 10 det
 - [x] 1000-placement safety cap
 - [x] desktop batch UI exposes mixed-size intent
 - [x] all 10 variable-size gap cases moved to supported
-- [~] variable-size CI/package verification
+- [x] variable-size CI/package verification — CI #239 and package-windows #183 succeeded
 
 Updated corpus: 130 supported, 10 capability-dependent, 10 clarification, 0 deterministic primitive gaps.
 

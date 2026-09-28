@@ -80,6 +80,62 @@ public sealed partial class DesktopSession
             $"{sources.Sum(source => source.Copies)} nội dung. Chọn một phương án để áp dụng.";
     }
 
+    public void GenerateSmartCollages(
+        IReadOnlyList<DesktopCompositionItem> items)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+
+        if (items.Count != 3 || items.Any(item => item.Copies != 1))
+            throw new ArgumentException("Smart Collage V2 hiện cần đúng 3 source/page, mỗi source 1 bản.");
+
+        var sources = new List<SourceSpec>(3);
+        var selectedPageIndexes = new HashSet<int>();
+
+        foreach (var item in items)
+        {
+            if (item.PageIndex < 0 || item.PageIndex >= _pages.Count)
+                throw new ArgumentOutOfRangeException(nameof(items), "Source/page đã chọn không còn hợp lệ.");
+
+            if (!selectedPageIndexes.Add(item.PageIndex))
+                throw new ArgumentException("Mỗi source/page chỉ được xuất hiện một lần.");
+
+            var page = _pages[item.PageIndex];
+            sources.Add(new SourceSpec(
+                page.SourcePath,
+                Copies: 1,
+                PageIndex: page.SourcePageIndex));
+        }
+
+        _autoLayoutCandidates.Clear();
+        _autoLayoutPreviews.Clear();
+
+        foreach (var template in CollageTemplateLibrary.ThreePhoto4x6Portrait())
+        {
+            var job = CollageTemplateLibrary.CreateJob(template, sources);
+            var candidate = new AutoLayoutCandidate(
+                Id: $"collage-{template.Id}",
+                Title: template.Title,
+                Description: $"Smart Collage · {string.Join(" · ", template.Tags)}",
+                Columns: 0,
+                Rows: 0,
+                Score: 0,
+                Job: job);
+
+            _autoLayoutCandidates.Add(candidate);
+
+            var preview = SourceJobRenderer.RenderMixedA4(
+                job,
+                outputPageIndex: 0,
+                dpi: 72);
+
+            _autoLayoutPreviews[candidate.Id] =
+                $"data:image/png;base64,{Convert.ToBase64String(preview)}";
+        }
+
+        _selectedAutoLayoutId = null;
+        _status = $"Đã tạo {_autoLayoutCandidates.Count} mẫu Smart Collage cho 3 ảnh. Chọn mẫu để áp dụng.";
+    }
+
     public void ApplyAutoLayout(string candidateId)
     {
         var candidate = _autoLayoutCandidates.FirstOrDefault(

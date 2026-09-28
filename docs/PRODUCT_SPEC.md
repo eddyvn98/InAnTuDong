@@ -36,6 +36,7 @@ Required:
 - spacing and cut marks
 - multi-item A4 layout
 - 4x6-inch photo paper when the installed driver advertises a matching paper size
+- guided two-sided printing on simplex printers through manual duplex
 
 Architecture must allow other printers later.
 
@@ -64,6 +65,20 @@ Support single-page fit, exact-size item, repeated items, grids, auto rotation, 
 For small-photo workflows, support deterministic auto-layout alternatives. The first slice accepts 1-6 selected source pages, generates up to four 4x6-inch (101.6 x 152.4 mm) grid candidates across portrait/landscape, renders each candidate for review, and lets the user choose one before printing. The LLM does not calculate auto-grid candidate coordinates.
 
 Smart Collage / Layout V2 extends this with an explicit canvas scene graph: each frame can have independent geometry, z-order, mask shape, rotation, fit, image scale and image offset. The first template library targets three-photo 4x6 portrait collages with at least ten deterministic designs. AI photo analysis and template/transform selection are layered on top of this validated renderer rather than replacing it.
+
+### Duplex printing
+
+`PrintJobSpec` expresses two-sided intent independently from printer hardware.
+
+- printers that advertise automatic duplex may execute through the driver
+- simplex printers use a guided manual-duplex workflow
+- the user does not manually calculate odd/even pages or reverse order
+- duplex intent must never be silently ignored and printed one-sided
+- pending back-pass state survives restart and retry
+- printer-specific feed/order/rotation behavior is stored separately from ordinary scale/offset calibration
+- manual-duplex verification requires explicit real-paper confirmation
+
+See `docs/MANUAL_DUPLEX.md`.
 
 ### Preview and policy
 

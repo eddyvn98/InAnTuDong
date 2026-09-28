@@ -9,6 +9,7 @@ Current schema version: `1.0`.
 - physical values use millimetres
 - A4 defaults to 210 x 297 mm
 - source references remain explicit
+- compiler-generated virtual blank pages may use `isBlank=true` with no file path
 - AI describes intent; layout engine calculates placements
 - do not silently guess values that materially change physical output
 
@@ -49,6 +50,31 @@ Current schema version: `1.0`.
 }
 ```
 
+## Virtual blank sources
+
+Booklet padding may require physical blank pages to reach a multiple of four logical pages.
+
+The compiler represents these as:
+
+```json
+{
+  "path": "",
+  "copies": 1,
+  "pageIndex": 0,
+  "isBlank": true
+}
+```
+
+Rules:
+
+- virtual blanks are created only by deterministic compilation,
+- they do not reference or invent an approved file,
+- the renderer creates a white raster locally,
+- ordinary non-blank sources still require an explicit path,
+- planner/user input should express booklet intent through `PrintPlan 2.0`, not manually author blank source entries.
+
+This keeps booklet padding inside the executable job boundary without creating temporary fake source files.
+
 ## Duplex semantics
 
 `print.duplex` is printer-neutral user intent:
@@ -76,5 +102,7 @@ See `docs/MANUAL_DUPLEX.md`.
 - margin/gap >= 0
 - layout must fit printable bounds
 - unsupported capabilities surface before print
+- non-blank sources require a path
+- virtual blank sources must not reference a path/page
 
 `schemaVersion` is mandatory for AI planner output. The current runtime accepts only `1.0`; unsupported versions are rejected before layout or printing.

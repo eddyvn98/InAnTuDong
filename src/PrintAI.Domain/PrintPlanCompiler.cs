@@ -117,11 +117,14 @@ public static class PrintPlanCompiler
             ? $"{group.Name} - set {setNumber}/{group.Sets}"
             : group.Name;
 
+        var (paper, layout) =
+            NUpLayoutResolver.Resolve(group);
+
         return new(
             JobName: jobName,
             Sources: sources,
-            Paper: group.Paper,
-            Layout: group.Layout,
+            Paper: paper,
+            Layout: layout,
             Print: new(
                 Copies: 1,
                 ColorMode: group.Print.ColorMode,

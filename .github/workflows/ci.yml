@@ -35,17 +35,19 @@ jobs:
         shell: pwsh
         run: |
           $html = Get-Content src/PrintAI.Desktop/local-web/index.html -Raw
-          $match = [regex]::Match(
-            $html,
-            '<script>([sS]*?)</script>',
-            [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+          $startTag = "<script>"
+          $endTag = "</script>"
+          $start = $html.IndexOf($startTag, [StringComparison]::OrdinalIgnoreCase)
+          $end = $html.IndexOf($endTag, [StringComparison]::OrdinalIgnoreCase)
 
-          if (-not $match.Success) {
+          if ($start -lt 0 -or $end -le $start) {
             throw "local-web/index.html does not contain an inline script."
           }
 
+          $start += $startTag.Length
+          $script = $html.Substring($start, $end - $start)
           $scriptPath = Join-Path $env:RUNNER_TEMP "printai-local-web.js"
-          Set-Content -Path $scriptPath -Value $match.Groups[1].Value -Encoding utf8
+          Set-Content -Path $scriptPath -Value $script -Encoding utf8
           node --check $scriptPath
 
       - name: Build web

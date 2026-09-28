@@ -77,7 +77,25 @@ public sealed partial class DesktopSession
 
         var order = _requestQueue[index].Order;
         _requestQueue.RemoveAt(index);
+        ReindexRequestQueue();
         _status = $"Đã xóa yêu cầu #{order}.";
+    }
+
+    private void ReindexRequestQueue()
+    {
+        var ordered = _requestQueue
+            .OrderBy(item => item.Order)
+            .ToArray();
+
+        _requestQueue.Clear();
+
+        for (var index = 0; index < ordered.Length; index++)
+        {
+            _requestQueue.Add(
+                ordered[index] with { Order = index + 1 });
+        }
+
+        _nextRequestOrder = _requestQueue.Count + 1;
     }
 
     public async Task ProcessQueuedRequestAsync(string id)

@@ -244,6 +244,8 @@ Implemented behavior:
 
 The 10 poster cases moved from `gap` to `supported`, reducing deterministic gaps from 20 to 10.
 
+Verification for this coverage change: CI #233 passed on Ubuntu + Windows with 241/241 shared tests, and package-windows #177 passed including packaged self-test and install lifecycle smoke checks.
+
 ### Next: variable-size general composition
 
 The final balanced-corpus gap family is independent per-item physical sizes on one sheet.

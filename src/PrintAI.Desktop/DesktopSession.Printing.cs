@@ -10,6 +10,13 @@ public sealed partial class DesktopSession
 {
     public void PrintCurrent()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         if (_printPath is null)
         {
             _status = "Chưa có trang preview có thể in.";
@@ -35,6 +42,13 @@ public sealed partial class DesktopSession
 
     public void PrintJob()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         var page = CurrentPage();
         if (page is null)
         {
@@ -124,6 +138,13 @@ public sealed partial class DesktopSession
 
     public void PrintAllSources()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         var submitted = 0;
 
         foreach (var page in _pages)

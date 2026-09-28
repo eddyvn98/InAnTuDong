@@ -1812,11 +1812,11 @@
       "category": "variable_size_items",
       "request": "Trên cùng A4, ảnh A 3x4 cm và ảnh B 4x6 cm.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-002",
@@ -1824,11 +1824,11 @@
       "category": "variable_size_items",
       "request": "Xếp logo 2x2 cm, QR 3x3 cm và ảnh 5x7 cm trên một tờ.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-003",
@@ -1836,11 +1836,11 @@
       "category": "variable_size_items",
       "request": "Mỗi ảnh trong 3 ảnh này có kích thước khác nhau.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-004",
@@ -1848,11 +1848,11 @@
       "category": "variable_size_items",
       "request": "In 4 tem 40x60 mm và 6 tem 30x30 mm trên cùng A4.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-005",
@@ -1860,11 +1860,11 @@
       "category": "variable_size_items",
       "request": "Ảnh 1 rộng 50 mm, ảnh 2 rộng 80 mm, tự xếp tiết kiệm giấy.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-006",
@@ -1872,11 +1872,11 @@
       "category": "variable_size_items",
       "request": "Trộn card 90x54 mm và nhãn 40x60 mm trên một tờ.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-007",
@@ -1884,11 +1884,11 @@
       "category": "variable_size_items",
       "request": "Mỗi source giữ kích thước riêng rồi xếp chung A4.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-008",
@@ -1896,11 +1896,11 @@
       "category": "variable_size_items",
       "request": "In hai QR 25 mm và một logo 60 mm trên cùng trang.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-009",
@@ -1908,11 +1908,11 @@
       "category": "variable_size_items",
       "request": "Xếp nhiều kích thước khác nhau, cho phép xoay từng item.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     },
     {
       "id": "VAR-010",
@@ -1920,11 +1920,11 @@
       "category": "variable_size_items",
       "request": "In 3 loại nhãn kích thước khác nhau trên cùng một sheet.",
       "sourceProfile": "mixedImages",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "variableItemSize"
       ],
-      "gapCapability": "variableItemSizes"
+      "gapCapability": null
     }
   ]
 }

@@ -20,6 +20,13 @@ public sealed partial class DesktopSession
             ?? throw new InvalidOperationException("Không có trang đang chọn.");
 
         var job = CurrentJob(page);
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            _status =
+                "Job đang yêu cầu in 2 mặt. Hãy dùng 'In toàn bộ job' để app quản lý đúng front/back pass.";
+            return;
+        }
+
         var result = Submit(_printPath, job);
 
         _status = Describe(result);
@@ -36,6 +43,13 @@ public sealed partial class DesktopSession
         }
 
         var job = CurrentJob(page);
+
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            PrintDuplexJob(page, job);
+            return;
+        }
+
         var pageCount = SourceJobRenderer.GetOutputPageCount(job);
         var submitted = 0;
 
@@ -158,6 +172,16 @@ public sealed partial class DesktopSession
         string path,
         PrintJobSpec job)
     {
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            return new(
+                PrintSubmissionState.Failed,
+                _selectedPrinter ?? "",
+                "",
+                Error:
+                    "Duplex intent cannot be submitted as a one-page simplex job. Use PrintJob().");
+        }
+
         if (string.IsNullOrWhiteSpace(_selectedPrinter))
         {
             return new(

@@ -44,6 +44,10 @@ internal static partial class DesktopSelfTest
                 checks,
                 tempDirectory,
                 pdfOutputPath);
+            CheckPdfRegressionSuite(
+                checks,
+                tempDirectory,
+                pdfOutputPath);
             CheckRequestQueueLifecycle(checks, tempDirectory);
             CheckSpreadsheetPipeline(checks, tempDirectory);
             CheckPrinterProbe(checks);

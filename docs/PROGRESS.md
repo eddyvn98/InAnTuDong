@@ -713,10 +713,19 @@ Priority decision:
 
 Reason: it closes a full gap family while reusing the existing deterministic grid/layout/rendering pipeline and requires less schema disruption than booklet, poster tiling or variable-size general composition.
 
-Verification status:
+Verification:
 
-- implementation is committed on the feature branch
-- CI/package verification pending
-- do not mark this slice verified until the feature-branch workflows are green
+- verified commit: `17d3cd563c9c432693e5c0694938a6ea736e61a6`
+- GitHub CI #199: success on Ubuntu + Windows
+- corpus integrity tests: success
+- request-derived PrintPlan regression tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #143: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The M7 corpus slice is verified. The next implementation target is General N-up / pages per sheet.
 
 See `docs/PRINT_INTENT_CORPUS.md`.

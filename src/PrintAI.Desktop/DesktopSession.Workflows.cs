@@ -16,7 +16,7 @@ public sealed partial class DesktopSession
 
         _selectedWorkflowId = preset.Id;
         _activeJob = preset.CreateJob(page.SourcePath);
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = $"workflow:{preset.Id}";
         _selectedOutputPage = 0;
 

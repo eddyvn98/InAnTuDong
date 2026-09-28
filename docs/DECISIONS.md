@@ -138,3 +138,17 @@ Printer selection resolves through a catalog of device profiles. A profile may c
 Only a profile that has completed real printed measurement may set `IsPhysicallyVerified=true`. The Epson L3310 profile is currently the only verified profile.
 
 L3316, L3210, L3250 and the generic A4 fallback use identity transforms as safe defaults but remain unverified. Unverified profiles must not unlock verification-dependent direct-print behavior. The desktop recipe/direct-print gate reads the catalog's verification flag instead of inferring verification from the printer name.
+
+
+## ADR-024 - Duplex intent falls back to guided manual duplex on simplex printers
+Status: accepted
+
+`PrintJobSpec.Print.Duplex` remains printer-neutral intent. `LongEdge` and `ShortEdge` must never be silently treated as `Off`.
+
+After printer selection, deterministic execution chooses the physical strategy. A printer advertising automatic duplex may use the driver's duplex path. A printer with `CanDuplex=false` uses a guided two-pass manual-duplex workflow instead of rejecting the user's two-sided intent.
+
+Manual duplex is modeled by physical sheets, not by exposing odd/even-page mechanics to the user. The runtime pairs front/back output pages, submits the complete front pass, pauses for an explicit paper-reinsert action, then submits the complete back pass in the printer-profile-specific order and rotation.
+
+Paper transport differs by printer/driver/settings, so the reinsert order and back-side transform are explicit profile data and are not considered verified until physically calibrated. Pending back-pass state is persisted so restart or a back-pass failure does not cause the front sides to be printed again.
+
+See `docs/MANUAL_DUPLEX.md`.

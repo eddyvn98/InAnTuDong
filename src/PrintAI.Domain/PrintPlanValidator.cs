@@ -206,7 +206,11 @@ public static class PrintPlanValidator
                     ? group.Scaling
                     : null,
                 PagePlacement = group.Placement,
-                SourceCrop = group.Crop
+                SourceCrop =
+                    group.Crop?.Mode == SourceCropMode.EdgesMm &&
+                    physical is null
+                        ? null
+                        : group.Crop
             };
             var representative = new PrintJobSpec(
                 JobName: group.Name,

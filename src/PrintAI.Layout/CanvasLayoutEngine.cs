@@ -24,8 +24,7 @@ public static class CanvasLayoutEngine
                 YMm: placement.YMm,
                 WidthMm: placement.WidthMm,
                 HeightMm: placement.HeightMm,
-                Rotated:
-                    Math.Abs(Math.Abs(placement.RotationDegrees) - 90) < 0.01,
+                Rotated: placement.UseRotatedFootprint,
                 SourceIndex: placement.SourceIndex,
                 SourceCopyIndex: 0))
             .ToArray();

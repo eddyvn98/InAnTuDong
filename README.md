@@ -20,8 +20,10 @@ The repository, not chat history, is the source of truth.
 ```
 files + request
   -> source inspection
-  -> AI planner
-  -> PrintJobSpec
+  -> Antigravity fast planner
+       -> accept valid/confident JSON
+       -> otherwise escalate once to Antigravity deep planner
+  -> PrintJobSpec / PrintPlan 2.0
   -> validator
   -> deterministic layout
   -> preview
@@ -56,17 +58,21 @@ dotnet run --project src/PrintAI.Desktop/PrintAI.Desktop.csproj
 
 The desktop app supports JPG/PNG/PDF preview and printing, multi-page sources, AI-assisted PrintJobSpec planning, deterministic user edits, Windows printer submission and local job history.
 
-Optional AI configuration:
+AI planning uses the locally installed and authenticated Antigravity CLI (`agy.exe`). PrintAI does not require an AI API key.
+
+Optional non-secret tuning:
 
 ```text
-PRINTAI_AI_ENDPOINT=https://your-endpoint/chat/completions
-PRINTAI_AI_MODEL=your-model
-PRINTAI_AI_API_KEY=optional-key
+PRINTAI_AGY_PATH
+PRINTAI_AGY_FAST_MODEL
+PRINTAI_AGY_DEEP_MODEL
+PRINTAI_AGY_FAST_EFFORT
+PRINTAI_AGY_DEEP_EFFORT
+PRINTAI_AGY_ESCALATE_BELOW
+PRINTAI_AGY_TIMEOUT
 ```
 
-The same values can be entered in the desktop UI; UI-entered API keys are session-only.
-
-See `docs/AI_PLANNER.md` for the AI flow and `docs/PROGRESS.md` for the exact current state.
+See `docs/ANTIGRAVITY_PLANNER.md`, `docs/AI_PLANNER.md` and `docs/PROGRESS.md`.
 
 
 ## Windows packaged build

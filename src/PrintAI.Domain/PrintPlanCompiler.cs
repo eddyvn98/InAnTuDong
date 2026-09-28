@@ -200,13 +200,33 @@ public static class PrintPlanCompiler
         int copiesPerSource,
         int setNumber)
     {
-        var sources = expandedSources
+        var logicalSources = expandedSources
             .Select(source => source with { Copies = copiesPerSource })
             .ToArray();
 
         var jobName = setNumber > 0 && group.Sets > 1
             ? $"{group.Name} - set {setNumber}/{group.Sets}"
             : group.Name;
+
+        if (group.Booklet is not null)
+        {
+            var booklet = BookletImpositionResolver.Resolve(
+                group,
+                logicalSources);
+
+            return new(
+                JobName: jobName,
+                Sources: booklet.Sources,
+                Paper: booklet.Paper,
+                Layout: booklet.Layout,
+                Print: new(
+                    Copies: 1,
+                    ColorMode: group.Print.ColorMode,
+                    Quality: group.Print.Quality,
+                    Duplex: booklet.Duplex),
+                Policy: plan.Policy,
+                SchemaVersion: "1.0");
+        }
 
         var (paper, resolvedLayout) =
             NUpLayoutResolver.Resolve(group);
@@ -220,7 +240,7 @@ public static class PrintPlanCompiler
 
         return new(
             JobName: jobName,
-            Sources: sources,
+            Sources: logicalSources,
             Paper: paper,
             Layout: layout,
             Print: new(

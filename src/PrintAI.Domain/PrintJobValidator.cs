@@ -40,6 +40,24 @@ public static class PrintJobValidator
         if (job.Sources.Any(s => s.PageIndex < 0))
             errors.Add(new("sources.pageIndex", "Source page index cannot be negative."));
 
+        if (job.Sources.Any(source =>
+                (source.OriginalWidthMm is null) !=
+                (source.OriginalHeightMm is null)))
+        {
+            errors.Add(new(
+                "sources.physicalSize.pair",
+                "Source physical width and height must be provided together."));
+        }
+
+        if (job.Sources.Any(source =>
+                source.OriginalWidthMm is <= 0 ||
+                source.OriginalHeightMm is <= 0))
+        {
+            errors.Add(new(
+                "sources.physicalSize",
+                "Source physical dimensions must be positive when provided."));
+        }
+
         if (job.Paper.WidthMm <= 0 || job.Paper.HeightMm <= 0)
             errors.Add(new("paper.size", "Paper dimensions must be positive."));
 
@@ -61,10 +79,61 @@ public static class PrintJobValidator
                 errors.Add(new("layout.spacing", "Margin and gap cannot be negative."));
         }
 
+        ValidatePhysicalScale(job, errors);
+
         if (job.Print.Copies < 1)
             errors.Add(new("print.copies", "Print copies must be at least 1."));
 
         return new(errors);
+    }
+
+    private static void ValidatePhysicalScale(
+        PrintJobSpec job,
+        List<ValidationError> errors)
+    {
+        var scaling = job.Layout.PhysicalScale;
+        if (scaling is null)
+            return;
+
+        if (job.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "layout.physicalScale.canvas",
+                "Physical scaling is not supported on Canvas layouts."));
+        }
+
+        if (job.Layout.Fit != FitMode.Contain)
+        {
+            errors.Add(new(
+                "layout.physicalScale.fit",
+                "Physical scaling requires Contain fit; Cover is a separate crop/fill intent."));
+        }
+
+        if (scaling.Mode == PhysicalScaleMode.Percent &&
+            (!double.IsFinite(scaling.Percent) ||
+             scaling.Percent <= 0 ||
+             scaling.Percent > 1000))
+        {
+            errors.Add(new(
+                "layout.physicalScale.percent",
+                "Physical scale percent must be greater than 0 and at most 1000."));
+        }
+
+        if (scaling.Mode is
+                PhysicalScaleMode.ShrinkOnly or
+                PhysicalScaleMode.Percent)
+        {
+            if (job.Sources.Any(source =>
+                    source.OriginalWidthMm is null ||
+                    source.OriginalHeightMm is null ||
+                    source.OriginalWidthMm <= 0 ||
+                    source.OriginalHeightMm <= 0))
+            {
+                errors.Add(new(
+                    "layout.physicalScale.sourceSize",
+                    "Shrink-only and percent scaling require trusted source physical dimensions."));
+            }
+        }
     }
 
     private static void ValidateCanvas(

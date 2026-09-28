@@ -9,7 +9,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Fixtures/print-intent-corpus.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/print-intent-corpus.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/PrintAI.Domain/PrintAI.Domain.csproj" />

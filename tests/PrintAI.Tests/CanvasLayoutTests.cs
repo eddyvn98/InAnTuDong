@@ -43,6 +43,35 @@ public sealed class CanvasLayoutTests
     }
 
     [Fact]
+    public void AiAssignments_PermuteSourcesAndLayerOnTemplateTransform()
+    {
+        var template = CollageTemplateLibrary.ThreePhoto4x6Portrait()
+            .Single(item => item.Id == "center-circle-two-sides");
+
+        var job = CollageTemplateLibrary.CreateJob(
+            template,
+            [
+                new SourceSpec("a.png"),
+                new SourceSpec("b.png"),
+                new SourceSpec("c.png")
+            ],
+            [
+                new CollageFrameAssignment(0, 2, Scale: 1.2, OffsetX: 0.1, OffsetY: -0.1),
+                new CollageFrameAssignment(1, 0),
+                new CollageFrameAssignment(2, 1)
+            ]);
+
+        var placements = job.Layout.Canvas!.Placements;
+
+        Assert.Equal(2, placements[0].SourceIndex);
+        Assert.Equal(0, placements[1].SourceIndex);
+        Assert.Equal(1, placements[2].SourceIndex);
+        Assert.True(placements[0].Transform!.Scale > 1.2);
+        Assert.Equal(0.1, placements[0].Transform!.OffsetX, 3);
+        Assert.Equal(-0.1, placements[0].Transform!.OffsetY, 3);
+    }
+
+    [Fact]
     public void CanvasRejectsPlacementOutsidePaper()
     {
         var job = new PrintJobSpec(

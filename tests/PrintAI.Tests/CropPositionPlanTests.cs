@@ -47,13 +47,13 @@ public sealed class CropPositionPlanTests
                 new CropEdgesSpec(TopMm: 10)),
             pages: null);
 
-        var validation = PrintPlanValidator.Validate(plan);
+        var error = Assert.Throws<ArgumentException>(() =>
+            PrintPlanCompiler.Compile(plan));
 
         Assert.Contains(
-            validation.Errors,
-            error =>
-                error.Code ==
-                "plan.groups.crop.sourceSize");
+            "trusted page size metadata",
+            error.Message,
+            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

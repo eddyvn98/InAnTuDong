@@ -145,6 +145,7 @@ public static class PrintPlanValidator
         ValidateScaling(group, prefix, errors);
         ValidatePlacement(group, prefix, errors);
         ValidateCrop(plan, group, prefix, errors);
+        ValidateBooklet(group, prefix, errors);
 
         if (group.NUp is null &&
             group.Layout.Mode == LayoutMode.Canvas)
@@ -188,7 +189,8 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
@@ -199,38 +201,66 @@ public static class PrintPlanValidator
                 .FirstOrDefault(size =>
                     size.PageIndex == firstPageIndex);
 
-            var (paper, resolvedLayout) = NUpLayoutResolver.Resolve(group);
-            var layout = resolvedLayout with
+            var representativeSource =
+                new SourceSpec(
+                    planSource.Path,
+                    PageIndex: firstPageIndex,
+                    OriginalWidthMm: physical?.WidthMm,
+                    OriginalHeightMm: physical?.HeightMm);
+
+            PrintJobSpec representative;
+
+            if (group.Booklet is not null)
             {
-                PhysicalScale = group.Scaling?.Mode == PhysicalScaleMode.MaxFit
-                    ? group.Scaling
-                    : null,
-                PagePlacement = group.Placement,
-                SourceCrop =
-                    group.Crop?.Mode == SourceCropMode.EdgesMm &&
-                    physical is null
-                        ? null
-                        : group.Crop
-            };
-            var representative = new PrintJobSpec(
-                JobName: group.Name,
-                Sources:
-                [
-                    new SourceSpec(
-                        planSource.Path,
-                        PageIndex: firstPageIndex,
-                        OriginalWidthMm: physical?.WidthMm,
-                        OriginalHeightMm: physical?.HeightMm)
-                ],
-                Paper: paper,
-                Layout: layout,
-                Print: new PrintSettings(
-                    Copies: 1,
-                    ColorMode: group.Print.ColorMode,
-                    Quality: group.Print.Quality,
-                    Duplex: group.Print.Duplex),
-                Policy: plan.Policy,
-                SchemaVersion: "1.0");
+                var booklet =
+                    BookletImpositionResolver.Resolve(
+                        group,
+                        [representativeSource]);
+
+                representative = new(
+                    JobName: group.Name,
+                    Sources: booklet.Sources,
+                    Paper: booklet.Paper,
+                    Layout: booklet.Layout,
+                    Print: new PrintSettings(
+                        Copies: 1,
+                        ColorMode: group.Print.ColorMode,
+                        Quality: group.Print.Quality,
+                        Duplex: booklet.Duplex),
+                    Policy: plan.Policy,
+                    SchemaVersion: "1.0");
+            }
+            else
+            {
+                var (paper, resolvedLayout) =
+                    NUpLayoutResolver.Resolve(group);
+                var layout = resolvedLayout with
+                {
+                    PhysicalScale =
+                        group.Scaling?.Mode == PhysicalScaleMode.MaxFit
+                            ? group.Scaling
+                            : null,
+                    PagePlacement = group.Placement,
+                    SourceCrop =
+                        group.Crop?.Mode == SourceCropMode.EdgesMm &&
+                        physical is null
+                            ? null
+                            : group.Crop
+                };
+
+                representative = new(
+                    JobName: group.Name,
+                    Sources: [representativeSource],
+                    Paper: paper,
+                    Layout: layout,
+                    Print: new PrintSettings(
+                        Copies: 1,
+                        ColorMode: group.Print.ColorMode,
+                        Quality: group.Print.Quality,
+                        Duplex: group.Print.Duplex),
+                    Policy: plan.Policy,
+                    SchemaVersion: "1.0");
+            }
 
             var jobValidation = PrintJobValidator.Validate(representative);
             foreach (var error in jobValidation.Errors)
@@ -239,6 +269,82 @@ public static class PrintPlanValidator
                     $"plan.group.job.{error.Code}",
                     $"{prefix}: {error.Message}"));
             }
+        }
+    }
+
+    private static void ValidateBooklet(
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var booklet = group.Booklet;
+        if (booklet is null)
+            return;
+
+        if (!group.Collate)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.collate",
+                $"{prefix} booklet sets must use collate=true so each set remains a complete booklet."));
+        }
+
+        if (group.NUp is not null)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.nup",
+                $"{prefix} booklet cannot be combined with General N-up."));
+        }
+
+        if (group.Scaling is not null)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.scaling",
+                $"{prefix} booklet cannot be combined with physical scaling in this slice."));
+        }
+
+        if (group.Placement is not null)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.placement",
+                $"{prefix} booklet cannot be combined with page placement in this slice."));
+        }
+
+        if (group.Crop is not null)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.crop",
+                $"{prefix} booklet cannot be combined with general source crop in this slice."));
+        }
+
+        if (group.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.canvas",
+                $"{prefix} booklet cannot use Canvas layout."));
+        }
+
+        if (!double.IsFinite(booklet.GutterMm) ||
+            booklet.GutterMm < 0 ||
+            !double.IsFinite(booklet.MarginMm) ||
+            booklet.MarginMm < 0)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.spacing",
+                $"{prefix} booklet gutter and margin must be finite and non-negative."));
+            return;
+        }
+
+        try
+        {
+            _ = BookletImpositionResolver.Resolve(
+                group,
+                [new SourceSpec("booklet-validation.pdf")]);
+        }
+        catch (ArgumentException ex)
+        {
+            errors.Add(new(
+                "plan.groups.booklet.geometry",
+                $"{prefix}: {ex.Message}"));
         }
     }
 

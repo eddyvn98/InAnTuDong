@@ -67,26 +67,25 @@ A gap case must name its missing capability.
 
 | Coverage | Cases | Share |
 | --- | ---: | ---: |
-| Supported | 100 | 66.7% |
+| Supported | 110 | 73.3% |
 | Supported with printer capability | 10 | 6.7% |
 | Correct behavior is clarification | 10 | 6.7% |
-| Missing primitive / gap | 30 | 20.0% |
+| Missing primitive / gap | 20 | 13.3% |
 | **Total** | **150** | **100%** |
 
 Two useful interpretations:
 
-- **Immediately/conditionally executable:** 110 / 150 = 73.3%.
-- **Semantically handled correctly, including asking when ambiguous:** 120 / 150 = 80.0%.
+- **Immediately/conditionally executable:** 120 / 150 = 80.0%.
+- **Semantically handled correctly, including asking when ambiguous:** 130 / 150 = 86.7%.
 
 Do not interpret these percentages as real customer traffic share. The corpus gives every category equal weight.
 
 ## Gap families
 
-The 30 current gap cases break down as follows:
+The 20 current gap cases break down as follows:
 
 | Gap family | Cases | Current limitation |
 | --- | ---: | --- |
-| Booklet imposition | 10 | no booklet page-signature/reordering engine |
 | Poster tiling | 10 | no oversized target canvas split across physical sheets |
 | Variable item sizes | 10 | PrintJobSpec grid remains uniform-size; Canvas is a dedicated collage path |
 
@@ -123,6 +122,11 @@ Representative supported requests are also converted into deterministic `PrintPl
 - auto-trim white crop
 - center-to-target-aspect crop
 - physical edge crop in millimetres
+- booklet padding to a multiple of four
+- booklet physical page reordering
+- A4 landscape 2-up booklet sides
+- short-edge duplex booklet execution
+- complete booklet sets and center gutter
 
 This is intentionally different from testing an LLM live in CI. The deterministic contract/compiler behavior is protected locally; live-model intent quality can be evaluated separately against the same corpus.
 
@@ -189,16 +193,36 @@ Implemented behavior:
 
 The 8 crop/position cases moved from `gap` to `supported`, reducing deterministic gaps from 38 to 30.
 
-Verification for this coverage change: CI #218 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #162 passed including packaged self-test and install lifecycle smoke checks.
+Verification for this coverage change: CI #219 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #163 passed including packaged self-test and install lifecycle smoke checks.
 
-### Next: booklet imposition
+### Completed: booklet imposition
 
-Booklet is selected next because the N-up/grid foundation already exists and booklet primarily adds deterministic page padding/reordering and sheet-side semantics.
+All 10 booklet corpus cases now have deterministic execution semantics.
 
-After booklet:
+Implemented behavior:
 
-1. poster/tiled printing
-2. variable-size general composition
+- standard A4 landscape -> folded A5 booklet geometry
+- deterministic page imposition
+- automatic blank padding to a multiple of four
+- virtual blank rendering without fake source files
+- short-edge duplex execution through the existing duplex path
+- 16 logical pages -> 8 printed sides -> 4 physical sheets
+- configurable center gutter
+- complete multi-set booklet compilation
+- landscape/two-up preview using the existing Grid renderer
+- parser/planner contract and corpus-derived regressions
+
+The 10 booklet cases moved from `gap` to `supported`, reducing deterministic gaps from 30 to 20.
+
+Verification for this coverage change: CI #221 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #165 passed including packaged self-test and install lifecycle smoke checks.
+
+### Next: poster / tiled printing
+
+Poster/tiled printing is selected next because it is now the largest missing page-space primitive that can still reuse the existing physical-sheet renderer.
+
+After poster/tile:
+
+1. variable-size general composition
 
 Booklet and poster remain important, but both introduce stronger ordering/physical-sheet semantics than N-up. Variable-size layout is last because it changes the current uniform-grid execution contract most substantially.
 

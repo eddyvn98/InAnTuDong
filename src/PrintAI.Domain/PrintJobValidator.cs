@@ -31,8 +31,24 @@ public static class PrintJobValidator
         if (job.Sources.Count == 0)
             errors.Add(new("sources.empty", "At least one source is required."));
 
-        if (job.Sources.Any(s => string.IsNullOrWhiteSpace(s.Path)))
-            errors.Add(new("sources.path", "Source paths cannot be empty."));
+        if (job.Sources.Any(s =>
+                !s.IsBlank &&
+                string.IsNullOrWhiteSpace(s.Path)))
+        {
+            errors.Add(new(
+                "sources.path",
+                "Non-blank source paths cannot be empty."));
+        }
+
+        if (job.Sources.Any(s =>
+                s.IsBlank &&
+                (!string.IsNullOrWhiteSpace(s.Path) ||
+                 s.PageIndex != 0)))
+        {
+            errors.Add(new(
+                "sources.blank",
+                "Virtual blank sources must not reference a file/page."));
+        }
 
         if (job.Sources.Any(s => s.Copies < 1))
             errors.Add(new("sources.copies", "Source copies must be at least 1."));

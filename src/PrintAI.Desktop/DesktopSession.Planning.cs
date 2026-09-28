@@ -189,6 +189,12 @@ public sealed partial class DesktopSession
             _ => null
         };
 
+    private static string? FormatBooklet(
+        BookletSpec? booklet) =>
+        booklet is null
+            ? null
+            : $"booklet · gutter {booklet.GutterMm:0.##}mm";
+
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
@@ -215,6 +221,8 @@ public sealed partial class DesktopSession
                         batch.Job.Layout.PagePlacement),
                     Crop: FormatCrop(
                         batch.Job.Layout.SourceCrop),
+                    Booklet: FormatBooklet(
+                        group?.Booklet),
                     CanAutoSequence:
                         batch.Job.Print.Duplex == DuplexMode.Off);
             })

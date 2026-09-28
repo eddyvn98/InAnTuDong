@@ -73,10 +73,12 @@ public static class SourceJobRenderer
         {
             foreach (var source in job.Sources)
             {
-                sources.Add(Decode(
-                    source.Path,
-                    source.PageIndex,
-                    dpi));
+                sources.Add(source.IsBlank
+                    ? CreateBlank()
+                    : Decode(
+                        source.Path,
+                        source.PageIndex,
+                        dpi));
             }
 
             return A4PreviewRenderer.RenderPng(
@@ -116,6 +118,13 @@ public static class SourceJobRenderer
             source,
             page: outputPageIndex,
             dpi: dpi);
+    }
+
+    private static SKBitmap CreateBlank()
+    {
+        var bitmap = new SKBitmap(1, 1);
+        bitmap.Erase(SKColors.White);
+        return bitmap;
     }
 
     private static SKBitmap Decode(

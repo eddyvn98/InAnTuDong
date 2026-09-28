@@ -1572,11 +1572,11 @@
       "category": "booklet",
       "request": "In file này dạng booklet để gấp đôi thành quyển.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-002",
@@ -1584,11 +1584,11 @@
       "category": "booklet",
       "request": "Sắp trang kiểu booklet A4 gấp thành A5.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-003",
@@ -1596,11 +1596,11 @@
       "category": "booklet",
       "request": "In booklet hai mặt lật đúng để gấp lại đọc theo thứ tự.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-004",
@@ -1608,11 +1608,11 @@
       "category": "booklet",
       "request": "Tài liệu 16 trang, dàn booklet 4 tờ A4.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-005",
@@ -1620,11 +1620,11 @@
       "category": "booklet",
       "request": "In booklet nhưng chừa mép giữa rộng hơn.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-006",
@@ -1632,11 +1632,11 @@
       "category": "booklet",
       "request": "In dạng sách nhỏ, trang tự đảo thứ tự để gấp.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-007",
@@ -1644,11 +1644,11 @@
       "category": "booklet",
       "request": "In 2 bộ booklet từ PDF này.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-008",
@@ -1656,11 +1656,11 @@
       "category": "booklet",
       "request": "Booklet A5 từ giấy A4, có trang trắng bù nếu thiếu.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-009",
@@ -1668,11 +1668,11 @@
       "category": "booklet",
       "request": "In booklet 20 trang và tự thêm trang trắng cho đủ chữ ký.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "BOOK-010",
@@ -1680,11 +1680,11 @@
       "category": "booklet",
       "request": "In booklet ngang để gấp giữa.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "booklet"
       ],
-      "gapCapability": "bookletImposition"
+      "gapCapability": null
     },
     {
       "id": "POSTER-001",

@@ -84,6 +84,10 @@ public sealed class GeneralPrintPlannerTests
         Assert.Contains("autoTrimWhite", client.LastRequest.SystemInstruction);
         Assert.Contains("centerToTargetAspect", client.LastRequest.SystemInstruction);
         Assert.Contains("edgesMm.topMm=10", client.LastRequest.SystemInstruction);
+        Assert.Contains("outputGroup.booklet", client.LastRequest.SystemInstruction);
+        Assert.Contains("8,1 / 2,7 / 6,3 / 4,5", client.LastRequest.SystemInstruction);
+        Assert.Contains("multiple of four", client.LastRequest.SystemInstruction);
+        Assert.Contains("print.duplex=\"shortEdge\"", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"percent\"", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"maxFit\"", client.LastRequest.SystemInstruction);
 

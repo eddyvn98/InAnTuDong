@@ -67,7 +67,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 "nUp": null,
                 "scaling": null,
                 "placement": null,
-                "crop": null
+                "crop": null,
+                "booklet": null
               }
             ],
             "policy": { "preview": "required" },
@@ -144,6 +145,18 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - Do not combine general crop with physical scaling or Canvas in this slice.
         - Page placement may combine with crop.
         - Cover/fill remains a separate fit/crop-to-frame behavior and should not be used to represent explicit edge removal.
+        - Booklet printing is represented with outputGroup.booklet.
+        - Standard A4-to-A5 booklet:
+          { "gutterMm": 4, "marginMm": 5 }.
+        - A booklet always uses A4 paper in landscape execution and deterministic two-page imposition per side.
+        - For booklet requests set print.duplex="shortEdge"; deterministic compilation also enforces the booklet short-edge duplex execution.
+        - Booklet page order is not authored by the model. Keep selections in normal reading order; deterministic code pads to a multiple of four and reorders physical sides.
+        - Example 8 logical pages become: 8,1 / 2,7 / 6,3 / 4,5.
+        - Missing pages required to reach a multiple of four are virtual white pages; never invent source file paths for them.
+        - "chừa mép giữa rộng hơn" should increase booklet.gutterMm; when no size is given use 10 mm.
+        - sets=N + collate=true means N complete booklet copies.
+        - Do not combine booklet with nUp, physical scaling, page placement, general source crop, or Canvas in this slice.
+        - Booklet output is already imposed 2-up; never also set nUp.
         - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 

@@ -12,6 +12,8 @@ public static class PrintPlanCompiler
                 nameof(plan));
         }
 
+        EnsurePhysicalScalingMetadata(plan);
+
         var batches = new List<CompiledPrintBatch>();
         var orderedGroups = plan.OutputGroups
             .Select((group, index) => new { Group = group, Index = index })
@@ -79,6 +81,44 @@ public static class PrintPlanCompiler
         }
 
         return new(plan.PlanName, batches);
+    }
+
+    private static void EnsurePhysicalScalingMetadata(PrintPlan plan)
+    {
+        foreach (var group in plan.OutputGroups)
+        {
+            if (group.Scaling?.Mode is not (
+                    PhysicalScaleMode.ShrinkOnly or
+                    PhysicalScaleMode.Percent))
+            {
+                continue;
+            }
+
+            foreach (var selection in group.Selections)
+            {
+                var source = plan.Sources[selection.SourceIndex];
+
+                foreach (var page in PrintPlanValidator.ResolvePages(
+                             plan,
+                             selection))
+                {
+                    var pageIndex = page - 1;
+                    var physical = source.Pages?
+                        .FirstOrDefault(size =>
+                            size.PageIndex == pageIndex);
+
+                    if (physical is null ||
+                        physical.WidthMm <= 0 ||
+                        physical.HeightMm <= 0)
+                    {
+                        throw new ArgumentException(
+                            $"Physical scaling requires trusted page size metadata for " +
+                            $"{source.Path} page {page}.",
+                            nameof(plan));
+                    }
+                }
+            }
+        }
     }
 
     private static IReadOnlyList<SourceSpec> ExpandSources(

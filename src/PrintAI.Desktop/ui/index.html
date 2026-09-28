@@ -115,6 +115,10 @@
       <h2>Source page</h2>
       <div class="strip" id="pageStrip"></div>
     </div>
+    <div id="planBatchSection" style="display:none">
+      <h2>PrintPlan batch</h2>
+      <div class="strip" id="planBatchStrip"></div>
+    </div>
     <div>
       <h2>Output page</h2>
       <div class="strip" id="outputStrip"></div>
@@ -272,7 +276,8 @@
     <div class="status" id="status">Chưa có job.</div>
     <div class="stack" style="margin-top:10px">
       <button class="primary" id="print" disabled>Print output đang xem</button>
-      <button id="printJob" disabled>Print toàn bộ job hiện tại</button>
+      <button id="printJob" disabled>Print toàn bộ batch/job hiện tại</button>
+      <button id="printPlan" disabled>Print toàn bộ PrintPlan (simplex)</button>
       <button id="printAllSources" disabled>Print tất cả source page</button>
     </div>
 
@@ -410,6 +415,7 @@ document.querySelector('#applySettings').onclick=()=>post('applyJobSettings',{
 });
 document.querySelector('#print').onclick=()=>post('print');
 document.querySelector('#printJob').onclick=()=>post('printJob');
+document.querySelector('#printPlan').onclick=()=>post('printPlan');
 document.querySelector('#printAllSources').onclick=()=>post('printAllSources');
 document.querySelector('#continueManualDuplex').onclick=()=>post('continueManualDuplex');
 document.querySelector('#cancelManualDuplex').onclick=()=>post('cancelManualDuplex');
@@ -455,6 +461,18 @@ function render(s){
   const pageStrip=document.querySelector('#pageStrip');
   pageStrip.innerHTML=pages||'<span class="meta">Chưa có source page.</span>';
   pageStrip.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>post('selectPage',{index:Number(b.dataset.source)}));
+
+  const planBatchSection=document.querySelector('#planBatchSection');
+  const planBatchStrip=document.querySelector('#planBatchStrip');
+  planBatchSection.style.display=s.Planner.IsGeneralPlan&&s.Planner.Batches.length?'block':'none';
+  planBatchStrip.innerHTML=s.Planner.Batches.map(x=>
+    '<button class="chip '+(x.Index===s.Planner.SelectedBatch?'active':'')+'" data-plan-batch="'+x.Index+'">'+
+    'Batch '+(x.Index+1)+'/'+s.Planner.Batches.length+' · '+esc(x.Name)+
+    ' · '+esc(x.ColorMode)+' · '+esc(x.Duplex)+'</button>'
+  ).join('');
+  planBatchStrip.querySelectorAll('[data-plan-batch]').forEach(b=>
+    b.onclick=()=>post('selectPlanBatch',{index:Number(b.dataset.planBatch)})
+  );
 
   let outputs='';
   for(let i=0;i<s.OutputPageCount;i++){
@@ -591,7 +609,10 @@ function render(s){
   if(!s.Planner.Configured)info.push('<div class="box warn">AI chưa cấu hình. Manual preview/print vẫn hoạt động.</div>');
   if(s.Planner.Decision){
     const confidence=s.Planner.Confidence!=null?' · '+Math.round(s.Planner.Confidence*100)+'%':'';
-    info.push('<div class="box">Decision: <b>'+esc(s.Planner.Decision)+'</b>'+confidence+'</div>');
+    const planSummary=s.Planner.IsGeneralPlan
+      ?' · PrintPlan 2.0 · '+s.Planner.Batches.length+' batch'
+      :'';
+    info.push('<div class="box">Decision: <b>'+esc(s.Planner.Decision)+'</b>'+confidence+planSummary+'</div>');
   }
   if(s.Planner.Questions.length)info.push('<div class="box question"><b>Cần trả lời:</b><br>'+s.Planner.Questions.map(esc).join('<br>')+'</div>');
   if(s.Planner.Warnings.length)info.push('<div class="box warn"><b>Warning:</b><br>'+s.Planner.Warnings.map(esc).join('<br>')+'</div>');
@@ -647,6 +668,10 @@ function render(s){
   document.querySelector('#status').textContent=s.Status||'Chưa có job.';
   document.querySelector('#print').disabled=!s.CanPrint||duplex.Pending||duplex.Mode!=='Off';
   document.querySelector('#printJob').disabled=!s.CanPrintJob||duplex.Pending;
+  document.querySelector('#printPlan').disabled=!s.CanPrintPlan||duplex.Pending;
+  document.querySelector('#printPlan').title=s.Planner.IsGeneralPlan&&s.Planner.Batches.some(x=>x.Duplex!=='Off')
+    ?'Plan có duplex: in từng batch để app quản lý đúng xấp giấy.'
+    :'Chỉ tự chạy toàn plan khi tất cả batch đều một mặt.';
   document.querySelector('#printAllSources').disabled=!s.CanPrintAllSources||duplex.Pending;
 
   const history=s.History.map(h=>

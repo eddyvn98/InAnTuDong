@@ -13,6 +13,7 @@ public sealed class DesktopPlannerSession
     private readonly HttpClient _httpClient = new();
     private ChatCompletionPlannerClient? _modelClient;
     private PrintPlanner? _planner;
+    private GeneralPrintPlanner? _generalPlanner;
     private SpreadsheetPrintPlanner? _spreadsheetPlanner;
 
     public string? Endpoint { get; private set; }
@@ -36,6 +37,7 @@ public sealed class DesktopPlannerSession
             _httpClient,
             new ChatCompletionTransportOptions(uri, Model, apiKey));
         _planner = new PrintPlanner(_modelClient);
+        _generalPlanner = new GeneralPrintPlanner(_modelClient);
         _spreadsheetPlanner = new SpreadsheetPrintPlanner(_modelClient);
     }
 
@@ -116,6 +118,61 @@ public sealed class DesktopPlannerSession
             cancellationToken);
     }
 
+    public async Task<DesktopGeneralPlanResult> PlanGeneralAsync(
+        string request,
+        IReadOnlyList<string> sourcePaths,
+        SafetyMode mode,
+        bool isVerifiedPrinterProfile,
+        CancellationToken cancellationToken = default)
+    {
+        if (_generalPlanner is null)
+        {
+            throw new InvalidOperationException(
+                "AI planner is not configured. Set endpoint and model first.");
+        }
+
+        if (sourcePaths.Count == 0)
+            throw new ArgumentException("At least one source is required.", nameof(sourcePaths));
+
+        var sources = sourcePaths
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(path =>
+            {
+                var metadata = SourceInspector.Inspect(path);
+                return new PlanningSource(
+                    Path: Path.GetFullPath(path),
+                    Kind: metadata.Kind.ToString(),
+                    PixelWidth: metadata.PixelWidth,
+                    PixelHeight: metadata.PixelHeight,
+                    PageCount: metadata.PageCount ?? 1);
+            })
+            .ToArray();
+
+        var outcome = await _generalPlanner.PlanAsync(
+            new PlanningRequest(request, sources),
+            cancellationToken);
+
+        var bound = GeneralPrintPlanSourceBinder.BindToAllowedSources(
+            outcome.Plan,
+            sources);
+
+        outcome = outcome with { Plan = bound };
+
+        var decision = PrintPolicyEngine.Decide(
+            outcome,
+            new PolicyContext(
+                Mode: mode,
+                IsKnownRecipe: false,
+                WasPreviouslyApproved: false,
+                IsVerifiedPrinterProfile: isVerifiedPrinterProfile));
+
+        return new(
+            Outcome: outcome,
+            Compiled: PrintPlanCompiler.Compile(bound),
+            Decision: decision,
+            Mode: mode);
+    }
+
     public async Task<DesktopPlanResult> PlanAsync(
         string request,
         DesktopPage page,
@@ -158,6 +215,12 @@ public sealed class DesktopPlannerSession
         return new(outcome, decision, mode);
     }
 }
+
+public sealed record DesktopGeneralPlanResult(
+    GeneralPlanningOutcome Outcome,
+    CompiledPrintPlan Compiled,
+    PolicyDecision Decision,
+    SafetyMode Mode);
 
 public sealed record DesktopPlanResult(
     PlanningOutcome Outcome,

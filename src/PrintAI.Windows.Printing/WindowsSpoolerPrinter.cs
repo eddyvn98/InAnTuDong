@@ -29,7 +29,8 @@ public static class WindowsSpoolerPrinter
         double paperHeightMm,
         bool landscape,
         PrinterDeviceProfile? profile = null,
-        short copies = 1) =>
+        short copies = 1,
+        ColorMode colorMode = ColorMode.Color) =>
         SubmitPages(
             printerName,
             [new PrintablePage(pngPath)],
@@ -38,7 +39,8 @@ public static class WindowsSpoolerPrinter
             landscape,
             profile,
             copies,
-            DuplexMode.Off);
+            DuplexMode.Off,
+            colorMode);
 
     public static PrintSubmissionResult SubmitPages(
         string printerName,
@@ -48,7 +50,8 @@ public static class WindowsSpoolerPrinter
         bool landscape,
         PrinterDeviceProfile? profile = null,
         short copies = 1,
-        DuplexMode duplex = DuplexMode.Off)
+        DuplexMode duplex = DuplexMode.Off,
+        ColorMode colorMode = ColorMode.Color)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(printerName);
         ArgumentNullException.ThrowIfNull(pages);
@@ -125,7 +128,9 @@ public static class WindowsSpoolerPrinter
             document.DefaultPageSettings.PaperSize = paper;
             document.DefaultPageSettings.Landscape = landscape;
             document.DefaultPageSettings.Color =
-                document.PrinterSettings.SupportsColor;
+                ResolveColorSetting(
+                    colorMode,
+                    document.PrinterSettings.SupportsColor);
             document.PrinterSettings.Duplex =
                 ResolveDuplexSetting(duplex, landscape);
 
@@ -185,6 +190,11 @@ public static class WindowsSpoolerPrinter
             return Failed(printerName, documentName, ex.Message);
         }
     }
+
+    public static bool ResolveColorSetting(
+        ColorMode colorMode,
+        bool printerSupportsColor) =>
+        colorMode == ColorMode.Color && printerSupportsColor;
 
     public static Duplex ResolveDuplexSetting(
         DuplexMode duplex,

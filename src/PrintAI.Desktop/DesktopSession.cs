@@ -32,6 +32,9 @@ public sealed partial class DesktopSession
     private string? _printPath;
     private PrintJobSpec? _activeJob;
     private DesktopPlanResult? _planResult;
+    private DesktopGeneralPlanResult? _generalPlanResult;
+    private CompiledPrintPlan? _compiledPlan;
+    private int _selectedPlanBatch;
     private string? _lastRequest;
 
     public DesktopSession()
@@ -164,7 +167,8 @@ public sealed partial class DesktopSession
         _selectedPage = index;
         _selectedOutputPage = 0;
 
-        if (!string.Equals(
+        if (_compiledPlan is null &&
+            !string.Equals(
                 oldPath,
                 CurrentPage()?.SourcePath,
                 StringComparison.OrdinalIgnoreCase))
@@ -258,6 +262,10 @@ public sealed partial class DesktopSession
                       !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintJob: page is not null &&
                          !string.IsNullOrWhiteSpace(_selectedPrinter),
+            CanPrintPlan: _compiledPlan is { Batches.Count: > 1 } &&
+                          _compiledPlan.Batches.All(batch =>
+                              batch.Job.Print.Duplex == DuplexMode.Off) &&
+                          !string.IsNullOrWhiteSpace(_selectedPrinter),
             CanPrintAllSources: _pages.Count > 0 &&
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
             Planner: planner,
@@ -357,23 +365,36 @@ public sealed partial class DesktopSession
             ? _pages[_selectedPage]
             : null;
 
-    private PrintJobSpec CurrentJob(DesktopPage page) =>
-        _activeJob is not null &&
-        _activeJob.Sources.Any(s =>
-            string.Equals(
-                s.Path,
-                page.SourcePath,
-                StringComparison.OrdinalIgnoreCase))
+    private PrintJobSpec CurrentJob(DesktopPage page)
+    {
+        if (_compiledPlan is not null && _activeJob is not null)
+            return _activeJob;
+
+        return _activeJob is not null &&
+               _activeJob.Sources.Any(s =>
+                   string.Equals(
+                       s.Path,
+                       page.SourcePath,
+                       StringComparison.OrdinalIgnoreCase))
             ? _activeJob
             : CreateDefaultJob(page.SourcePath);
+    }
 
     private void ResetPlan()
     {
         _activeJob = null;
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = null;
         _selectedOutputPage = 0;
         ClearAutoLayouts();
+    }
+
+    private void ClearPlannerResults()
+    {
+        _planResult = null;
+        _generalPlanResult = null;
+        _compiledPlan = null;
+        _selectedPlanBatch = 0;
     }
 
     private bool IsVerifiedPrinter() =>

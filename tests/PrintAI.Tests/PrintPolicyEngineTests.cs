@@ -69,6 +69,60 @@ public sealed class PrintPolicyEngineTests
         Assert.Equal(PolicyDecisionKind.Direct, result.Kind);
     }
 
+    [Fact]
+    public void GeneralPlan_AutoStopsForQuestions()
+    {
+        var outcome = GeneralOutcome() with
+        {
+            Questions = ["In 2 mặt lật cạnh nào?"]
+        };
+
+        var result = PrintPolicyEngine.Decide(
+            outcome,
+            new PolicyContext(
+                SafetyMode.Auto,
+                IsVerifiedPrinterProfile: true));
+
+        Assert.Equal(PolicyDecisionKind.QuestionRequired, result.Kind);
+    }
+
+    [Fact]
+    public void GeneralPlan_AutoDirectWhenValidatedAndUnambiguous()
+    {
+        var result = PrintPolicyEngine.Decide(
+            GeneralOutcome(),
+            new PolicyContext(
+                SafetyMode.Auto,
+                IsVerifiedPrinterProfile: true));
+
+        Assert.Equal(PolicyDecisionKind.Direct, result.Kind);
+    }
+
+    private static GeneralPlanningOutcome GeneralOutcome() =>
+        new(
+            new PrintPlan(
+                "plan",
+                [new PlanSourceSpec("C:/a.pdf", 2)],
+                [
+                    new PrintOutputGroupSpec(
+                        "all",
+                        [new PageSelectionSpec(0, [new PageRangeSpec(1, 2)])],
+                        new PaperSpec(),
+                        new LayoutSpec(
+                            LayoutMode.ExactSize,
+                            200,
+                            287,
+                            MarginMm: 5,
+                            AllowRotate: false),
+                        new OutputPrintSettings())
+                ],
+                new PolicySpec(),
+                "2.0"),
+            0.96,
+            [],
+            [],
+            "{}");
+
     private static PlanningOutcome Outcome() =>
         new(
             new PrintJobSpec(

@@ -563,3 +563,100 @@ source -> inspection -> planner/spec -> allowlist -> validation -> deterministic
 ## Session rule
 
 Never continue from chat memory alone. Read this file, `AGENTS.md`, `ROADMAP.md`, `DECISIONS.md`, `LIBRARIES.md` and relevant specs first. Update this file before ending a work session.
+
+
+## M7 General Print Intent foundation
+
+Direction updated on 2026-09-28 after reviewing real-world print-request coverage.
+
+Scope is explicitly **print-only**. PrintAI will not add CRM/customer management, quotation/pricing, payment, inventory, delivery, or general order-management features.
+
+Branch: `m7-general-print-intent`.
+
+Implemented in this foundation slice:
+
+- new `PrintPlan 2.0` high-level print-intent model
+- inspected source path + page-count contract
+- one-based user-facing page ranges with include/exclude rules
+- odd/even/all page parity
+- ordered output groups so different page ranges can carry different print settings
+- explicit `sets` and `collate` semantics
+- deterministic `PrintPlanCompiler` producing one or more existing `PrintJobSpec 1.0` jobs
+- mixed color and mixed duplex represented as separate executable batches
+- strict `GeneralPrintPlanParser`
+- provider-neutral `GeneralPrintPlanner`
+- `GeneralPrintPlanSourceBinder` rejecting invented paths or changed inspected page counts
+- tests added for page filtering, mixed color/duplex compilation, collated complete sets, non-collated copies, strict parsing and source binding
+- new `docs/GENERAL_PRINT_INTENT.md`
+- architecture/product/ADR/roadmap/agent guidance updated for the new boundary
+
+Compatibility decision:
+
+- simple uniform jobs may continue to use `PrintJobSpec 1.0` directly
+- complex multi-rule requests use `PrintPlan 2.0`
+- the stable layout, renderer, preview, policy, duplex and Windows spooler layers remain downstream of `PrintJobSpec 1.0`
+
+Verification:
+
+- verified commit: `3d70819dc479828ef1d37d21a584c29b6224d1f0`
+- GitHub CI run #174: success on Ubuntu + Windows
+- package-windows run #118: success
+- packaged desktop publish: success
+- packaged self-test: success
+- install / upgrade / rollback / uninstall smoke flow: success
+- Windows package ZIP + SHA-256 generation/upload: success
+
+M7 foundation is verified. The next work is product integration rather than more foundation schema work.
+
+Next concrete task:
+
+1. integrate GeneralPrintPlanner into the desktop request path for requests that require multiple output groups
+2. add a deterministic multi-batch preview/execution coordinator
+3. build the first real-request corpus before adding booklet/poster/variable-size extensions
+
+See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## M7 desktop PrintPlan integration verification
+
+Branch `m7-general-print-intent` now carries the first usable product integration of PrintPlan 2.0.
+
+Implemented:
+
+- desktop natural-language planning now calls `GeneralPrintPlanner` over all approved loaded sources
+- strict PrintPlan 2.0 output is source/page-count bound before compilation
+- Safe / Smart / Auto policy applies to GeneralPlanningOutcome
+- compiled plans become explicit desktop batches
+- UI shows batch number, job name, color mode and duplex mode
+- selecting a batch activates and renders the corresponding existing `PrintJobSpec 1.0`
+- browsing source pages no longer destroys an active compiled plan
+- plans containing only simplex batches can be sent sequentially through `PrintPlan()`
+- plans containing duplex batches deliberately require batch-by-batch execution so manual-duplex paper state cannot silently advance
+- complete-set ordering across multiple collated groups is fixed: output is interleaved per set
+- mixed collated/non-collated multi-group plans are rejected as ambiguous
+- duplicate PrintPlan source paths are rejected
+- Canvas layout is rejected in General Print Intent; Smart Collage remains the dedicated canvas workflow
+- `PrintSettings.ColorMode` now reaches Windows `PageSettings.Color`
+- grayscale jobs no longer silently print through the color-enabled path
+- manual-duplex back-pass persistence includes color mode
+- applying workflows, recipes, auto layouts, labels, mixed compositions or deterministic edits clears stale PrintPlan state
+
+Verification on commit `10c9cd26b8ae5cadd6cfe26d7766e5420a0f09f5`:
+
+- GitHub CI #191: success on Ubuntu + Windows
+- package-windows #135: success
+- shared tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The next concrete M7 task is no longer plumbing. It is coverage validation:
+
+1. create a 100-200 request corpus representing realistic print language
+2. turn representative cases into deterministic parser/compiler regression fixtures
+3. use corpus gaps to choose the next primitives, starting with general N-up, scaling and crop/margins
+4. only then move to booklet/poster/variable-size layout
+
+See `docs/GENERAL_PRINT_INTENT.md`.

@@ -57,7 +57,7 @@ public sealed partial class DesktopSession
 
         _selectedPage = items[0].PageIndex;
         _selectedWorkflowId = MixedCompositionWorkflow.Id;
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = "workflow:mixed-composition";
         _selectedOutputPage = 0;
 
@@ -101,7 +101,7 @@ public sealed partial class DesktopSession
 
         _selectedPage = frontPageIndex;
         _selectedWorkflowId = CccdWorkflow.FrontBackId;
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = "workflow:cccd-front-back";
         _selectedOutputPage = 0;
 

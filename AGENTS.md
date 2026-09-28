@@ -16,12 +16,14 @@ This file prevents project drift between AI/chat sessions.
 2. Record blockers and the exact next task.
 3. Put architecture/product decisions in `docs/DECISIONS.md`.
 4. Do not mark work complete without tests, CI, or manual verification as appropriate.
+5. For General Print Intent changes, read `docs/GENERAL_PRINT_INTENT.md` before editing planner/domain behavior.
 
 ## Engineering rules
 
 - Prefer mature libraries/platform APIs over hand-written commodity infrastructure.
 - Keep physical print geometry deterministic.
-- AI may produce `PrintJobSpec`; AI may not directly issue arbitrary print commands.
+- AI may produce `PrintJobSpec 1.0` for simple uniform jobs or `PrintPlan 2.0` for multi-rule print intent; AI may not directly issue arbitrary print commands.
+- Keep the product print-only: do not add CRM, pricing, payment, inventory, delivery, or unrelated order-management scope.
 - Store physical dimensions in millimetres.
 - A4 is the maximum paper size for the first printer profile.
 - Epson L3310 is a device profile, not a domain dependency.

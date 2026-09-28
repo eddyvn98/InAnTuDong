@@ -21,6 +21,7 @@ internal sealed record PendingManualDuplexJob(
     string PrinterName,
     string PrinterProfileId,
     DuplexMode Mode,
+    ColorMode ColorMode,
     DateTimeOffset CreatedAt,
     ManualDuplexPendingPhase Phase,
     int SheetCount,

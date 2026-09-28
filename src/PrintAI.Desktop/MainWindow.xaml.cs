@@ -85,6 +85,9 @@ public partial class MainWindow : Window
                 case "selectOutputPage":
                     _session.SelectOutputPage(root.GetProperty("index").GetInt32());
                     break;
+                case "selectPlanBatch":
+                    _session.SelectPlanBatch(root.GetProperty("index").GetInt32());
+                    break;
                 case "configurePlanner":
                     _session.ConfigurePlanner(
                         root.GetProperty("endpoint").GetString() ?? "",
@@ -168,6 +171,9 @@ public partial class MainWindow : Window
                     break;
                 case "printJob":
                     _session.PrintJob();
+                    break;
+                case "printPlan":
+                    _session.PrintPlan();
                     break;
                 case "printAllSources":
                     _session.PrintAllSources();

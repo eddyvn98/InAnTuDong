@@ -5,9 +5,13 @@
 ```
 Input
  -> Source Inspector
- -> AI Planner
- -> PrintJobSpec
- -> Validator
+ -> Planning
+      -> simple uniform request: PrintJobSpec 1.0
+      -> complex multi-rule request: PrintPlan 2.0
+           -> PrintPlan Validator / Source Binder
+           -> PrintPlan Compiler
+           -> one or more PrintJobSpec 1.0 batches
+ -> PrintJobSpec Validator
  -> Layout Engine
  -> Renderer
  -> Preview
@@ -23,11 +27,12 @@ Scanning enters the same pipeline after acquisition.
 
 ### PrintAI.Domain
 
-Pure business contract:
+Pure print-domain contract:
 
 - physical units
-- job specification
-- validation
+- `PrintJobSpec 1.0` execution job
+- `PrintPlan 2.0` high-level multi-rule print intent
+- validation and compilation from plan to executable jobs
 - printer-neutral intent
 
 No UI, AI SDK, Epson API, or spooler dependency.
@@ -42,7 +47,7 @@ Deterministic placement:
 - optional 90-degree rotation
 - future cut marks/packing
 
-AI never supplies final pixel/device coordinates.
+AI never supplies final pixel/device coordinates. `PrintPlan 2.0` may select pages and shared print rules, but deterministic code still owns executable geometry.
 
 ### PrintAI.Web
 
@@ -88,3 +93,10 @@ Policy result is one of:
 Use adapters for AI provider, scanner backend, printer backend, OCR, office conversion, and PDF rendering.
 
 Epson L3310 remains a profile rather than a type baked into the domain.
+
+
+## General Print Intent
+
+`PrintJobSpec 1.0` remains the stable execution boundary. `PrintPlan 2.0` sits above it for requests that need different rules across pages/files, explicit sets/collation, or ordered multi-file output. The compiler decomposes a validated plan into ordinary `PrintJobSpec 1.0` batches, so existing layout/rendering/policy/spooler code remains reusable.
+
+See `docs/GENERAL_PRINT_INTENT.md`.

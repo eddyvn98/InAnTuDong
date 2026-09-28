@@ -37,7 +37,35 @@ public static class PrintPolicyEngine
         if (!validation.IsValid)
             return new(PolicyDecisionKind.Rejected, "PrintJobSpec validation failed.");
 
-        if (outcome.Questions.Count > 0)
+        return DecideCore(
+            outcome.Confidence,
+            outcome.Questions,
+            outcome.Warnings,
+            context);
+    }
+
+    public static PolicyDecision Decide(
+        GeneralPlanningOutcome outcome,
+        PolicyContext context)
+    {
+        var validation = PrintPlanValidator.Validate(outcome.Plan);
+        if (!validation.IsValid)
+            return new(PolicyDecisionKind.Rejected, "PrintPlan validation failed.");
+
+        return DecideCore(
+            outcome.Confidence,
+            outcome.Questions,
+            outcome.Warnings,
+            context);
+    }
+
+    private static PolicyDecision DecideCore(
+        double confidence,
+        IReadOnlyList<string> questions,
+        IReadOnlyList<string> warnings,
+        PolicyContext context)
+    {
+        if (questions.Count > 0)
             return new(
                 PolicyDecisionKind.QuestionRequired,
                 "Planner reported material ambiguity that requires user input.");
@@ -52,7 +80,7 @@ public static class PrintPolicyEngine
                 PolicyDecisionKind.PreviewRequired,
                 "Printer profile has not been physically verified.");
 
-        if (outcome.Confidence < 0.90 || outcome.Warnings.Count > 0)
+        if (confidence < 0.90 || warnings.Count > 0)
             return new(
                 PolicyDecisionKind.PreviewRequired,
                 "Planner confidence or warnings require preview.");

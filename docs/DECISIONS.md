@@ -174,3 +174,33 @@ Manual duplex is modeled by physical sheets. PrintAI submits the complete front 
 Back-pass order, rotation and reinsert instructions are explicit per-printer profile data. Verification is persisted only after a real-paper confirmation and is never inferred from the printer model name.
 
 See `docs/MANUAL_DUPLEX.md`.
+
+
+## ADR-027 - PrintPlan 2.0 expands intent without replacing PrintJobSpec 1.0
+Status: accepted
+
+PrintAI remains a print-only product. CRM, pricing, payment, inventory, delivery and unrelated order-management scope are explicitly excluded.
+
+`PrintJobSpec 1.0` remains the stable executable print contract. It is appropriate for uniform jobs where all selected content shares one paper/layout/print rule set.
+
+`PrintPlan 2.0` is added above that boundary for real-world requests that require page ranges, multiple approved sources, ordered output groups, different color/duplex/layout rules, or explicit sets/collation.
+
+The AI may propose a strict `PrintPlan 2.0`, but deterministic code validates source/page references and compiles it into one or more ordinary `PrintJobSpec 1.0` batches. Every compiled job is validated again before layout/preview/execution.
+
+This avoids destabilizing the existing renderer/spooler architecture while allowing print-language coverage to grow without creating a preset for every named print product.
+
+See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## ADR-028 - Multi-batch execution is automatic only when paper handling is safe
+Status: accepted
+
+A compiled PrintPlan may contain multiple executable PrintJobSpec batches.
+
+The desktop UI exposes every batch explicitly and allows preview/printing one batch at a time. When all batches are simplex, PrintAI may submit the complete plan sequentially in deterministic batch order.
+
+If any batch requests duplex, PrintAI does not auto-advance the whole multi-batch plan. The user executes batches explicitly so an automatic/manual duplex pass, paper reinsert step or pending back pass cannot accidentally flow into the next logical batch.
+
+Complete collated sets spanning multiple output groups are interleaved by set: all groups for set 1, then all groups for set 2, and so on.
+
+Color mode is part of executable intent, not UI metadata. Windows submission must honor PrintJobSpec.Print.ColorMode, and a persisted manual-duplex back pass must preserve the same color mode.

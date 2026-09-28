@@ -48,15 +48,71 @@ public static class PrintJobValidator
         if (shortSide > MaxA4WidthMm || longSide > MaxA4HeightMm)
             errors.Add(new("paper.max", "Paper cannot exceed A4 in the first device profile."));
 
-        if (job.Layout.ItemWidthMm <= 0 || job.Layout.ItemHeightMm <= 0)
-            errors.Add(new("layout.itemSize", "Item dimensions must be positive."));
+        if (job.Layout.Mode == LayoutMode.Canvas)
+        {
+            ValidateCanvas(job, errors);
+        }
+        else
+        {
+            if (job.Layout.ItemWidthMm <= 0 || job.Layout.ItemHeightMm <= 0)
+                errors.Add(new("layout.itemSize", "Item dimensions must be positive."));
 
-        if (job.Layout.MarginMm < 0 || job.Layout.GapMm < 0)
-            errors.Add(new("layout.spacing", "Margin and gap cannot be negative."));
+            if (job.Layout.MarginMm < 0 || job.Layout.GapMm < 0)
+                errors.Add(new("layout.spacing", "Margin and gap cannot be negative."));
+        }
 
         if (job.Print.Copies < 1)
             errors.Add(new("print.copies", "Print copies must be at least 1."));
 
         return new(errors);
+    }
+
+    private static void ValidateCanvas(
+        PrintJobSpec job,
+        List<ValidationError> errors)
+    {
+        var canvas = job.Layout.Canvas;
+        if (canvas is null || canvas.Placements.Count == 0)
+        {
+            errors.Add(new("layout.canvas.empty", "Canvas layout requires at least one placement."));
+            return;
+        }
+
+        var paperWidth = job.Paper.Orientation == PageOrientation.Portrait
+            ? job.Paper.WidthMm
+            : job.Paper.HeightMm;
+        var paperHeight = job.Paper.Orientation == PageOrientation.Portrait
+            ? job.Paper.HeightMm
+            : job.Paper.WidthMm;
+
+        foreach (var placement in canvas.Placements)
+        {
+            if (placement.SourceIndex < 0 || placement.SourceIndex >= job.Sources.Count)
+                errors.Add(new("layout.canvas.source", "Canvas placement references an unavailable source."));
+
+            if (placement.WidthMm <= 0 || placement.HeightMm <= 0)
+                errors.Add(new("layout.canvas.size", "Canvas placement dimensions must be positive."));
+
+            if (placement.XMm < 0 || placement.YMm < 0 ||
+                placement.XMm + placement.WidthMm > paperWidth + 0.01 ||
+                placement.YMm + placement.HeightMm > paperHeight + 0.01)
+            {
+                errors.Add(new("layout.canvas.bounds", "Canvas placement must remain inside the paper."));
+            }
+
+            var transform = placement.Transform ?? new ImageTransformSpec();
+            if (transform.Scale <= 0 || transform.Scale > 10)
+                errors.Add(new("layout.canvas.scale", "Canvas image scale must be greater than 0 and at most 10."));
+
+            if (transform.OffsetX < -1 || transform.OffsetX > 1 ||
+                transform.OffsetY < -1 || transform.OffsetY > 1)
+            {
+                errors.Add(new("layout.canvas.offset", "Canvas image offsets must be between -1 and 1."));
+            }
+
+            var shape = placement.Shape ?? new ShapeSpec();
+            if (shape.CornerRadiusMm < 0)
+                errors.Add(new("layout.canvas.cornerRadius", "Canvas corner radius cannot be negative."));
+        }
     }
 }

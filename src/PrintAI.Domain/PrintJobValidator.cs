@@ -409,6 +409,9 @@ public static class PrintJobValidator
             if (placement.SourceIndex < 0 || placement.SourceIndex >= job.Sources.Count)
                 errors.Add(new("layout.canvas.source", "Canvas placement references an unavailable source."));
 
+            if (placement.Page < 0)
+                errors.Add(new("layout.canvas.page", "Canvas placement page cannot be negative."));
+
             if (placement.WidthMm <= 0 || placement.HeightMm <= 0)
                 errors.Add(new("layout.canvas.size", "Canvas placement dimensions must be positive."));
 

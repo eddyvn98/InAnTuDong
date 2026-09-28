@@ -151,7 +151,7 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 - [x] explicit supported / capability-dependent / clarification / gap labels
 - [x] CI validation for corpus size, category balance, IDs and gap labels
 - [x] request-derived deterministic compiler regression fixtures
-- [~] corpus slice CI verification
+- [x] corpus slice CI verification — CI #199 and package-windows #143 succeeded
 
 Baseline: 76 supported, 10 capability-dependent, 10 clarification, 54 deterministic gaps. See `docs/PRINT_INTENT_CORPUS.md`.
 

@@ -203,6 +203,46 @@ internal static partial class DesktopSelfTest
             return;
         }
 
+        var queueId = before.RequestQueue[0].Id;
+        session.UpsertQueuedRequest(
+            id: queueId,
+            request: "Chỉ in ảnh thứ hai",
+            mode: "Safe",
+            sourceIndexes: [1]);
+
+        var afterEdit = session.BuildState();
+        if (afterEdit.RequestQueue.Count != 1 ||
+            afterEdit.RequestQueue[0].Request != "Chỉ in ảnh thứ hai" ||
+            afterEdit.RequestQueue[0].Mode != "Safe" ||
+            afterEdit.RequestQueue[0].SourcePaths.Count != 1 ||
+            !string.Equals(
+                afterEdit.RequestQueue[0].SourcePaths[0],
+                second,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            checks.Add(new(
+                "request-queue-lifecycle",
+                false,
+                "Editing a queued request did not preserve the intended source set."));
+            return;
+        }
+
+        session.RemoveQueuedRequest(queueId);
+        if (session.BuildState().RequestQueue.Count != 0)
+        {
+            checks.Add(new(
+                "request-queue-lifecycle",
+                false,
+                "Deleting a queued request left stale queue state."));
+            return;
+        }
+
+        session.UpsertQueuedRequest(
+            id: null,
+            request: "In hai ảnh này",
+            mode: "Smart",
+            sourceIndexes: [0, 1]);
+
         session.RemoveSource(0);
         var afterRemove = session.BuildState();
 
@@ -230,7 +270,7 @@ internal static partial class DesktopSelfTest
             "request-queue-lifecycle",
             passed,
             passed
-                ? "Queued requests track source removal and clear with sources."
+                ? "Queue create/edit/delete/source-removal/clear lifecycle passed."
                 : "Clearing sources left stale queued requests."));
     }
 

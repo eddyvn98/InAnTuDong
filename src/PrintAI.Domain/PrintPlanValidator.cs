@@ -166,6 +166,7 @@ public static class PrintPlanValidator
         ValidateVariableItems(plan, group, prefix, errors);
 
         if (group.NUp is null &&
+            group.VariableItems is null &&
             group.Layout.Mode == LayoutMode.Canvas)
         {
             errors.Add(new(

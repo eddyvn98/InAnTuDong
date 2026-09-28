@@ -10,6 +10,7 @@ Current schema version: `1.0`.
 - A4 defaults to 210 x 297 mm
 - source references remain explicit
 - compiler-generated virtual blank pages may use `isBlank=true` with no file path
+- compiler-generated poster tiles may carry `posterTile` execution metadata
 - AI describes intent; layout engine calculates placements
 - do not silently guess values that materially change physical output
 
@@ -75,6 +76,27 @@ Rules:
 
 This keeps booklet padding inside the executable job boundary without creating temporary fake source files.
 
+## Poster tile sources
+
+Poster tiling is authored at the PrintPlan 2.0 level and compiled into ordinary executable sources carrying deterministic poster-space metadata.
+
+A compiled poster tile source includes:
+
+- source path/page reference
+- tile row/column and total grid size
+- assembled poster target width/height
+- the tile rectangle inside that poster canvas
+- overlap amount
+- Contain/Cover mapping mode
+- optional registration-mark flag
+- optional tile-label flag
+
+The executable layout mode is `posterTile`. Every poster source produces one physical output page, and the final row/column may use a smaller placement size than interior tiles.
+
+The model does not author per-tile crop coordinates. Renderer code derives the exact source rectangle from the decoded source aspect and poster-level mapping.
+
+Poster tiles are simplex. Complete repeated posters are represented as separate compiled batches rather than per-tile source copies.
+
 ## Duplex semantics
 
 `print.duplex` is printer-neutral user intent:
@@ -104,5 +126,7 @@ See `docs/MANUAL_DUPLEX.md`.
 - unsupported capabilities surface before print
 - non-blank sources require a path
 - virtual blank sources must not reference a path/page
+- PosterTile sources require valid poster-space metadata
+- PosterTile layout is simplex and one physical output page per tile
 
 `schemaVersion` is mandatory for AI planner output. The current runtime accepts only `1.0`; unsupported versions are rejected before layout or printing.

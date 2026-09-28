@@ -80,8 +80,9 @@ Each source stores:
 - approved file path
 - inspected page count
 - trusted per-page physical size in millimetres when the source format exposes it
+- trusted raster pixel width/height when available, for source aspect calculations such as one-dimension poster targets
 
-For PDF, physical page size comes from deterministic source inspection. The model may not invent or change path, page count, or physical page size. The source binder replaces planner-side metadata with the inspected values before compilation.
+For PDF, physical page size comes from deterministic source inspection. Raster pixel dimensions and PDF physical dimensions are rebound from inspected values after planning. The model may not invent or change path, page count, physical page size, or source aspect metadata.
 
 ### Page selection
 

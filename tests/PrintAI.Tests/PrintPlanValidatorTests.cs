@@ -37,6 +37,37 @@ public sealed class PrintPlanValidatorTests
     }
 
     [Fact]
+    public void Validate_RejectsAmbiguousMixedCollationAcrossGroups()
+    {
+        var collated = new PrintOutputGroupSpec(
+            "Cover",
+            [new(0)],
+            new(),
+            new(LayoutMode.ExactSize, 200, 287),
+            new(),
+            Sets: 2,
+            Collate: true,
+            Sequence: 0);
+
+        var nonCollated = collated with
+        {
+            Name = "Body",
+            Collate = false,
+            Sequence = 1
+        };
+
+        var plan = new PrintPlan(
+            "Ambiguous",
+            [new("C:/print/doc.pdf", 2)],
+            [collated, nonCollated],
+            new());
+
+        var result = PrintPlanValidator.Validate(plan);
+
+        Assert.Contains(result.Errors, error => error.Code == "plan.groups.collation");
+    }
+
+    [Fact]
     public void Validate_RejectsOutOfRangePagesAndDuplicateSequence()
     {
         var group = new PrintOutputGroupSpec(

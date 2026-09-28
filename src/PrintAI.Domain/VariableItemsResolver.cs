@@ -89,10 +89,11 @@ public static class VariableItemsResolver
                 YMm: p.Y,
                 WidthMm: p.Width,
                 HeightMm: p.Height,
-                RotationDegrees: p.Rotated ? 90 : 0,
+                RotationDegrees: 0,
                 ZIndex: index,
                 Fit: p.Fit,
-                Page: p.Page)).ToArray());
+                Page: p.Page,
+                UseRotatedFootprint: p.Rotated)).ToArray());
 
         return new PrintJobSpec(
             JobName: jobName,

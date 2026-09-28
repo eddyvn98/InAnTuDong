@@ -100,17 +100,26 @@ jobs:
         shell: pwsh
         run: |
           $report = "artifacts/PrintAI-selftest.json"
+          $pdf = "artifacts/PrintAI-selftest-output.pdf"
           $exe = (Resolve-Path "artifacts/PrintAI-win-x64/PrintAI.exe").Path
 
           $process = Start-Process `
             -FilePath $exe `
-            -ArgumentList "--self-test", "--self-test-output", $report `
+            -ArgumentList "--self-test", "--self-test-output", $report, "--self-test-pdf-output", $pdf `
             -Wait `
             -PassThru `
             -WindowStyle Hidden
 
           if (-not (Test-Path $report)) {
             throw "Packaged self-test did not produce a report."
+          }
+
+          if (-not (Test-Path $pdf)) {
+            throw "Packaged self-test did not produce a PDF."
+          }
+
+          if ((Get-Item $pdf).Length -lt 1000) {
+            throw "Packaged self-test PDF is unexpectedly small."
           }
 
           Get-Content $report
@@ -196,6 +205,7 @@ jobs:
             artifacts/PrintAI-win-x64.zip
             artifacts/PrintAI-win-x64.sha256.txt
             artifacts/PrintAI-selftest.json
+            artifacts/PrintAI-selftest-output.pdf
             artifacts/PrintAI-installed-selftest.json
           if-no-files-found: error
           retention-days: 14

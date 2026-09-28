@@ -149,12 +149,19 @@ The first implementation milestone does not require an AI provider. It builds th
 
 ### V2.4 - AI photo analysis
 
-- vision adapter
-- subject/face/saliency metadata contract
-- template selection prompt/schema
-- bounded transform output
-- deterministic validation of every AI proposal
-- fallback to heuristic/template selection when AI is unavailable
+Initial implementation complete:
+
+- OpenAI-compatible multimodal vision adapter reusing the existing endpoint/model/API-key session
+- three low-resolution source thumbnails sent in one multimodal request
+- per-source orientation, importance and normalized focal-point analysis
+- strict template-selection JSON schema
+- AI source-to-frame assignment
+- bounded scale and normalized X/Y crop offsets
+- deterministic validation of every AI proposal before rendering
+- up to four ranked AI candidates
+- automatic four-template fallback when AI is unavailable, malformed or non-vision-capable
+
+Current limitation: there is no local face detector yet. Face/subject awareness is inferred by the configured vision model and therefore remains advisory. Preview remains required before printing.
 
 ### V2.5 - manual refinement
 

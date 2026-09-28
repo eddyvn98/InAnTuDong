@@ -220,3 +220,25 @@ Source pages remain in explicit row-major order. Duplex remains a separate print
 Borders are an executable layout property and are rendered locally; the model does not draw or rasterize borders itself.
 
 This preserves the stable Grid renderer, preview pipeline, Windows spooler and manual/automatic duplex implementation while closing the General N-up corpus gap.
+
+
+## ADR-030 - Physical scaling is separate from fit/crop geometry
+Status: accepted
+
+Physical print scaling and source-pixel fit are different concerns.
+
+`FitMode.Contain` / `Cover` continue to describe how source pixels map into an already-defined placement. General Print Intent adds an optional `PhysicalScaleSpec` for requests expressed relative to the source's real printed size.
+
+The supported physical scale modes are:
+
+- `MaxFit`: use the largest whole-content size that fits the target placement.
+- `ShrinkOnly`: preserve inspected source physical size unless shrinking is required; never upscale.
+- `Percent`: multiply inspected source physical width/height by an explicit percentage.
+
+For PDF, SourceInspector supplies per-page width/height in millimetres. These dimensions cross the AI boundary as source context but are rebound from deterministic inspected metadata before compilation. Planner output cannot rewrite them.
+
+`ShrinkOnly` and `Percent` require trusted physical source dimensions. If those dimensions are unavailable, compilation is blocked; the planner should ask rather than infer a physical size from pixels.
+
+Percent values are centered in the target placement. Percentages larger than the target may be clipped by that placement, and preview exposes the result. This is distinct from `Cover`, which intentionally crops to fill.
+
+Physical scaling is not combined with General N-up or Canvas in this slice. This avoids mixing page-scale semantics with multi-item/collage geometry before a concrete need is validated.

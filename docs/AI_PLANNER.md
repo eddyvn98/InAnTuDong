@@ -1,42 +1,46 @@
-# Desktop AI planner configuration
+# Desktop AI planner
 
-The desktop AI planner uses a configurable chat-completions-compatible HTTP endpoint.
+PrintAI uses the locally installed and authenticated **Google Antigravity CLI (AGY)** as the primary natural-language planning transport.
 
-The deterministic printing engine does not depend on any AI provider SDK.
+No AI API key is required by PrintAI.
 
-## Configure in the app
+See `docs/ANTIGRAVITY_PLANNER.md` for the complete fast/deep design.
 
-In the Desktop **AI planner** section, enter:
+## Startup
 
-- Endpoint
-- Model
-- API key, if the endpoint requires one
+On desktop startup PrintAI tries to locate `agy.exe` automatically.
 
-The API key entered in the UI is kept only for the current process. It is not written to job history.
+If AGY is not found, natural-language planning is unavailable but deterministic preview/print workflows continue to work.
 
-## Configure with environment variables
+The UI exposes AGY readiness and an optional CLI-path retry field instead of endpoint/model/API-key credential fields.
 
-The desktop app also reads:
+## Configuration
+
+Optional non-secret tuning:
 
 ```text
-PRINTAI_AI_ENDPOINT
-PRINTAI_AI_MODEL
-PRINTAI_AI_API_KEY
+PRINTAI_AGY_PATH
+PRINTAI_AGY_FAST_MODEL
+PRINTAI_AGY_DEEP_MODEL
+PRINTAI_AGY_FAST_EFFORT
+PRINTAI_AGY_DEEP_EFFORT
+PRINTAI_AGY_ESCALATE_BELOW
+PRINTAI_AGY_TIMEOUT
 ```
 
-`PRINTAI_AI_API_KEY` is optional for local/no-auth endpoints.
+Credentials are not PrintAI configuration. Authentication remains inside the user's Antigravity installation/session.
 
 ## Request flow
 
-1. Select a JPG, PNG or PDF source/page.
-2. Enter a natural-language request.
-3. Choose Safe, Smart or Auto.
-4. Click **AI lập kế hoạch**.
-5. The model returns a strict versioned JSON proposal.
-6. PrintAI rejects unknown schema fields, invalid values and unapproved source paths.
-7. PrintAI runs deterministic validation and policy evaluation.
-8. The desktop renders the resulting A4 output pages.
-9. The user may edit physical settings before printing.
+1. Select sources.
+2. Enter a natural-language print request.
+3. PrintAI inspects source metadata locally.
+4. AGY fast/low-effort produces strict planner JSON.
+5. PrintAI parses and validates it locally.
+6. Invalid or low-confidence results escalate once to the configured deep model.
+7. Source paths are rebound to the approved allowlist.
+8. PrintPlan 2.0 compiles deterministically into PrintJobSpec 1.0 batches.
+9. Existing Safe/Smart/Auto policy, preview and Windows print execution remain unchanged.
 
 ## Policy behavior
 
@@ -44,19 +48,19 @@ PRINTAI_AI_API_KEY
 - Smart requires preview for new/unapproved jobs.
 - Auto may submit directly only if all policy gates pass.
 - Planner questions stop direct execution.
-- Warnings or confidence below 0.90 require preview.
+- Warnings or confidence below policy thresholds require preview.
 - An unverified printer profile requires preview.
-
-The Epson L3310 profile in this repository is physically verified.
 
 ## Source security boundary
 
-The planner is given inspected metadata and the selected source path. It must copy the path exactly.
+AGY sees only the user request plus PrintAI-provided context.
 
-A planner response that references another local path is rejected. The AI cannot use the planner JSON to make PrintAI read an arbitrary file.
+Planner output may reference only selected/inspected sources. Unknown or rewritten paths are rejected before rendering or printing.
 
-## History
+AGY never owns Windows print execution.
 
-PrintAI keeps up to 100 local history entries under the user's LocalAppData PrintAI folder.
+## Smart Collage
 
-History records planning/printing status and job metadata. It does not persist the AI API key.
+Smart Collage AI vision previously depended on a generic multimodal HTTP endpoint.
+
+During the AGY migration, deterministic collage templates remain available while local-image handling through AGY is verified. PrintAI must not require a separate hidden API key for this feature.

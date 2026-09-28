@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Windows;
@@ -124,6 +125,19 @@ public partial class MainWindow : Window
                         root.TryGetProperty("cliPath", out var cliPath)
                             ? cliPath.GetString()
                             : null);
+                    break;
+                case "openLocalWeb":
+                    if (_localWebHost is null)
+                    {
+                        throw new InvalidOperationException(
+                            "Local web chưa khởi động.");
+                    }
+
+                    Process.Start(new ProcessStartInfo(
+                        _localWebHost.BaseUri.ToString())
+                    {
+                        UseShellExecute = true
+                    });
                     break;
                 case "plan":
                     await _session.PlanAsync(

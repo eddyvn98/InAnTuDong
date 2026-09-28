@@ -183,10 +183,10 @@ The balanced real-request corpus now reflects General N-up, physical scaling, an
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 100 directly supported
+- 110 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 30 expose missing deterministic primitives
+- 20 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
@@ -283,13 +283,42 @@ Examples:
 - "chỉ lấy phần giữa" -> `CenterToTargetAspect`
 - "cắt 10 mm mép trên" -> `EdgesMm(top=10)`
 
-Crop/placement verification: CI #218 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #162 passed.
+Crop/placement verification: CI #219 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #163 passed.
+
+### Booklet imposition
+
+Booklet is a high-level `BookletSpec` on one PrintPlan output group. The AI keeps logical pages in normal reading order; deterministic code owns padding and physical imposition.
+
+The first implementation uses:
+
+- A4 paper forced to landscape execution
+- two logical pages per printed side
+- short-edge duplex
+- configurable outer margin
+- configurable center gutter
+- automatic blank padding to a multiple of four pages
+
+For an eight-page booklet, physical side order is:
+
+```text
+front sheet 1: 8 | 1
+back  sheet 1: 2 | 7
+front sheet 2: 6 | 3
+back  sheet 2: 4 | 5
+```
+
+A document whose logical page count is not divisible by four receives virtual white pages. These blank pages are execution objects only; no fake file path is created or passed through source inspection.
+
+Booklet output compiles to the existing `LayoutMode.Grid` renderer with two columns. Each pair of output pages is then handled by the existing automatic/manual duplex engine as one physical sheet.
+
+Booklet sets require `collate=true`. `sets=N` produces N complete booklet batches instead of multiplying copies page-by-page.
+
+Booklet is intentionally not combined with General N-up, physical scaling, general crop, page placement, or Canvas in this slice.
 
 The next capabilities are now prioritized from the remaining gaps:
 
-1. booklet imposition
-2. poster/tiled printing
-3. variable-size independent items in one sheet
+1. poster/tiled printing
+2. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

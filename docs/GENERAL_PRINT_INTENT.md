@@ -241,6 +241,8 @@ Examples:
 
 Percent scaling is centered and preserves physical proportions. A requested percentage may extend beyond the target placement; preview then shows the deterministic clipping. `Cover` remains a separate crop/fill intent.
 
+Physical scaling verification: CI #209 passed on Ubuntu + Windows with 167/167 shared tests, and package-windows #153 passed.
+
 The next capabilities are now prioritized from the remaining gaps:
 
 1. crop, anchor, offset and asymmetric margins

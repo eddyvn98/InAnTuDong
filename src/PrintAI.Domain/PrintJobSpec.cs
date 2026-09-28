@@ -49,7 +49,8 @@ public sealed record CanvasPlacementSpec(
     int ZIndex = 0,
     ShapeSpec? Shape = null,
     ImageTransformSpec? Transform = null,
-    FitMode Fit = FitMode.Cover);
+    FitMode Fit = FitMode.Cover,
+    int Page = 0);
 
 public sealed record CanvasLayoutSpec(
     IReadOnlyList<CanvasPlacementSpec> Placements);

@@ -144,7 +144,7 @@ The current PrintPlan 2.0 foundation requires:
 
 Every compiled PrintJobSpec is validated again by the existing PrintJobValidator before execution.
 
-## Current implementation slice
+## Current implementation
 
 Implemented on branch `m7-general-print-intent`:
 
@@ -152,28 +152,42 @@ Implemented on branch `m7-general-print-intent`:
 - page range/include/exclude/parity resolution
 - output group sequencing
 - sets vs collate semantics
+- cross-group complete-set ordering: set 1 cover -> body, then set 2 cover -> body, instead of printing all covers first
 - compiler to one or more PrintJobSpec 1.0 jobs
 - strict JSON parser for the general planner
+- explicit PrintPlan JSON shape/example in the model instruction
 - source-path and page-count binding
 - provider-neutral GeneralPrintPlanner
-- tests for mixed color/duplex, collated sets, non-collated copies, page filtering and parser/source safety
+- General PrintPlan policy gating through Safe / Smart / Auto
+- desktop AI request path now uses GeneralPrintPlanner
+- compiled-batch navigation and per-batch preview in the desktop UI
+- safe full-plan execution when every batch is simplex
+- duplex plans remain intentionally batch-by-batch so manual reinsert state cannot accidentally advance into another batch
+- Windows printing now honors `PrintSettings.ColorMode`; grayscale intent is passed to the driver instead of always enabling color
+- manual-duplex pending state persists color mode for the back pass
+- switching to manual workflows/recipes/layouts clears stale compiled-plan state
+- tests for mixed color/duplex, complete-set ordering, collated/non-collated copies, page filtering, parser/source safety, policy gates and Windows color-mode mapping
+
+Verification for the desktop integration slice:
+
+- CI #191: Ubuntu + Windows success
+- package-windows #135: success
+- Windows desktop build: success
+- packaged self-test: success
+- install / upgrade / rollback / uninstall smoke flow: success
 
 ## Planned M7 extensions
 
-The domain direction is intentionally broader than the first implementation slice.
+The next capabilities are:
 
-Next capabilities:
-
-1. desktop integration: use GeneralPrintPlanner for complex requests
-2. execution coordinator for compiled multi-batch plans
-3. general N-up/page-per-sheet intent
-4. richer scaling: actual size, fit, fill, shrink-only and custom percent
-5. crop, anchor, offset and asymmetric margins
-6. mixed paper/orientation capability reporting
-7. booklet imposition
-8. poster/tiled printing
-9. variable-size independent items in one sheet
-10. regression corpus of 100-200 real print requests
+1. build the first 100-200 real-request print-intent regression corpus
+2. general N-up/page-per-sheet intent
+3. richer scaling: actual size, fit, fill, shrink-only and custom percent
+4. crop, anchor, offset and asymmetric margins
+5. mixed paper/orientation capability reporting
+6. booklet imposition
+7. poster/tiled printing
+8. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

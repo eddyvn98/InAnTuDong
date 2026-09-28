@@ -8,6 +8,13 @@ public sealed record CollageTemplate(
     IReadOnlyList<string> Tags,
     CanvasLayoutSpec Canvas);
 
+public sealed record CollageFrameAssignment(
+    int FrameIndex,
+    int SourceIndex,
+    double Scale = 1,
+    double OffsetX = 0,
+    double OffsetY = 0);
+
 public static class CollageTemplateLibrary
 {
     public static IReadOnlyList<CollageTemplate> ThreePhoto4x6Portrait() =>
@@ -65,10 +72,52 @@ public static class CollageTemplateLibrary
 
     public static PrintJobSpec CreateJob(
         CollageTemplate template,
-        IReadOnlyList<SourceSpec> sources)
+        IReadOnlyList<SourceSpec> sources) =>
+        CreateJob(
+            template,
+            sources,
+            [
+                new CollageFrameAssignment(0, 0),
+                new CollageFrameAssignment(1, 1),
+                new CollageFrameAssignment(2, 2)
+            ]);
+
+    public static PrintJobSpec CreateJob(
+        CollageTemplate template,
+        IReadOnlyList<SourceSpec> sources,
+        IReadOnlyList<CollageFrameAssignment> assignments)
     {
         if (sources.Count != 3)
             throw new ArgumentException("The initial collage template library requires exactly three sources.");
+
+        if (assignments.Count != template.Canvas.Placements.Count)
+            throw new ArgumentException("Every collage frame requires exactly one assignment.");
+
+        if (!assignments.Select(item => item.FrameIndex).Order().SequenceEqual(
+                Enumerable.Range(0, template.Canvas.Placements.Count)))
+        {
+            throw new ArgumentException("Frame assignments must cover every template frame exactly once.");
+        }
+
+        if (!assignments.Select(item => item.SourceIndex).Order().SequenceEqual([0, 1, 2]))
+            throw new ArgumentException("Each collage source must be used exactly once.");
+
+        var byFrame = assignments.ToDictionary(item => item.FrameIndex);
+
+        var placements = template.Canvas.Placements
+            .Select((placement, frameIndex) =>
+            {
+                var assignment = byFrame[frameIndex];
+                return placement with
+                {
+                    SourceIndex = assignment.SourceIndex,
+                    Transform = new ImageTransformSpec(
+                        Scale: assignment.Scale,
+                        OffsetX: assignment.OffsetX,
+                        OffsetY: assignment.OffsetY)
+                };
+            })
+            .ToArray();
 
         return new PrintJobSpec(
             JobName: $"Smart collage - {template.Title}",
@@ -82,7 +131,7 @@ public static class CollageTemplateLibrary
                 ItemWidthMm: 1,
                 ItemHeightMm: 1,
                 Fit: FitMode.Cover,
-                Canvas: template.Canvas),
+                Canvas: new CanvasLayoutSpec(placements)),
             Print: new PrintSettings(
                 ColorMode: ColorMode.Color,
                 Quality: PrintQuality.High),

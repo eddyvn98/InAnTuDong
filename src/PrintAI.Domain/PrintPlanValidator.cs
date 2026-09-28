@@ -214,11 +214,35 @@ public static class PrintPlanValidator
 
             if (group.Poster is not null)
             {
-                var poster =
-                    PosterTilingResolver.Resolve(
-                        plan,
-                        group,
-                        [representativeSource]);
+                var canResolvePreBind =
+                    (group.Poster.TargetWidthMm is not null &&
+                     group.Poster.TargetHeightMm is not null) ||
+                    (group.Poster.Columns is not null &&
+                     group.Poster.Rows is not null) ||
+                    physical is not null;
+
+                if (!canResolvePreBind)
+                {
+                    return;
+                }
+
+                PosterTilingResult poster;
+
+                try
+                {
+                    poster =
+                        PosterTilingResolver.Resolve(
+                            plan,
+                            group,
+                            [representativeSource]);
+                }
+                catch (ArgumentException ex)
+                {
+                    errors.Add(new(
+                        "plan.groups.poster.geometry",
+                        $"{prefix}: {ex.Message}"));
+                    return;
+                }
 
                 representative = new(
                     JobName: group.Name,
@@ -361,17 +385,17 @@ public static class PrintPlanValidator
             return;
         }
 
-        var values = new[]
+        var optionalDimensions = new[]
         {
             poster.TargetWidthMm,
-            poster.TargetHeightMm,
-            poster.OverlapMm,
-            poster.MarginMm
+            poster.TargetHeightMm
         };
 
-        if (values
+        if (optionalDimensions
             .Where(value => value is not null)
-            .Any(value => !double.IsFinite(value!.Value)))
+            .Any(value => !double.IsFinite(value!.Value)) ||
+            !double.IsFinite(poster.OverlapMm) ||
+            !double.IsFinite(poster.MarginMm))
         {
             errors.Add(new(
                 "plan.groups.poster.number",

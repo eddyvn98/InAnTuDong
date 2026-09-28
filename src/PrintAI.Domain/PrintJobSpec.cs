@@ -7,6 +7,30 @@ public sealed record PaperSpec(
     double HeightMm = 297,
     PageOrientation Orientation = PageOrientation.Portrait);
 
+public sealed record ImageTransformSpec(
+    double Scale = 1,
+    double OffsetX = 0,
+    double OffsetY = 0);
+
+public sealed record ShapeSpec(
+    FrameShape Kind = FrameShape.Rectangle,
+    double CornerRadiusMm = 0);
+
+public sealed record CanvasPlacementSpec(
+    int SourceIndex,
+    double XMm,
+    double YMm,
+    double WidthMm,
+    double HeightMm,
+    double RotationDegrees = 0,
+    int ZIndex = 0,
+    ShapeSpec? Shape = null,
+    ImageTransformSpec? Transform = null,
+    FitMode Fit = FitMode.Cover);
+
+public sealed record CanvasLayoutSpec(
+    IReadOnlyList<CanvasPlacementSpec> Placements);
+
 public sealed record LayoutSpec(
     LayoutMode Mode,
     double ItemWidthMm,
@@ -15,7 +39,8 @@ public sealed record LayoutSpec(
     double MarginMm = 5,
     bool AllowRotate = true,
     bool CutMarks = false,
-    FitMode Fit = FitMode.Contain);
+    FitMode Fit = FitMode.Contain,
+    CanvasLayoutSpec? Canvas = null);
 
 public sealed record PrintSettings(
     int Copies = 1,
@@ -35,8 +60,9 @@ public sealed record PrintJobSpec(
     string SchemaVersion = "1.0");
 
 public enum PageOrientation { Portrait, Landscape }
-public enum LayoutMode { Grid, ExactSize }
+public enum LayoutMode { Grid, ExactSize, Canvas }
 public enum FitMode { Contain, Cover }
+public enum FrameShape { Rectangle, RoundedRectangle, Ellipse, Circle }
 public enum ColorMode { Color, Grayscale }
 public enum PrintQuality { Draft, Standard, High }
 public enum DuplexMode { Off, LongEdge, ShortEdge }

@@ -2,6 +2,7 @@ using System.IO;
 using System.Net.Http;
 using PrintAI.Domain;
 using PrintAI.Planning;
+using PrintAI.Rendering;
 using PrintAI.SourceInspection;
 
 namespace PrintAI.Desktop;
@@ -9,6 +10,7 @@ namespace PrintAI.Desktop;
 public sealed class DesktopPlannerSession
 {
     private readonly HttpClient _httpClient = new();
+    private ChatCompletionPlannerClient? _modelClient;
     private PrintPlanner? _planner;
 
     public string? Endpoint { get; private set; }
@@ -28,10 +30,10 @@ public sealed class DesktopPlannerSession
 
         Endpoint = uri.ToString();
         Model = model.Trim();
-        _planner = new PrintPlanner(
-            new ChatCompletionPlannerClient(
-                _httpClient,
-                new ChatCompletionTransportOptions(uri, Model, apiKey)));
+        _modelClient = new ChatCompletionPlannerClient(
+            _httpClient,
+            new ChatCompletionTransportOptions(uri, Model, apiKey));
+        _planner = new PrintPlanner(_modelClient);
     }
 
     public bool ConfigureFromEnvironment()
@@ -51,6 +53,47 @@ public sealed class DesktopPlannerSession
             Environment.GetEnvironmentVariable("PRINTAI_AI_API_KEY"));
 
         return true;
+    }
+
+
+    public async Task<SmartCollagePlan> PlanSmartCollageAsync(
+        IReadOnlyList<DesktopPage> pages,
+        IReadOnlyList<string> allowedTemplateIds,
+        string? userInstruction = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (_modelClient is null)
+        {
+            throw new InvalidOperationException(
+                "AI planner is not configured. Set endpoint and a vision-capable model first.");
+        }
+
+        if (pages.Count != 3)
+            throw new ArgumentException("Smart Collage vision currently requires exactly three pages.");
+
+        var images = new List<MultimodalImage>(3);
+
+        for (var sourceIndex = 0; sourceIndex < pages.Count; sourceIndex++)
+        {
+            var page = pages[sourceIndex];
+            var metadata = SourceInspector.Inspect(page.SourcePath);
+            var png = SourceJobRenderer.RenderSourceThumbnailPng(
+                page.SourcePath,
+                page.SourcePageIndex,
+                maxDimension: 768);
+
+            images.Add(new MultimodalImage(
+                SourceIndex: sourceIndex,
+                DataUrl: $"data:image/png;base64,{Convert.ToBase64String(png)}",
+                PixelWidth: metadata.PixelWidth,
+                PixelHeight: metadata.PixelHeight));
+        }
+
+        return await new SmartCollagePlanner(_modelClient).PlanAsync(
+            images,
+            allowedTemplateIds,
+            userInstruction,
+            cancellationToken);
     }
 
     public async Task<DesktopPlanResult> PlanAsync(

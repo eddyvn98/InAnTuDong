@@ -26,7 +26,12 @@
     .strip{display:flex;gap:6px;overflow:auto;padding-bottom:2px}
     .chip{white-space:nowrap;padding:6px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
     .previewWrap{min-height:0;display:flex;align-items:center;justify-content:center;background:#eef1f5;border-radius:12px;padding:16px;overflow:hidden}
-    .preview{max-height:100%;max-width:100%;aspect-ratio:210/297;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
+    .preview{max-height:100%;max-width:100%;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
+    .autoLayoutGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+    .autoLayoutCard{border:1px solid #dde3ec;border-radius:10px;padding:8px;background:#fff}
+    .autoLayoutCard.active{border-color:#182033;box-shadow:0 0 0 1px #182033 inset}
+    .autoLayoutCard img{display:block;width:100%;height:120px;object-fit:contain;background:#eef1f5;border-radius:7px;margin-bottom:7px}
+    .autoLayoutCard button{width:100%;margin-top:7px;padding:7px}
     .empty{color:#7b8493;text-align:center;max-width:340px;line-height:1.5}
     label{display:block;font-size:11px;color:#687184;margin:9px 0 5px}
     .status,.box{margin-top:10px;padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45}
@@ -79,7 +84,7 @@
     <label>Endpoint chat-completions compatible</label>
     <input id="endpoint" placeholder="https://.../chat/completions">
     <div class="row">
-      <div><label>Model</label><input id="model" placeholder="model-name"></div>
+      <div><label>Model</label><input id="model" placeholder="model-name"><div class="meta">Smart Collage cần model hỗ trợ vision/image input.</div></div>
       <div><label>API key (không lưu)</label><input id="apiKey" type="password" placeholder="optional"></div>
     </div>
     <button id="saveAi" style="margin-top:8px">Lưu AI cho phiên này</button>
@@ -103,7 +108,7 @@
       <div class="strip" id="pageStrip"></div>
     </div>
     <div>
-      <h2>Output A4</h2>
+      <h2>Output page</h2>
       <div class="strip" id="outputStrip"></div>
     </div>
     <div class="previewWrap" id="previewWrap">
@@ -114,7 +119,7 @@
   <section class="panel right">
     <h2>Thiết lập job</h2>
     <div class="settings">
-      <div><label>Mode</label><select id="jobMode"><option>Grid</option><option>ExactSize</option></select></div>
+      <div><label>Mode</label><select id="jobMode"><option>Grid</option><option>ExactSize</option><option>Canvas</option></select></div>
       <div><label>Fit</label><select id="fit"><option>Contain</option><option>Cover</option></select></div>
       <div><label>Rộng mm</label><input id="width" type="number" step="0.1"></div>
       <div><label>Cao mm</label><input id="height" type="number" step="0.1"></div>
@@ -141,6 +146,25 @@
         <button id="compositionNone">Bỏ chọn</button>
       </div>
       <div class="compositionList" id="compositionList"></div>
+
+      <div class="box" style="margin-top:10px">
+        <b>Tự sắp xếp trên giấy 4×6 inch</b>
+        <div class="meta">Khổ thật 101.6 × 152.4 mm. App thử nhiều grid dọc/ngang và cho xem trước để chọn.</div>
+        <label>Ưu tiên</label>
+        <select id="autoLayoutPreference">
+          <option value="Balanced">Cân bằng</option>
+          <option value="MinCrop">Ít crop</option>
+          <option value="Fill">Lấp đầy giấy</option>
+        </select>
+        <button class="primary" id="generateAutoLayouts" style="width:100%;margin-top:8px">Tạo grid tự động 4×6</button>
+        <label>Yêu cầu AI cho collage</label>
+        <input id="smartCollageInstruction" placeholder="Ví dụ: ưu tiên khuôn mặt, ảnh 1 làm nổi bật">
+        <button id="generateSmartCollages" style="width:100%;margin-top:6px">✨ AI Smart Collage (đúng 3 ảnh)</button>
+        <div class="meta">AI Smart Collage gửi thumbnail tối đa 768px của 3 ảnh tới endpoint AI đã cấu hình. Grid/template fallback chạy local và không gửi ảnh.</div>
+        <div class="autoLayoutGrid" id="autoLayoutCandidates"></div>
+      </div>
+
+      <div class="meta" style="margin-top:10px">Hoặc bố trí grid A4 thủ công:</div>
       <div class="row">
         <div><label>Rộng mm</label><input id="compositionWidth" type="number" min="1" step="0.1" value="40"></div>
         <div><label>Cao mm</label><input id="compositionHeight" type="number" min="1" step="0.1" value="60"></div>
@@ -261,6 +285,26 @@ document.querySelector('#compositionNone').onclick=()=>{
     compositionSelection.set(index,{checked:false,copies:current.copies||1});
   });
 };
+document.querySelector('#generateSmartCollages').onclick=()=>{
+  const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>({
+    pageIndex:Number(box.dataset.composeCheck),
+    copies:Number(document.querySelector('[data-compose-copies="'+box.dataset.composeCheck+'"]').value)
+  }));
+  post('generateSmartCollages',{
+    items,
+    instruction:document.querySelector('#smartCollageInstruction').value.trim()
+  });
+};
+document.querySelector('#generateAutoLayouts').onclick=()=>{
+  const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>({
+    pageIndex:Number(box.dataset.composeCheck),
+    copies:Number(document.querySelector('[data-compose-copies="'+box.dataset.composeCheck+'"]').value)
+  }));
+  post('generateAutoLayouts',{
+    items,
+    preference:document.querySelector('#autoLayoutPreference').value
+  });
+};
 document.querySelector('#composeMixed').onclick=()=>{
   const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>{
     const pageIndex=Number(box.dataset.composeCheck);
@@ -353,14 +397,14 @@ function render(s){
 
   let outputs='';
   for(let i=0;i<s.OutputPageCount;i++){
-    outputs+='<button class="chip '+(i===s.SelectedOutputPage?'active':'')+'" data-output="'+i+'">A4 '+(i+1)+'/'+s.OutputPageCount+'</button>';
+    outputs+='<button class="chip '+(i===s.SelectedOutputPage?'active':'')+'" data-output="'+i+'">Trang '+(i+1)+'/'+s.OutputPageCount+'</button>';
   }
   const outputStrip=document.querySelector('#outputStrip');
   outputStrip.innerHTML=outputs||'<span class="meta">Chưa có output.</span>';
   outputStrip.querySelectorAll('[data-output]').forEach(b=>b.onclick=()=>post('selectOutputPage',{index:Number(b.dataset.output)}));
 
   document.querySelector('#previewWrap').innerHTML=s.PreviewDataUrl
-    ?'<img class="preview" alt="A4 preview" src="'+s.PreviewDataUrl+'">'
+    ?'<img class="preview" alt="Print preview" src="'+s.PreviewDataUrl+'">'
     :'<div class="empty">Không có preview khả dụng.</div>';
 
   const scanner=document.querySelector('#scanner');
@@ -399,6 +443,21 @@ function render(s){
     };
   });
   document.querySelector('#composeMixed').disabled=!s.Pages.length;
+  document.querySelector('#generateAutoLayouts').disabled=!s.Pages.length;
+  document.querySelector('#generateSmartCollages').disabled=!s.Pages.length;
+
+  const autoLayoutCandidates=document.querySelector('#autoLayoutCandidates');
+  autoLayoutCandidates.innerHTML=s.AutoLayouts.length?s.AutoLayouts.map(x=>
+    '<div class="autoLayoutCard '+(x.Id===s.SelectedAutoLayoutId?'active':'')+'">'+
+      '<img alt="'+esc(x.Title)+'" src="'+x.PreviewDataUrl+'">'+
+      '<b>'+esc(x.Title)+'</b>'+
+      '<div class="meta">'+esc(x.Description)+'</div>'+
+      '<button data-auto-layout="'+esc(x.Id)+'">'+(x.Id===s.SelectedAutoLayoutId?'Đã chọn':'Chọn phương án này')+'</button>'+
+    '</div>'
+  ).join(''):'<div class="meta">Chưa tạo phương án.</div>';
+  autoLayoutCandidates.querySelectorAll('[data-auto-layout]').forEach(button=>{
+    button.onclick=()=>post('applyAutoLayout',{candidateId:button.dataset.autoLayout});
+  });
 
   const cccdFront=document.querySelector('#cccdFrontPage');
   const cccdBack=document.querySelector('#cccdBackPage');
@@ -482,8 +541,20 @@ function render(s){
     set('#jobMode',j.Mode);set('#fit',j.Fit);set('#width',j.ItemWidthMm);set('#height',j.ItemHeightMm);
     set('#gap',j.GapMm);set('#margin',j.MarginMm);set('#copies',j.Copies);
     const copies=document.querySelector('#copies');
-    copies.disabled=!!j.CopiesArePerSource;
-    copies.title=j.CopiesArePerSource?'Job nhiều source: chỉnh số bản trong composition UI.':'';
+    const isCanvas=j.Mode==='Canvas';
+    copies.disabled=!!j.CopiesArePerSource||isCanvas;
+    copies.title=isCanvas
+      ?'Smart Collage Canvas: chỉnh frame sẽ được hỗ trợ ở editor riêng.'
+      :(j.CopiesArePerSource?'Job nhiều source: chỉnh số bản trong composition UI.':'');
+    document.querySelector('#applySettings').disabled=isCanvas;
+    document.querySelector('#jobMode').disabled=isCanvas;
+    document.querySelector('#width').disabled=isCanvas;
+    document.querySelector('#height').disabled=isCanvas;
+    document.querySelector('#gap').disabled=isCanvas;
+    document.querySelector('#margin').disabled=isCanvas;
+    document.querySelector('#rotate').disabled=isCanvas;
+    document.querySelector('#cutMarks').disabled=isCanvas;
+    document.querySelector('#fit').disabled=isCanvas;
     document.querySelector('#rotate').checked=j.AllowRotate;
     document.querySelector('#cutMarks').checked=j.CutMarks;
   }

@@ -226,6 +226,8 @@ public sealed partial class DesktopSession
             SelectedRecipeId: _selectedRecipeId,
             BuiltInWorkflows: GetBuiltInWorkflows(),
             SelectedWorkflowId: _selectedWorkflowId,
+            AutoLayouts: GetAutoLayoutViews(),
+            SelectedAutoLayoutId: _selectedAutoLayoutId,
             PreviewDataUrl: _previewDataUrl,
             Status: _status,
             CanPrint: _printPath is not null &&
@@ -345,6 +347,7 @@ public sealed partial class DesktopSession
         _planResult = null;
         _lastRequest = null;
         _selectedOutputPage = 0;
+        ClearAutoLayouts();
     }
 
     private bool IsVerifiedPrinter() =>

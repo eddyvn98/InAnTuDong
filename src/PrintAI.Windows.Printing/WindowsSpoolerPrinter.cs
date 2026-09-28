@@ -11,6 +11,23 @@ public static class WindowsSpoolerPrinter
         string printerName,
         string pngPath,
         PrinterDeviceProfile? profile = null,
+        short copies = 1) =>
+        SubmitPng(
+            printerName,
+            pngPath,
+            paperWidthMm: 210,
+            paperHeightMm: 297,
+            landscape: false,
+            profile: profile,
+            copies: copies);
+
+    public static PrintSubmissionResult SubmitPng(
+        string printerName,
+        string pngPath,
+        double paperWidthMm,
+        double paperHeightMm,
+        bool landscape,
+        PrinterDeviceProfile? profile = null,
         short copies = 1)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(printerName);
@@ -21,6 +38,9 @@ public static class WindowsSpoolerPrinter
 
         if (copies <= 0)
             return Failed(printerName, "unknown", "Copies must be greater than zero.");
+
+        if (paperWidthMm <= 0 || paperHeightMm <= 0)
+            return Failed(printerName, "unknown", "Paper dimensions must be positive.");
 
         profile ??= new PrinterDeviceProfile("default", printerName);
 
@@ -40,15 +60,22 @@ public static class WindowsSpoolerPrinter
             if (!document.PrinterSettings.IsValid)
                 return Failed(printerName, documentName, "Windows reports the printer as invalid.");
 
-            var a4 = document.PrinterSettings.PaperSizes
-                .Cast<PaperSize>()
-                .FirstOrDefault(IsA4);
+            var paper = FindPaper(
+                document.PrinterSettings,
+                paperWidthMm,
+                paperHeightMm);
 
-            if (a4 is null)
-                return Failed(printerName, documentName, "The printer driver does not advertise A4 paper.");
+            if (paper is null)
+            {
+                return Failed(
+                    printerName,
+                    documentName,
+                    $"The printer driver does not advertise paper near " +
+                    $"{paperWidthMm:0.#} x {paperHeightMm:0.#} mm.");
+            }
 
-            document.DefaultPageSettings.PaperSize = a4;
-            document.DefaultPageSettings.Landscape = false;
+            document.DefaultPageSettings.PaperSize = paper;
+            document.DefaultPageSettings.Landscape = landscape;
             document.DefaultPageSettings.Color = document.PrinterSettings.SupportsColor;
 
             document.PrintPage += (_, e) =>
@@ -67,8 +94,10 @@ public static class WindowsSpoolerPrinter
                     (float)(-hardMarginX + profile.OffsetXMm),
                     (float)(-hardMarginY + profile.OffsetYMm));
 
-                var targetWidth = (float)(210d * profile.ScaleX);
-                var targetHeight = (float)(297d * profile.ScaleY);
+                var logicalWidth = landscape ? paperHeightMm : paperWidthMm;
+                var logicalHeight = landscape ? paperWidthMm : paperHeightMm;
+                var targetWidth = (float)(logicalWidth * profile.ScaleX);
+                var targetHeight = (float)(logicalHeight * profile.ScaleY);
 
                 e.Graphics.DrawImage(
                     image,
@@ -95,17 +124,57 @@ public static class WindowsSpoolerPrinter
         }
     }
 
-    private static bool IsA4(PaperSize paper)
+    public static bool MatchesPaperSize(
+        PaperCapability paper,
+        double widthMm,
+        double heightMm,
+        double toleranceMm = 2)
     {
-        if (paper.Kind == PaperKind.A4)
-            return true;
+        var requestedShort = Math.Min(widthMm, heightMm);
+        var requestedLong = Math.Max(widthMm, heightMm);
+        var actualShort = Math.Min(paper.WidthMm, paper.HeightMm);
+        var actualLong = Math.Max(paper.WidthMm, paper.HeightMm);
 
-        var widthMm = PrinterCapabilityProbe.HundredthsInchToMm(paper.Width);
-        var heightMm = PrinterCapabilityProbe.HundredthsInchToMm(paper.Height);
-        var width = Math.Min(widthMm, heightMm);
-        var height = Math.Max(widthMm, heightMm);
+        return Math.Abs(actualShort - requestedShort) <= toleranceMm &&
+               Math.Abs(actualLong - requestedLong) <= toleranceMm;
+    }
 
-        return Math.Abs(width - 210) <= 2 && Math.Abs(height - 297) <= 2;
+    private static PaperSize? FindPaper(
+        PrinterSettings settings,
+        double widthMm,
+        double heightMm)
+    {
+        foreach (PaperSize paper in settings.PaperSizes)
+        {
+            var actualWidth = PrinterCapabilityProbe.HundredthsInchToMm(paper.Width);
+            var actualHeight = PrinterCapabilityProbe.HundredthsInchToMm(paper.Height);
+
+            if (Matches(
+                    actualWidth,
+                    actualHeight,
+                    widthMm,
+                    heightMm))
+            {
+                return paper;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool Matches(
+        double actualWidth,
+        double actualHeight,
+        double requestedWidth,
+        double requestedHeight)
+    {
+        var actualShort = Math.Min(actualWidth, actualHeight);
+        var actualLong = Math.Max(actualWidth, actualHeight);
+        var requestedShort = Math.Min(requestedWidth, requestedHeight);
+        var requestedLong = Math.Max(requestedWidth, requestedHeight);
+
+        return Math.Abs(actualShort - requestedShort) <= 2 &&
+               Math.Abs(actualLong - requestedLong) <= 2;
     }
 
     private static PrintSubmissionResult Failed(

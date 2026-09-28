@@ -113,6 +113,22 @@ public partial class MainWindow : Window
                     _session.ApplyBuiltInWorkflow(
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
+                case "generateSmartCollages":
+                    await _session.GenerateSmartCollagesAsync(
+                        ReadCompositionItems(root),
+                        root.TryGetProperty("instruction", out var collageInstruction)
+                            ? collageInstruction.GetString()
+                            : null);
+                    break;
+                case "generateAutoLayouts":
+                    _session.GenerateAutoLayouts(
+                        ReadCompositionItems(root),
+                        root.GetProperty("preference").GetString() ?? "Balanced");
+                    break;
+                case "applyAutoLayout":
+                    _session.ApplyAutoLayout(
+                        root.GetProperty("candidateId").GetString() ?? "");
+                    break;
                 case "composeMixedPages":
                     _session.ComposeMixedPages(
                         ReadCompositionItems(root),

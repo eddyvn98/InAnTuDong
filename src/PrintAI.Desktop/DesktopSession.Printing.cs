@@ -20,7 +20,7 @@ public sealed partial class DesktopSession
             ?? throw new InvalidOperationException("Không có trang đang chọn.");
 
         var job = CurrentJob(page);
-        var result = Submit(_printPath);
+        var result = Submit(_printPath, job);
 
         _status = Describe(result);
         RecordPrint("print-page", result, job);
@@ -63,7 +63,7 @@ public sealed partial class DesktopSession
 
                 File.WriteAllBytes(path, png);
 
-                var result = Submit(path);
+                var result = Submit(path, job);
                 if (result.State == PrintSubmissionState.Failed)
                 {
                     _status =
@@ -130,7 +130,7 @@ public sealed partial class DesktopSession
 
                 File.WriteAllBytes(path, png);
 
-                var result = Submit(path);
+                var result = Submit(path, job);
                 if (result.State == PrintSubmissionState.Failed)
                 {
                     _status =
@@ -154,7 +154,9 @@ public sealed partial class DesktopSession
             $"Đã gửi {submitted}/{_pages.Count} source page tới spooler.";
     }
 
-    private PrintSubmissionResult Submit(string path)
+    private PrintSubmissionResult Submit(
+        string path,
+        PrintJobSpec job)
     {
         if (string.IsNullOrWhiteSpace(_selectedPrinter))
         {
@@ -167,9 +169,12 @@ public sealed partial class DesktopSession
 
         var profile = PrinterProfileCatalog.Resolve(_selectedPrinter);
 
-        return WindowsSpoolerPrinter.SubmitA4Png(
+        return WindowsSpoolerPrinter.SubmitPng(
             _selectedPrinter,
             path,
+            job.Paper.WidthMm,
+            job.Paper.HeightMm,
+            job.Paper.Orientation == PageOrientation.Landscape,
             profile);
     }
 

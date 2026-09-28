@@ -7,6 +7,45 @@ namespace PrintAI.Rendering;
 
 public static class SourceJobRenderer
 {
+    public static byte[] RenderSourceThumbnailPng(
+        string sourcePath,
+        int sourcePageIndex,
+        int maxDimension = 768)
+    {
+        if (maxDimension is < 128 or > 2048)
+            throw new ArgumentOutOfRangeException(nameof(maxDimension));
+
+        using var source = Decode(
+            sourcePath,
+            sourcePageIndex,
+            dpi: 96);
+
+        var scale = Math.Min(
+            1d,
+            (double)maxDimension / Math.Max(source.Width, source.Height));
+
+        var width = Math.Max(1, (int)Math.Round(source.Width * scale));
+        var height = Math.Max(1, (int)Math.Round(source.Height * scale));
+
+        using var surface = SKSurface.Create(new SKImageInfo(width, height));
+        var canvas = surface.Canvas;
+        canvas.Clear(SKColors.White);
+
+        var sampling = new SKSamplingOptions(
+            SKFilterMode.Linear,
+            SKMipmapMode.Linear);
+
+        canvas.DrawBitmap(
+            source,
+            new SKRect(0, 0, source.Width, source.Height),
+            new SKRect(0, 0, width, height),
+            sampling);
+
+        using var image = surface.Snapshot();
+        using var data = image.Encode(SKEncodedImageFormat.Png, 90);
+        return data.ToArray();
+    }
+
     public static int GetOutputPageCount(PrintJobSpec job)
     {
         var layout = LayoutEngine.Layout(job);

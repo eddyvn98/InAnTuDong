@@ -90,6 +90,22 @@ public sealed class PrinterProbeTests
     }
 
     [Fact]
+    public void PaperMatcher_AcceptsDriverRounded4x6()
+    {
+        var paper = new PaperCapability(
+            "4x6",
+            "Custom",
+            0,
+            WidthMm: 101.7,
+            HeightMm: 152.3);
+
+        Assert.True(WindowsSpoolerPrinter.MatchesPaperSize(
+            paper,
+            widthMm: 101.6,
+            heightMm: 152.4));
+    }
+
+    [Fact]
     public void SubmitA4Png_MissingFileFailsBeforePrinting()
     {
         var result = WindowsSpoolerPrinter.SubmitA4Png(

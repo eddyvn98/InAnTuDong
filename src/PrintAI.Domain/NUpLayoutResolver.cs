@@ -30,8 +30,19 @@ public static class NUpLayoutResolver
                 nameof(group));
         }
 
+        if (nUp.Columns is <= 0 ||
+            (nUp.Columns is int requestedColumns &&
+             nUp.PagesPerSheet % requestedColumns != 0))
+        {
+            throw new ArgumentException(
+                "N-up columns must be a positive divisor of pagesPerSheet.",
+                nameof(group));
+        }
+
         var orientation = nUp.AutoOrientation
-            ? RecommendedOrientation(nUp.PagesPerSheet)
+            ? RecommendedOrientation(
+                nUp.PagesPerSheet,
+                nUp.Columns)
             : group.Paper.Orientation;
 
         var paper = group.Paper with
@@ -39,9 +50,11 @@ public static class NUpLayoutResolver
             Orientation = orientation
         };
 
-        var (columns, rows) = GridFor(
-            nUp.PagesPerSheet,
-            orientation);
+        var (columns, rows) = nUp.Columns is int columnsOverride
+            ? (columnsOverride, nUp.PagesPerSheet / columnsOverride)
+            : GridFor(
+                nUp.PagesPerSheet,
+                orientation);
 
         var paperWidth = orientation == PageOrientation.Portrait
             ? paper.WidthMm
@@ -106,8 +119,26 @@ public static class NUpLayoutResolver
         };
 
     public static PageOrientation RecommendedOrientation(
-        int pagesPerSheet) =>
-        pagesPerSheet switch
+        int pagesPerSheet,
+        int? columns = null)
+    {
+        if (columns is int explicitColumns)
+        {
+            if (explicitColumns <= 0 ||
+                pagesPerSheet % explicitColumns != 0)
+            {
+                throw new ArgumentException(
+                    "N-up columns must be a positive divisor of pagesPerSheet.",
+                    nameof(columns));
+            }
+
+            var rows = pagesPerSheet / explicitColumns;
+            return explicitColumns >= rows
+                ? PageOrientation.Landscape
+                : PageOrientation.Portrait;
+        }
+
+        return pagesPerSheet switch
         {
             2 or 6 or 8 => PageOrientation.Landscape,
             4 or 9 or 16 => PageOrientation.Portrait,
@@ -116,4 +147,5 @@ public static class NUpLayoutResolver
                 pagesPerSheet,
                 "Unsupported pages-per-sheet value.")
         };
+    }
 }

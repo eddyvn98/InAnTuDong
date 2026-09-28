@@ -109,7 +109,7 @@ These are validation tasks, not missing software architecture.
 - [x] manual duplex correctness — PR #29 merged; planner, batch spooler, auto/manual execution, reinsert state and restart-safe back pass verified by CI + Windows package
 - [~] manual duplex printer calibration — per-printer order/rotation/instruction persistence implemented; real-paper verification pending
 - [ ] tagged release + release notes
-- [ ] field validation matrix for real 4x6, Smart Collage provider, HEIC, Office, scanner and printer hardware
+- [ ] field validation matrix for real 4x6, Smart Collage provider, HEIC, Office, scanner and printer hardware — execute `docs/M6_FIELD_VALIDATION.md`
 
 Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing.
 

@@ -50,7 +50,8 @@ public sealed record CanvasPlacementSpec(
     ShapeSpec? Shape = null,
     ImageTransformSpec? Transform = null,
     FitMode Fit = FitMode.Cover,
-    int Page = 0);
+    int Page = 0,
+    bool UseRotatedFootprint = false);
 
 public sealed record CanvasLayoutSpec(
     IReadOnlyList<CanvasPlacementSpec> Placements);

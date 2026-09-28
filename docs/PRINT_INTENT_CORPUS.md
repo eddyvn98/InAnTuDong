@@ -189,6 +189,8 @@ Implemented behavior:
 
 The 8 crop/position cases moved from `gap` to `supported`, reducing deterministic gaps from 38 to 30.
 
+Verification for this coverage change: CI #218 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #162 passed including packaged self-test and install lifecycle smoke checks.
+
 ### Next: booklet imposition
 
 Booklet is selected next because the N-up/grid foundation already exists and booklet primarily adds deterministic page padding/reordering and sheet-side semantics.

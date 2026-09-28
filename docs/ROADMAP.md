@@ -134,7 +134,7 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 - [x] strict general-planner JSON parser
 - [x] source path + inspected page-count binding
 - [x] unit tests added for the foundation slice
-- [~] CI verification for the foundation slice
+- [x] CI verification for the foundation slice — CI #174 and package-windows #118 succeeded
 
 ### Next slices
 

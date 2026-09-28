@@ -4,6 +4,7 @@ using System.Text.Json;
 using PrintAI.DocumentConversion;
 using PrintAI.Domain;
 using PrintAI.Rendering;
+using PrintAI.Scanning;
 using PrintAI.SourceInspection;
 using PrintAI.Windows.Printing;
 using SkiaSharp;
@@ -23,7 +24,9 @@ internal sealed record DesktopSelfTestReport(
 
 internal static partial class DesktopSelfTest
 {
-    public static int Run(string? outputPath)
+    public static int Run(
+        string? outputPath,
+        string? pdfOutputPath = null)
     {
         var checks = new List<DesktopSelfTestCheck>();
         var tempDirectory = Path.Combine(
@@ -37,6 +40,10 @@ internal static partial class DesktopSelfTest
             CheckUiAssets(checks);
             CheckLocalWebContract(checks);
             CheckRasterPipeline(checks, tempDirectory);
+            CheckPdfOutputPipeline(
+                checks,
+                tempDirectory,
+                pdfOutputPath);
             CheckRequestQueueLifecycle(checks, tempDirectory);
             CheckSpreadsheetPipeline(checks, tempDirectory);
             CheckPrinterProbe(checks);
@@ -223,6 +230,80 @@ internal static partial class DesktopSelfTest
             throw new InvalidOperationException("Could not encode self-test PNG.");
 
         File.WriteAllBytes(path, data.ToArray());
+    }
+
+    private static void CheckPdfOutputPipeline(
+        ICollection<DesktopSelfTestCheck> checks,
+        string tempDirectory,
+        string? requestedOutputPath)
+    {
+        var sourcePath = Path.Combine(
+            tempDirectory,
+            "pdf-source.png");
+        WriteSmokePng(sourcePath);
+
+        var job = new PrintJobSpec(
+            "pdf-self-test",
+            [new SourceSpec(sourcePath, Copies: 2)],
+            new PaperSpec(),
+            new LayoutSpec(
+                LayoutMode.ExactSize,
+                ItemWidthMm: 60,
+                ItemHeightMm: 60,
+                MarginMm: 5,
+                AllowRotate: false,
+                Fit: FitMode.Contain),
+            new PrintSettings(),
+            new PolicySpec(PreviewPolicy.Required));
+
+        var pageCount =
+            SourceJobRenderer.GetOutputPageCount(job);
+        var renderedPaths = new List<string>();
+
+        for (var pageIndex = 0;
+             pageIndex < pageCount;
+             pageIndex++)
+        {
+            var png = SourceJobRenderer.RenderA4(
+                job,
+                sourcePath,
+                sourcePageIndex: 0,
+                outputPageIndex: pageIndex,
+                dpi: 96);
+
+            var pagePath = Path.Combine(
+                tempDirectory,
+                $"pdf-page-{pageIndex + 1}.png");
+            File.WriteAllBytes(pagePath, png);
+            renderedPaths.Add(pagePath);
+        }
+
+        var outputPath = string.IsNullOrWhiteSpace(
+            requestedOutputPath)
+            ? Path.Combine(
+                tempDirectory,
+                "PrintAI-selftest-output.pdf")
+            : Path.GetFullPath(requestedOutputPath);
+
+        ScanPdfWriter.Write(
+            renderedPaths,
+            outputPath);
+
+        var bytes = File.ReadAllBytes(outputPath);
+        var validHeader =
+            bytes.Length > 5 &&
+            bytes[0] == (byte)'%' &&
+            bytes[1] == (byte)'P' &&
+            bytes[2] == (byte)'D' &&
+            bytes[3] == (byte)'F' &&
+            bytes[4] == (byte)'-';
+
+        checks.Add(new(
+            "pdf-output-pipeline",
+            validHeader && bytes.Length > 1000,
+            validHeader
+                ? $"Rendered {pageCount} output page(s) -> PDF {bytes.Length} bytes: {outputPath}"
+                : $"PDF output is invalid: {outputPath}"));
     }
 
     private static void CheckRequestQueueLifecycle(

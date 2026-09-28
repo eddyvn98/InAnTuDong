@@ -35,6 +35,7 @@ internal static partial class DesktopSelfTest
         try
         {
             CheckUiAssets(checks);
+            CheckLocalWebContract(checks);
             CheckRasterPipeline(checks, tempDirectory);
             CheckRequestQueueLifecycle(checks, tempDirectory);
             CheckSpreadsheetPipeline(checks, tempDirectory);
@@ -98,6 +99,55 @@ internal static partial class DesktopSelfTest
             present
                 ? $"desktop={desktopIndex}; local-web={localWebIndex}"
                 : "ui/index.html or local-web/index.html is missing from the package."));
+    }
+
+    private static void CheckLocalWebContract(
+        ICollection<DesktopSelfTestCheck> checks)
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory,
+            "local-web",
+            "index.html");
+
+        if (!File.Exists(path))
+        {
+            checks.Add(new(
+                "local-web-contract",
+                false,
+                "local-web/index.html is missing."));
+            return;
+        }
+
+        var html = File.ReadAllText(path);
+        var required = new[]
+        {
+            "id=\"files\"",
+            "data-select-source",
+            "data-remove-source",
+            "id=\"queueSave\"",
+            "id=\"queueRun\"",
+            "id=\"queueDelete\"",
+            "upsertQueuedRequest",
+            "removeQueuedRequest",
+            "processNextQueuedRequest",
+            "X-PrintAI-Session",
+            "/api/bootstrap",
+            "/api/files",
+            "/api/action"
+        };
+
+        var missing = required
+            .Where(token => !html.Contains(
+                token,
+                StringComparison.Ordinal))
+            .ToArray();
+
+        checks.Add(new(
+            "local-web-contract",
+            missing.Length == 0,
+            missing.Length == 0
+                ? "Local web source/queue/auth controls are present."
+                : $"Missing local web contract token(s): {string.Join(", ", missing)}"));
     }
 
     private static void CheckRasterPipeline(

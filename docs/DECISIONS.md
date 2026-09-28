@@ -400,3 +400,13 @@ ASP.NET Core request threads may not mutate `DesktopSession` directly. Browser o
 The WPF shell remains the process owner for this first slice. A later browser-first startup mode may make the visible WPF window optional without changing the loopback security or deterministic print boundaries.
 
 See `docs/LOCAL_WEB.md`.
+
+
+## ADR-038 - Browser UI exposes intent, not print-engine controls
+Status: accepted
+
+The primary PrintAI browser surface is AI-first and intentionally minimal. Human-facing controls are limited to source selection, source/page thumbnails, a natural-language request composer, deterministic preview, and a compact print action.
+
+Print-engine capabilities are not removed when their controls disappear. Printer/profile selection, policy, batch/output navigation, duplex handling, readiness and other deterministic operations remain behind the existing application/session boundary so AI and PrintAI code can use them without requiring the user to operate implementation details.
+
+The default browser planning policy is Smart. Printing remains gated by the existing deterministic preview, validation, capability and spooler paths; hiding controls does not bypass those safety boundaries.

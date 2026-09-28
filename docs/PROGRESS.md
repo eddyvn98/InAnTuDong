@@ -778,10 +778,19 @@ Next implementation target:
 
 **shrink-only / custom-percent scaling**
 
-Verification status:
+Verification:
 
-- implementation and docs committed on the feature branch
-- CI/package verification pending
-- do not merge until Linux + Windows shared tests and Windows package are green
+- verified commit: `71a3c1b65ec0d8bc532f2e99f4c000a361ae612f`
+- GitHub CI #204: success on Ubuntu + Windows
+- shared suite: 145/145 tests pass
+- N-up geometry/corpus/regression tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #148: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The General N-up slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

@@ -86,6 +86,8 @@ public sealed record DesktopPrintBatchView(
     string ColorMode,
     string Duplex,
     string Paper,
+    int? PagesPerSheet,
+    bool ItemBorder,
     bool CanAutoSequence);
 
 public sealed record DesktopJobView(

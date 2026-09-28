@@ -72,20 +72,40 @@ public static class CollageTemplateLibrary
 
     public static PrintJobSpec CreateJob(
         CollageTemplate template,
-        IReadOnlyList<SourceSpec> sources) =>
-        CreateJob(
+        IReadOnlyList<SourceSpec> sources)
+    {
+        if (sources.Count != 3)
+            throw new ArgumentException("The initial collage template library requires exactly three sources.");
+
+        return CreateJobCore(
             template,
             sources,
-            [
-                new CollageFrameAssignment(0, 0),
-                new CollageFrameAssignment(1, 1),
-                new CollageFrameAssignment(2, 2)
-            ]);
+            template.Canvas.Placements
+                .Select((placement, frameIndex) => new CollageFrameAssignment(
+                    FrameIndex: frameIndex,
+                    SourceIndex: placement.SourceIndex,
+                    Scale: 1,
+                    OffsetX: 0,
+                    OffsetY: 0))
+                .ToArray(),
+            preserveTemplateTransform: true);
+    }
 
     public static PrintJobSpec CreateJob(
         CollageTemplate template,
         IReadOnlyList<SourceSpec> sources,
-        IReadOnlyList<CollageFrameAssignment> assignments)
+        IReadOnlyList<CollageFrameAssignment> assignments) =>
+        CreateJobCore(
+            template,
+            sources,
+            assignments,
+            preserveTemplateTransform: false);
+
+    private static PrintJobSpec CreateJobCore(
+        CollageTemplate template,
+        IReadOnlyList<SourceSpec> sources,
+        IReadOnlyList<CollageFrameAssignment> assignments,
+        bool preserveTemplateTransform)
     {
         if (sources.Count != 3)
             throw new ArgumentException("The initial collage template library requires exactly three sources.");
@@ -108,13 +128,28 @@ public static class CollageTemplateLibrary
             .Select((placement, frameIndex) =>
             {
                 var assignment = byFrame[frameIndex];
+                var baseTransform = placement.Transform ?? new ImageTransformSpec();
+
+                var transform = preserveTemplateTransform
+                    ? baseTransform
+                    : new ImageTransformSpec(
+                        Scale: Math.Clamp(
+                            baseTransform.Scale * assignment.Scale,
+                            1,
+                            10),
+                        OffsetX: Math.Clamp(
+                            baseTransform.OffsetX + assignment.OffsetX,
+                            -1,
+                            1),
+                        OffsetY: Math.Clamp(
+                            baseTransform.OffsetY + assignment.OffsetY,
+                            -1,
+                            1));
+
                 return placement with
                 {
                     SourceIndex = assignment.SourceIndex,
-                    Transform = new ImageTransformSpec(
-                        Scale: assignment.Scale,
-                        OffsetX: assignment.OffsetX,
-                        OffsetY: assignment.OffsetY)
+                    Transform = transform
                 };
             })
             .ToArray();

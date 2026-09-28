@@ -204,3 +204,19 @@ If any batch requests duplex, PrintAI does not auto-advance the whole multi-batc
 Complete collated sets spanning multiple output groups are interleaved by set: all groups for set 1, then all groups for set 2, and so on.
 
 Color mode is part of executable intent, not UI metadata. Windows submission must honor PrintJobSpec.Print.ColorMode, and a persisted manual-duplex back pass must preserve the same color mode.
+
+
+## ADR-029 - General N-up compiles to the existing Grid execution mode
+Status: accepted
+
+General document pages-per-sheet intent is represented at the PrintPlan 2.0 layer as `NUpSpec`; it does not add another executable `LayoutMode`.
+
+The supported first-slice values are 2, 4, 6, 8, 9 and 16 pages per sheet. Deterministic code chooses the standard row/column grid, paper orientation and physical cell dimensions. The planner may request an explicit valid column count when the request clearly implies a different grid, such as presentation slides.
+
+`NUpSpec` owns pages-per-sheet, optional columns, gap, margin, border, fit and auto-orientation. The compiler resolves those semantics into a normal `LayoutMode.Grid` PrintJobSpec with uniform cell geometry.
+
+Source pages remain in explicit row-major order. Duplex remains a separate print setting and is not reinterpreted by N-up. An incomplete final sheet is allowed and contains the remaining source pages without duplication.
+
+Borders are an executable layout property and are rendered locally; the model does not draw or rasterize borders itself.
+
+This preserves the stable Grid renderer, preview pipeline, Windows spooler and manual/automatic duplex implementation while closing the General N-up corpus gap.

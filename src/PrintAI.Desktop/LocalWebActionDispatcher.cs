@@ -33,6 +33,16 @@ internal static class LocalWebActionDispatcher
                     ReadString(payload, "printer"));
                 break;
 
+            case "selectSource":
+                desktop.SelectSource(
+                    ReadInt(payload, "index"));
+                break;
+
+            case "removeSource":
+                desktop.RemoveSource(
+                    ReadInt(payload, "index"));
+                break;
+
             case "selectPage":
                 desktop.SelectPage(
                     ReadInt(payload, "index"));

@@ -23,6 +23,23 @@ public sealed class WindowsSpoolerDuplexTests
             WindowsSpoolerPrinter.ResolveDuplexSetting(mode, landscape));
     }
 
+    [Theory]
+    [InlineData(ColorMode.Color, true, true)]
+    [InlineData(ColorMode.Color, false, false)]
+    [InlineData(ColorMode.Grayscale, true, false)]
+    [InlineData(ColorMode.Grayscale, false, false)]
+    public void ColorMapping_RespectsIntentAndPrinterCapability(
+        ColorMode mode,
+        bool printerSupportsColor,
+        bool expected)
+    {
+        Assert.Equal(
+            expected,
+            WindowsSpoolerPrinter.ResolveColorSetting(
+                mode,
+                printerSupportsColor));
+    }
+
     [Fact]
     public void SubmitPages_RejectsEmptyBatchBeforePrinterAccess()
     {

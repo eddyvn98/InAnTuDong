@@ -155,4 +155,4 @@ See `docs/GENERAL_PRINT_INTENT.md`.
 
 ## Priority
 
-Do not invest heavily in new workflow features during M6 unless a release-blocking defect requires it.
+Prioritize M7 General Print Intent coverage before declaring the product broadly usable for real customer print requests. Keep M6 release-hardening evidence intact, but do not expand into non-print business workflows.

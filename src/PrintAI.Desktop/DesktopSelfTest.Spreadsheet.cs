@@ -1,3 +1,4 @@
+using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -36,14 +37,19 @@ internal static partial class DesktopSelfTest
         var sheetPlan = plan.Sheets.FirstOrDefault();
 
         var passed =
-            File.Exists(outputPath) &&
             sheet is not null &&
-            sheet.MaxColumn == 10 &&
-            sheetPlan is not null &&
-            sheetPlan.Orientation ==
-                SpreadsheetPageOrientation.Landscape &&
-            sheetPlan.ScalePercent >= 90 &&
-            sheetPlan.MinimumFontPt >= 8.5;
+            sheetPlan is not null;
+
+        if (passed)
+        {
+            passed =
+                File.Exists(outputPath) &&
+                sheet!.MaxColumn == 10 &&
+                sheetPlan!.Orientation ==
+                    SpreadsheetPageOrientation.Landscape &&
+                sheetPlan.ScalePercent >= 90 &&
+                sheetPlan.MinimumFontPt >= 8.5;
+        }
 
         checks.Add(new(
             "spreadsheet-smart-print",

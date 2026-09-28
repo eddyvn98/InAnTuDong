@@ -23,6 +23,7 @@ Examples:
 - "Ghép 2 mặt CCCD thành 3 bộ trên A4."
 - "Xếp 3 ảnh này lên giấy 4x6 inch, cho tôi vài cách để chọn."
 - "Scan 5 tờ thành một PDF rồi in 2 bản."
+- "In file này dạng booklet A4 gấp thành A5, tự dàn trang và thêm trang trắng nếu cần."
 
 ## V1 hardware scope
 
@@ -63,7 +64,7 @@ Validate paper bounds, sizes, margins, copies, source readability, layout overfl
 
 ### Layout
 
-Support single-page fit, exact-size item, repeated items, grids, auto rotation, spacing, cut marks, and paper-saving placement.
+Support single-page fit, exact-size item, repeated items, grids, auto rotation, spacing, cut marks, paper-saving placement, deterministic N-up, physical scaling, crop/anchor/offset/asymmetric margins, and booklet imposition.
 
 For small-photo workflows, support deterministic auto-layout alternatives. The first slice accepts 1-6 selected source pages, generates up to four 4x6-inch (101.6 x 152.4 mm) grid candidates across portrait/landscape, renders each candidate for review, and lets the user choose one before printing. The LLM does not calculate auto-grid candidate coordinates.
 
@@ -124,4 +125,4 @@ Exact-size output must eventually be verified with a real ruler/calibration page
 
 The planner must eventually cover real print-language combinations without requiring a workflow preset for every product name. Required intent dimensions include page/range selection, ordered multi-file composition, copies vs complete sets/collation, mixed color rules, mixed simplex/duplex rules, N-up/repeat, scaling, crop/position, booklet imposition, tiled/poster printing, and variable-size items.
 
-The first `PrintPlan 2.0` slice implements page selection, output groups, ordering, sets/collation, mixed color/duplex decomposition and compilation to existing jobs. See `docs/GENERAL_PRINT_INTENT.md`.
+PrintPlan 2.0 now implements page selection, output groups, ordering, sets/collation, mixed color/duplex decomposition, General N-up, physical scaling, crop/placement, and booklet imposition before compiling to existing executable jobs. Poster/tiled printing and variable-size general composition remain the two corpus-driven M7 gaps. See `docs/GENERAL_PRINT_INTENT.md`.

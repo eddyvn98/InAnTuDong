@@ -155,6 +155,8 @@ Implemented behavior:
 
 The N-up corpus cases moved from `gap` to `supported`, reducing deterministic gaps from 54 to 44.
 
+Verification for this coverage change: CI #204 passed on Ubuntu + Windows and package-windows #148 passed, including packaged self-test and install lifecycle smoke checks.
+
 ### Next: richer scaling
 
 Scaling is the next implementation target because it is the smallest remaining cross-cutting gap family and affects ordinary document/photo printing directly.

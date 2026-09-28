@@ -56,7 +56,7 @@ public sealed class SpreadsheetPrintPlanner(
                 {
                     name = sheet.Name,
                     rows = sheet.MaxRow,
-                    columns = sheet.MaxColumn,
+                    columnCount = sheet.MaxColumn,
                     estimatedWidthChars = sheet.EstimatedWidthChars,
                     mergedCellCount = sheet.MergedCellCount,
                     hiddenColumnCount = sheet.HiddenColumnCount,

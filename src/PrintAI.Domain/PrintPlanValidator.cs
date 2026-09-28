@@ -146,6 +146,7 @@ public static class PrintPlanValidator
         ValidatePlacement(group, prefix, errors);
         ValidateCrop(plan, group, prefix, errors);
         ValidateBooklet(group, prefix, errors);
+        ValidatePoster(plan, group, prefix, errors);
 
         if (group.NUp is null &&
             group.Layout.Mode == LayoutMode.Canvas)
@@ -190,7 +191,8 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.poster", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
@@ -210,7 +212,28 @@ public static class PrintPlanValidator
 
             PrintJobSpec representative;
 
-            if (group.Booklet is not null)
+            if (group.Poster is not null)
+            {
+                var poster =
+                    PosterTilingResolver.Resolve(
+                        plan,
+                        group,
+                        [representativeSource]);
+
+                representative = new(
+                    JobName: group.Name,
+                    Sources: poster.Sources,
+                    Paper: poster.Paper,
+                    Layout: poster.Layout,
+                    Print: new PrintSettings(
+                        Copies: 1,
+                        ColorMode: group.Print.ColorMode,
+                        Quality: group.Print.Quality,
+                        Duplex: DuplexMode.Off),
+                    Policy: plan.Policy,
+                    SchemaVersion: "1.0");
+            }
+            else if (group.Booklet is not null)
             {
                 var booklet =
                     BookletImpositionResolver.Resolve(
@@ -269,6 +292,102 @@ public static class PrintPlanValidator
                     $"plan.group.job.{error.Code}",
                     $"{prefix}: {error.Message}"));
             }
+        }
+    }
+
+    private static void ValidatePoster(
+        PrintPlan plan,
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var poster = group.Poster;
+        if (poster is null)
+            return;
+
+        if (!group.Collate)
+        {
+            errors.Add(new(
+                "plan.groups.poster.collate",
+                $"{prefix} poster sets must use collate=true so each set remains a complete tile sequence."));
+        }
+
+        if (group.NUp is not null ||
+            group.Scaling is not null ||
+            group.Placement is not null ||
+            group.Crop is not null ||
+            group.Booklet is not null)
+        {
+            errors.Add(new(
+                "plan.groups.poster.combination",
+                $"{prefix} poster tiling cannot combine with N-up, scaling, placement, crop, or booklet in this slice."));
+        }
+
+        if (group.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "plan.groups.poster.canvas",
+                $"{prefix} poster tiling cannot use Canvas layout."));
+        }
+
+        if (group.Print.Duplex != DuplexMode.Off)
+        {
+            errors.Add(new(
+                "plan.groups.poster.duplex",
+                $"{prefix} poster tiles must print one-sided."));
+        }
+
+        if (group.Selections is null ||
+            group.Selections.Count != 1)
+        {
+            errors.Add(new(
+                "plan.groups.poster.selection",
+                $"{prefix} poster tiling currently requires exactly one page selection."));
+            return;
+        }
+
+        var selection = group.Selections[0];
+        if (selection.SourceIndex < 0 ||
+            selection.SourceIndex >= plan.Sources.Count)
+        {
+            return;
+        }
+
+        if (ResolvePages(plan, selection).Count != 1)
+        {
+            errors.Add(new(
+                "plan.groups.poster.pages",
+                $"{prefix} poster tiling currently requires exactly one resolved source page."));
+            return;
+        }
+
+        var values = new[]
+        {
+            poster.TargetWidthMm,
+            poster.TargetHeightMm,
+            poster.OverlapMm,
+            poster.MarginMm
+        };
+
+        if (values
+            .Where(value => value is not null)
+            .Any(value => !double.IsFinite(value!.Value)))
+        {
+            errors.Add(new(
+                "plan.groups.poster.number",
+                $"{prefix} poster dimensions, overlap and margin must be finite."));
+        }
+
+        if (poster.TargetWidthMm is <= 0 ||
+            poster.TargetHeightMm is <= 0 ||
+            poster.Columns is <= 0 ||
+            poster.Rows is <= 0 ||
+            poster.OverlapMm < 0 ||
+            poster.MarginMm < 0)
+        {
+            errors.Add(new(
+                "plan.groups.poster.geometry",
+                $"{prefix} poster dimensions/grid must be positive and overlap/margin non-negative."));
         }
     }
 

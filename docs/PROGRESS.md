@@ -476,6 +476,29 @@ Exact next M6 work:
 4. tagged preview release + release notes
 5. real iPhone HEIC and scanner/Office/printer validation matrix
 
+
+## M6 Excel Smart Print in progress
+
+Branch `m6-excel-smart-print` adds the first spreadsheet-aware print workflow:
+
+- XLSX workbook inspection through Open XML
+- per-sheet row/column/header/width profile
+- guarded spreadsheet-specific AI planner
+- deterministic fallback when AI is unavailable or invalid
+- readability floor: effective printed text >= 8.5 pt
+- no default "fit all columns on one page"
+- landscape selection for wide tables
+- content-aware capped column widths
+- wrap text
+- repeat detected header rows
+- repeat leading identifier columns across horizontal page breaks
+- print-area generation from the used range
+- optimizer writes a copy; the original workbook is untouched
+- optimized XLSX -> LibreOffice PDF -> existing PrintAI preview/print path
+- regression workbook with 12 columns for analysis, optimizer and AI-plan validation
+
+See `docs/EXCEL_SMART_PRINT.md`.
+
 ## Important execution boundary
 
 AI cannot:

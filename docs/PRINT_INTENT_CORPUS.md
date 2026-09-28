@@ -265,6 +265,8 @@ Implemented behavior:
 
 The 10 variable-size cases moved from `gap` to `supported`, reducing deterministic primitive gaps from 10 to 0.
 
+Verification for this coverage change: CI #239 passed on Ubuntu + Windows with 261/261 shared tests, and package-windows #183 passed including packaged self-test and install lifecycle smoke checks.
+
 Requests that omit required sizes and lack trusted physical source metadata still correctly require clarification; the new primitive never guesses physical dimensions.
 
 ## Corpus maintenance rules

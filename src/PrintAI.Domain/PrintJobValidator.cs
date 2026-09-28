@@ -183,7 +183,8 @@ public static class PrintJobValidator
                 tile.CanvasXmm,
                 tile.CanvasYmm,
                 tile.CanvasWidthMm,
-                tile.CanvasHeightMm
+                tile.CanvasHeightMm,
+                tile.OverlapMm
             };
 
             if (dimensions.Any(value => !double.IsFinite(value)) ||
@@ -193,6 +194,7 @@ public static class PrintJobValidator
                 tile.CanvasYmm < 0 ||
                 tile.CanvasWidthMm <= 0 ||
                 tile.CanvasHeightMm <= 0 ||
+                tile.OverlapMm < 0 ||
                 tile.CanvasXmm + tile.CanvasWidthMm >
                     tile.TargetWidthMm + 0.001 ||
                 tile.CanvasYmm + tile.CanvasHeightMm >

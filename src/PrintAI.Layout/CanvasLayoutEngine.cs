@@ -19,7 +19,7 @@ public static class CanvasLayoutEngine
         var placements = canvas.Placements
             .Select((placement, index) => new Placement(
                 Index: index,
-                Page: 0,
+                Page: placement.Page,
                 XMm: placement.XMm,
                 YMm: placement.YMm,
                 WidthMm: placement.WidthMm,

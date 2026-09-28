@@ -155,6 +155,40 @@ public sealed partial class DesktopSession
             _ => null
         };
 
+    private static string? FormatPlacement(
+        PagePlacementSpec? placement)
+    {
+        if (placement is null)
+            return null;
+
+        var m = placement.Margins;
+        var offset =
+            Math.Abs(placement.OffsetXMm) > 0.001 ||
+            Math.Abs(placement.OffsetYMm) > 0.001
+                ? $" · offset {placement.OffsetXMm:0.##},{placement.OffsetYMm:0.##}mm"
+                : "";
+
+        return
+            $"{placement.Anchor} · lề " +
+            $"{m.LeftMm:0.##}/{m.TopMm:0.##}/" +
+            $"{m.RightMm:0.##}/{m.BottomMm:0.##}mm" +
+            offset;
+    }
+
+    private static string? FormatCrop(
+        SourceCropSpec? crop) =>
+        crop?.Mode switch
+        {
+            SourceCropMode.AutoTrimWhite => "auto-trim trắng",
+            SourceCropMode.CenterToTargetAspect => "crop giữa",
+            SourceCropMode.EdgesMm when crop.EdgesMm is { } edges =>
+                $"crop {edges.LeftMm:0.##}/" +
+                $"{edges.TopMm:0.##}/" +
+                $"{edges.RightMm:0.##}/" +
+                $"{edges.BottomMm:0.##}mm",
+            _ => null
+        };
+
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
@@ -177,6 +211,10 @@ public sealed partial class DesktopSession
                     ItemBorder: batch.Job.Layout.ItemBorder,
                     PhysicalScaling: FormatPhysicalScaling(
                         batch.Job.Layout.PhysicalScale),
+                    Placement: FormatPlacement(
+                        batch.Job.Layout.PagePlacement),
+                    Crop: FormatCrop(
+                        batch.Job.Layout.SourceCrop),
                     CanAutoSequence:
                         batch.Job.Print.Duplex == DuplexMode.Off);
             })

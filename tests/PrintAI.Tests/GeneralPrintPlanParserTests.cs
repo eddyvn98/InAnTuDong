@@ -69,6 +69,59 @@ public sealed class GeneralPrintPlanParserTests
     }
 
     [Fact]
+    public void Parse_AcceptsPlacementAndCropIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup =
+            node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["placement"] = new JsonObject
+        {
+            ["margins"] = new JsonObject
+            {
+                ["leftMm"] = 20,
+                ["topMm"] = 5,
+                ["rightMm"] = 5,
+                ["bottomMm"] = 5
+            },
+            ["anchor"] = "right",
+            ["offsetXMm"] = 0,
+            ["offsetYMm"] = -5,
+            ["shrinkToFit"] = true
+        };
+
+        firstGroup["crop"] = new JsonObject
+        {
+            ["mode"] = "edgesMm",
+            ["edgesMm"] = new JsonObject
+            {
+                ["leftMm"] = 0,
+                ["topMm"] = 10,
+                ["rightMm"] = 0,
+                ["bottomMm"] = 0
+            },
+            ["whiteThreshold"] = 245
+        };
+
+        var outcome = GeneralPrintPlanParser.Parse(
+            node.ToJsonString());
+
+        var group = outcome.Plan.OutputGroups[0];
+
+        Assert.NotNull(group.Placement);
+        Assert.Equal(
+            PageAnchor.Right,
+            group.Placement!.Anchor);
+        Assert.Equal(-5, group.Placement.OffsetYMm);
+
+        Assert.NotNull(group.Crop);
+        Assert.Equal(
+            SourceCropMode.EdgesMm,
+            group.Crop!.Mode);
+        Assert.Equal(10, group.Crop.EdgesMm!.TopMm);
+    }
+
+    [Fact]
     public void Parse_RejectsUnknownFields()
     {
         var node = JsonNode.Parse(ValidJson())!.AsObject();

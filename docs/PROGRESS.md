@@ -861,6 +861,78 @@ Verification:
 - install -> upgrade -> rollback -> uninstall smoke flow: success
 - ZIP/checksum/artifact upload: success
 
-The physical scaling slice is verified and ready to merge.
+The physical scaling slice was merged through PR #34. Final PR-head verification: CI #213 and package-windows #157 succeeded.
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 crop / anchor / offset / asymmetric margins
+
+Branch: `m7-crop-position`.
+
+The next corpus-driven M7 slice implements page-space placement and source-space crop as separate deterministic primitives.
+
+Implemented:
+
+- `PageMarginsSpec` with independent left/top/right/bottom millimetres
+- `PagePlacementSpec` with:
+  - center / top / bottom / left / right anchors
+  - four corner anchors
+  - signed X/Y millimetre offsets
+  - proportional shrink-to-fit inside reduced available page area
+- ExactSize layout resolves asymmetric margins and anchor geometry deterministically
+- placement offsets are rejected if they move the physical rectangle outside the paper
+- `SourceCropSpec` with:
+  - `AutoTrimWhite`
+  - `CenterToTargetAspect`
+  - `EdgesMm`
+- white-border trim is deterministic and raster-local
+- physical edge crop maps trusted source millimetres into raster coordinates
+- millimetre crop requires trusted physical page size
+- crop happens before Contain/Cover mapping
+- crop + placement can compose
+- crop + physical scaling, crop + N-up, crop + Canvas are intentionally rejected in this slice
+- placement + N-up is intentionally rejected in this slice
+- GeneralPrintPlanner prompt maps Vietnamese margin/anchor/offset/crop language into the new fields
+- desktop PrintPlan batch strip exposes placement and crop summaries
+- layout, crop calculator, renderer integration, parser, planner and corpus-derived regressions added
+- POS-003 through POS-010 moved from `gap` to `supported`
+
+Corpus after this slice:
+
+- 100 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 30 / 150 deterministic gaps remain
+
+Coverage on the balanced corpus:
+
+- immediately/conditionally executable: 110 / 150 = 73.3%
+- semantically handled including clarification: 120 / 150 = 80.0%
+
+Remaining gap families:
+
+- booklet imposition: 10
+- poster/tiled printing: 10
+- variable-size items: 10
+
+Next implementation target:
+
+**booklet imposition**
+
+Verification:
+
+- verified commit: `c9fda4eeeef45178f58dc4fa06b15a917e3fbafb`
+- GitHub CI #218: success on Ubuntu + Windows
+- shared suite: 191/191 tests pass
+- crop/placement layout, parser, calculator, renderer and corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #162: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The crop/placement slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

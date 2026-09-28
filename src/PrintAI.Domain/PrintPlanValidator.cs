@@ -143,6 +143,8 @@ public static class PrintPlanValidator
         }
 
         ValidateScaling(group, prefix, errors);
+        ValidatePlacement(group, prefix, errors);
+        ValidateCrop(plan, group, prefix, errors);
 
         if (group.NUp is null &&
             group.Layout.Mode == LayoutMode.Canvas)
@@ -184,24 +186,41 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.selection", StringComparison.Ordinal) ||
                 error.Code == "plan.groups.canvas" ||
                 error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
+            var firstPageIndex = firstPage - 1;
+            var planSource =
+                plan.Sources[firstSelection.SourceIndex];
+            var physical = planSource.Pages?
+                .FirstOrDefault(size =>
+                    size.PageIndex == firstPageIndex);
+
             var (paper, resolvedLayout) = NUpLayoutResolver.Resolve(group);
             var layout = resolvedLayout with
             {
                 PhysicalScale = group.Scaling?.Mode == PhysicalScaleMode.MaxFit
                     ? group.Scaling
-                    : null
+                    : null,
+                PagePlacement = group.Placement,
+                SourceCrop =
+                    group.Crop?.Mode == SourceCropMode.EdgesMm &&
+                    physical is null
+                        ? null
+                        : group.Crop
             };
             var representative = new PrintJobSpec(
                 JobName: group.Name,
                 Sources:
                 [
                     new SourceSpec(
-                        plan.Sources[firstSelection.SourceIndex].Path,
-                        PageIndex: firstPage - 1)
+                        planSource.Path,
+                        PageIndex: firstPageIndex,
+                        OriginalWidthMm: physical?.WidthMm,
+                        OriginalHeightMm: physical?.HeightMm)
                 ],
                 Paper: paper,
                 Layout: layout,
@@ -221,6 +240,121 @@ public static class PrintPlanValidator
                     $"{prefix}: {error.Message}"));
             }
         }
+    }
+
+    private static void ValidatePlacement(
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var placement = group.Placement;
+        if (placement is null)
+            return;
+
+        if (group.NUp is not null)
+        {
+            errors.Add(new(
+                "plan.groups.placement.nup",
+                $"{prefix} cannot combine page placement with General N-up in the current slice."));
+        }
+
+        if (group.Layout.Mode != LayoutMode.ExactSize)
+        {
+            errors.Add(new(
+                "plan.groups.placement.mode",
+                $"{prefix} page placement currently requires ExactSize layout."));
+        }
+
+        var margins = placement.Margins;
+        var values = new[]
+        {
+            margins.LeftMm,
+            margins.TopMm,
+            margins.RightMm,
+            margins.BottomMm
+        };
+
+        if (values.Any(value =>
+                !double.IsFinite(value) || value < 0))
+        {
+            errors.Add(new(
+                "plan.groups.placement.margins",
+                $"{prefix} page margins must be finite and non-negative."));
+        }
+
+        if (!double.IsFinite(placement.OffsetXMm) ||
+            !double.IsFinite(placement.OffsetYMm))
+        {
+            errors.Add(new(
+                "plan.groups.placement.offset",
+                $"{prefix} placement offsets must be finite."));
+        }
+    }
+
+    private static void ValidateCrop(
+        PrintPlan plan,
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var crop = group.Crop;
+        if (crop is null)
+            return;
+
+        if (group.NUp is not null)
+        {
+            errors.Add(new(
+                "plan.groups.crop.nup",
+                $"{prefix} cannot combine general source crop with N-up in the current slice."));
+        }
+
+        if (group.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "plan.groups.crop.canvas",
+                $"{prefix} cannot combine general source crop with Canvas layout."));
+        }
+
+        if (group.Scaling is not null)
+        {
+            errors.Add(new(
+                "plan.groups.crop.scaling",
+                $"{prefix} cannot combine source crop with physical scaling in the current slice."));
+        }
+
+        if (crop.Mode != SourceCropMode.EdgesMm)
+            return;
+
+        var edges = crop.EdgesMm;
+        if (edges is null)
+        {
+            errors.Add(new(
+                "plan.groups.crop.edges",
+                $"{prefix} EdgesMm crop requires explicit edge values."));
+            return;
+        }
+
+        var values = new[]
+        {
+            edges.LeftMm,
+            edges.TopMm,
+            edges.RightMm,
+            edges.BottomMm
+        };
+
+        if (values.Any(value =>
+                !double.IsFinite(value) || value < 0))
+        {
+            errors.Add(new(
+                "plan.groups.crop.edges",
+                $"{prefix} crop edge values must be finite and non-negative."));
+            return;
+        }
+
+        // Trusted physical page sizes are rebound after the strict planner
+        // parser. Source-size availability and edge-vs-page bounds are
+        // therefore enforced by PrintPlanCompiler, not at this pre-bind
+        // validation stage.
     }
 
     private static void ValidateScaling(

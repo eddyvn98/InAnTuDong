@@ -471,6 +471,8 @@ function render(s){
     (x.PagesPerSheet?' · '+x.PagesPerSheet+'-up':'')+
     (x.ItemBorder?' · viền':'')+
     (x.PhysicalScaling?' · '+esc(x.PhysicalScaling):'')+
+    (x.Placement?' · '+esc(x.Placement):'')+
+    (x.Crop?' · '+esc(x.Crop):'')+
     ' · '+esc(x.ColorMode)+' · '+esc(x.Duplex)+'</button>'
   ).join('');
   planBatchStrip.querySelectorAll('[data-plan-batch]').forEach(b=>

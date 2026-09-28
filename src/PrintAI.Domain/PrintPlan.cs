@@ -44,7 +44,9 @@ public sealed record PrintOutputGroupSpec(
     bool Collate = true,
     int Sequence = 0,
     NUpSpec? NUp = null,
-    PhysicalScaleSpec? Scaling = null);
+    PhysicalScaleSpec? Scaling = null,
+    PagePlacementSpec? Placement = null,
+    SourceCropSpec? Crop = null);
 
 public sealed record PrintPlan(
     string PlanName,

@@ -242,3 +242,30 @@ For PDF, SourceInspector supplies per-page width/height in millimetres. These di
 Percent values are centered in the target placement. Percentages larger than the target may be clipped by that placement, and preview exposes the result. This is distinct from `Cover`, which intentionally crops to fill.
 
 Physical scaling is not combined with General N-up or Canvas in this slice. This avoids mixing page-scale semantics with multi-item/collage geometry before a concrete need is validated.
+
+
+## ADR-031 - Page placement and source crop are separate deterministic primitives
+Status: accepted
+
+Page-space positioning and source-space cropping are different print operations and remain separate in the execution contract.
+
+`PagePlacementSpec` controls the physical placement rectangle on paper:
+
+- asymmetric margins
+- page anchor
+- signed X/Y offsets in millimetres
+- optional proportional shrink-to-fit when the requested margins reduce available space
+
+It currently applies only to `LayoutMode.ExactSize`. Offsets may move content outside the requested margin box but may not move the physical placement outside the paper.
+
+`SourceCropSpec` controls which part of the source is mapped into that placement:
+
+- `AutoTrimWhite` detects a deterministic non-white bounding box
+- `CenterToTargetAspect` crops symmetrically to the placement aspect
+- `EdgesMm` removes explicit physical millimetres from source edges
+
+`EdgesMm` requires trusted source physical dimensions. PDF dimensions come from SourceInspector and planner output cannot override them.
+
+Crop is applied before Contain/Cover pixel mapping. General crop is not combined with N-up, Canvas, or physical scaling in this slice; placement and crop may be combined.
+
+This separation prevents margin/position requests from being misrepresented as source crop, and prevents source crop from silently changing paper-space positioning.

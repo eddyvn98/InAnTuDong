@@ -89,6 +89,8 @@ public sealed record DesktopPrintBatchView(
     int? PagesPerSheet,
     bool ItemBorder,
     string? PhysicalScaling,
+    string? Placement,
+    string? Crop,
     bool CanAutoSequence);
 
 public sealed record DesktopJobView(

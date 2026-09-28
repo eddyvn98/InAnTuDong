@@ -24,8 +24,13 @@ public static class ExactSizeLayoutEngine
             throw new InvalidOperationException("The requested exact-size item does not fit inside the printable layout area.");
 
         var sourceItems = ExpandSources(job);
-        var x = (paperWidth - selected.WidthMm) / 2;
-        var y = (paperHeight - selected.HeightMm) / 2;
+        var (x, y) = ResolvePosition(
+            job,
+            paperWidth,
+            paperHeight,
+            selected.WidthMm,
+            selected.HeightMm);
+
         var placements = sourceItems
             .Select((sourceItem, index) => new Placement(
                 index,
@@ -74,14 +79,102 @@ public static class ExactSizeLayoutEngine
     {
         var width = rotated ? job.Layout.ItemHeightMm : job.Layout.ItemWidthMm;
         var height = rotated ? job.Layout.ItemWidthMm : job.Layout.ItemHeightMm;
-        var availableWidth = paperWidth - (2 * job.Layout.MarginMm);
-        var availableHeight = paperHeight - (2 * job.Layout.MarginMm);
+        var margins = ResolveMargins(job);
+        var availableWidth =
+            paperWidth - margins.LeftMm - margins.RightMm;
+        var availableHeight =
+            paperHeight - margins.TopMm - margins.BottomMm;
+
+        var fits =
+            width <= availableWidth &&
+            height <= availableHeight;
+
+        if (!fits &&
+            job.Layout.PagePlacement?.ShrinkToFit == true &&
+            availableWidth > 0 &&
+            availableHeight > 0)
+        {
+            var scale = Math.Min(
+                1d,
+                Math.Min(
+                    availableWidth / width,
+                    availableHeight / height));
+
+            width *= scale;
+            height *= scale;
+            fits =
+                width <= availableWidth + 0.0001 &&
+                height <= availableHeight + 0.0001;
+        }
 
         return new Candidate(
             width,
             height,
             rotated,
-            width <= availableWidth && height <= availableHeight);
+            fits);
+    }
+
+    private static PageMarginsSpec ResolveMargins(
+        PrintJobSpec job) =>
+        job.Layout.PagePlacement?.Margins ??
+        new PageMarginsSpec(
+            job.Layout.MarginMm,
+            job.Layout.MarginMm,
+            job.Layout.MarginMm,
+            job.Layout.MarginMm);
+
+    private static (double X, double Y) ResolvePosition(
+        PrintJobSpec job,
+        double paperWidth,
+        double paperHeight,
+        double width,
+        double height)
+    {
+        var placement = job.Layout.PagePlacement;
+        if (placement is null)
+        {
+            return (
+                (paperWidth - width) / 2,
+                (paperHeight - height) / 2);
+        }
+
+        var margins = placement.Margins;
+        var left = margins.LeftMm;
+        var top = margins.TopMm;
+        var right = paperWidth - margins.RightMm;
+        var bottom = paperHeight - margins.BottomMm;
+
+        var centerX = left + ((right - left - width) / 2);
+        var centerY = top + ((bottom - top - height) / 2);
+        var rightX = right - width;
+        var bottomY = bottom - height;
+
+        var (x, y) = placement.Anchor switch
+        {
+            PageAnchor.Top => (centerX, top),
+            PageAnchor.Bottom => (centerX, bottomY),
+            PageAnchor.Left => (left, centerY),
+            PageAnchor.Right => (rightX, centerY),
+            PageAnchor.TopLeft => (left, top),
+            PageAnchor.TopRight => (rightX, top),
+            PageAnchor.BottomLeft => (left, bottomY),
+            PageAnchor.BottomRight => (rightX, bottomY),
+            _ => (centerX, centerY)
+        };
+
+        x += placement.OffsetXMm;
+        y += placement.OffsetYMm;
+
+        if (x < -0.0001 ||
+            y < -0.0001 ||
+            x + width > paperWidth + 0.0001 ||
+            y + height > paperHeight + 0.0001)
+        {
+            throw new InvalidOperationException(
+                "Page placement offset moves the item outside the physical paper.");
+        }
+
+        return (x, y);
     }
 
     private static (double Width, double Height) GetPaperSize(PaperSpec paper) =>

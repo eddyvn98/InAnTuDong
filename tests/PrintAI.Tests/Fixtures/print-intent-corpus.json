@@ -1320,13 +1320,13 @@
       "category": "crop_margin_position",
       "request": "Cắt bỏ phần trắng xung quanh ảnh trước khi in.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "autoCropForPrint"
+      "gapCapability": null
     },
     {
       "id": "POS-004",
@@ -1334,13 +1334,13 @@
       "category": "crop_margin_position",
       "request": "Chừa lề trái 20 mm để đóng hồ sơ.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "asymmetricMargins"
+      "gapCapability": null
     },
     {
       "id": "POS-005",
@@ -1348,13 +1348,13 @@
       "category": "crop_margin_position",
       "request": "Đưa nội dung lên trên 5 mm.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "contentOffset"
+      "gapCapability": null
     },
     {
       "id": "POS-006",
@@ -1362,13 +1362,13 @@
       "category": "crop_margin_position",
       "request": "Căn ảnh sát mép phải.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "anchorPosition"
+      "gapCapability": null
     },
     {
       "id": "POS-007",
@@ -1376,13 +1376,13 @@
       "category": "crop_margin_position",
       "request": "Chỉ lấy phần giữa của ảnh rồi in.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "cropRegion"
+      "gapCapability": null
     },
     {
       "id": "POS-008",
@@ -1390,13 +1390,13 @@
       "category": "crop_margin_position",
       "request": "Cắt 10 mm ở mép trên trước khi in.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "cropRegion"
+      "gapCapability": null
     },
     {
       "id": "POS-009",
@@ -1404,13 +1404,13 @@
       "category": "crop_margin_position",
       "request": "Chừa lề trên 15 mm và lề trái 25 mm.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "asymmetricMargins"
+      "gapCapability": null
     },
     {
       "id": "POS-010",
@@ -1418,13 +1418,13 @@
       "category": "crop_margin_position",
       "request": "Căn nội dung xuống góc dưới bên phải.",
       "sourceProfile": "singlePdf20",
-      "expectedCoverage": "gap",
+      "expectedCoverage": "supported",
       "requiredCapabilities": [
         "crop",
         "margin",
         "position"
       ],
-      "gapCapability": "anchorPosition"
+      "gapCapability": null
     },
     {
       "id": "PAPER-001",

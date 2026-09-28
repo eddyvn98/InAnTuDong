@@ -13,6 +13,7 @@ public static class PrintPlanCompiler
         }
 
         EnsurePhysicalScalingMetadata(plan);
+        EnsureCropMetadata(plan);
 
         var batches = new List<CompiledPrintBatch>();
         var orderedGroups = plan.OutputGroups
@@ -121,6 +122,50 @@ public static class PrintPlanCompiler
         }
     }
 
+    private static void EnsureCropMetadata(PrintPlan plan)
+    {
+        foreach (var group in plan.OutputGroups)
+        {
+            if (group.Crop?.Mode != SourceCropMode.EdgesMm)
+                continue;
+
+            var edges = group.Crop.EdgesMm
+                ?? throw new ArgumentException(
+                    "EdgesMm crop requires explicit edge values.",
+                    nameof(plan));
+
+            foreach (var selection in group.Selections)
+            {
+                var source = plan.Sources[selection.SourceIndex];
+
+                foreach (var page in PrintPlanValidator.ResolvePages(
+                             plan,
+                             selection))
+                {
+                    var physical = source.Pages?
+                        .FirstOrDefault(size =>
+                            size.PageIndex == page - 1);
+
+                    if (physical is null)
+                    {
+                        throw new ArgumentException(
+                            $"Millimetre crop requires trusted page size metadata for " +
+                            $"{source.Path} page {page}.",
+                            nameof(plan));
+                    }
+
+                    if (edges.LeftMm + edges.RightMm >= physical.WidthMm ||
+                        edges.TopMm + edges.BottomMm >= physical.HeightMm)
+                    {
+                        throw new ArgumentException(
+                            $"Crop edges leave no content for {source.Path} page {page}.",
+                            nameof(plan));
+                    }
+                }
+            }
+        }
+    }
+
     private static IReadOnlyList<SourceSpec> ExpandSources(
         PrintPlan plan,
         PrintOutputGroupSpec group)
@@ -168,7 +213,9 @@ public static class PrintPlanCompiler
 
         var layout = resolvedLayout with
         {
-            PhysicalScale = group.Scaling
+            PhysicalScale = group.Scaling,
+            PagePlacement = group.Placement,
+            SourceCrop = group.Crop
         };
 
         return new(

@@ -136,7 +136,7 @@ public sealed partial class DesktopSession
 
         _selectedRecipeId = recipe.Id;
         _activeJob = recipe.CreateJob(page.SourcePath, recipe.Name);
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = $"recipe:{recipe.Name}";
         _selectedOutputPage = 0;
         RebuildPreview();

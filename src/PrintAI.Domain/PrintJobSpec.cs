@@ -11,6 +11,7 @@ public sealed record PosterTileSourceSpec(
     double CanvasYmm,
     double CanvasWidthMm,
     double CanvasHeightMm,
+    double OverlapMm = 0,
     FitMode Fit = FitMode.Contain,
     bool RegistrationMarks = false,
     bool TileLabel = false);

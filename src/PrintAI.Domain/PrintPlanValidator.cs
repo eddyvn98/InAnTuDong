@@ -40,6 +40,22 @@ public static class PrintPlanValidator
 
             if (source.PageCount < 1)
                 errors.Add(new("plan.sources.pageCount", $"Source {sourceIndex} page count must be at least 1."));
+
+            if ((source.PixelWidth is null) !=
+                (source.PixelHeight is null))
+            {
+                errors.Add(new(
+                    "plan.sources.pixelSize.pair",
+                    $"Source {sourceIndex} pixel width/height must be provided together."));
+            }
+
+            if (source.PixelWidth is <= 0 ||
+                source.PixelHeight is <= 0)
+            {
+                errors.Add(new(
+                    "plan.sources.pixelSize",
+                    $"Source {sourceIndex} pixel dimensions must be positive when provided."));
+            }
         }
 
         if (plan.OutputGroups is null || plan.OutputGroups.Count == 0)

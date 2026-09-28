@@ -244,6 +244,23 @@
 
     <h3>Máy in</h3>
     <select id="printer"></select>
+    <div class="box" id="manualDuplexProfileBox">
+      <b>Manual duplex profile</b>
+      <div class="meta" id="manualDuplexProfileState">Chưa verify bằng giấy thật.</div>
+      <div class="row">
+        <div><label>Thứ tự back pass</label><select id="manualBackOrder"><option>Reverse</option><option>Forward</option></select></div>
+        <div><label>Long-edge rotation</label><select id="manualLongRotation"><option value="0">0°</option><option value="180">180°</option></select></div>
+      </div>
+      <label>Short-edge rotation</label>
+      <select id="manualShortRotation"><option value="0">0°</option><option value="180">180°</option></select>
+      <label>Hướng dẫn nạp lại giấy</label>
+      <textarea id="manualReinsertInstruction" style="min-height:64px"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button id="saveManualDuplexProfile">Lưu · chưa verify</button>
+        <button id="verifyManualDuplexProfile">Xác nhận đã test giấy thật</button>
+      </div>
+      <div class="meta">Chỉ xác nhận verified sau khi đã thử giấy thật đúng printer/driver/feed setting này.</div>
+    </div>
     <div class="box warn" id="manualDuplexBox" style="display:none">
       <b>Đang chờ in mặt sau</b>
       <div class="meta" id="manualDuplexInfo"></div>
@@ -396,6 +413,15 @@ document.querySelector('#printJob').onclick=()=>post('printJob');
 document.querySelector('#printAllSources').onclick=()=>post('printAllSources');
 document.querySelector('#continueManualDuplex').onclick=()=>post('continueManualDuplex');
 document.querySelector('#cancelManualDuplex').onclick=()=>post('cancelManualDuplex');
+const saveManualDuplexProfile=verified=>post('saveManualDuplexProfile',{
+  backOrder:document.querySelector('#manualBackOrder').value,
+  longEdgeRotationDegrees:Number(document.querySelector('#manualLongRotation').value),
+  shortEdgeRotationDegrees:Number(document.querySelector('#manualShortRotation').value),
+  reinsertInstruction:document.querySelector('#manualReinsertInstruction').value.trim(),
+  verified
+});
+document.querySelector('#saveManualDuplexProfile').onclick=()=>saveManualDuplexProfile(false);
+document.querySelector('#verifyManualDuplexProfile').onclick=()=>saveManualDuplexProfile(true);
 document.querySelector('#printer').onchange=e=>post('selectPrinter',{printer:e.target.value});
 
 chrome.webview.addEventListener('message',e=>{
@@ -595,6 +621,18 @@ function render(s){
   }
 
   const duplex=s.Duplex;
+  if(!duplex.Pending&&duplex.BackOrder){
+    set('#manualBackOrder',duplex.BackOrder);
+    set('#manualLongRotation',duplex.LongEdgeBackRotationDegrees);
+    set('#manualShortRotation',duplex.ShortEdgeBackRotationDegrees);
+    set('#manualReinsertInstruction',duplex.Instruction||'');
+  }
+  document.querySelector('#manualDuplexProfileState').innerHTML=duplex.ProfileVerified
+    ?'<b>✓ Verified bằng giấy thật</b>'
+    :'<b>Chưa verified bằng giấy thật</b>';
+  document.querySelector('#saveManualDuplexProfile').disabled=duplex.Pending||!s.SelectedPrinter;
+  document.querySelector('#verifyManualDuplexProfile').disabled=duplex.Pending||!s.SelectedPrinter;
+
   const duplexBox=document.querySelector('#manualDuplexBox');
   duplexBox.style.display=duplex.Pending?'block':'none';
   document.querySelector('#continueManualDuplex').disabled=!duplex.CanContinueBack;

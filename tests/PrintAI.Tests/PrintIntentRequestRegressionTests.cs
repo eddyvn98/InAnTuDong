@@ -1,4 +1,6 @@
 using PrintAI.Domain;
+using PrintAI.Layout;
+using PrintAI.Rendering;
 using Xunit;
 
 namespace PrintAI.Tests;
@@ -137,6 +139,118 @@ public sealed class PrintIntentRequestRegressionTests
     }
 
     [Fact]
+    public void Nup001_TwoPagesPerSheet_UsesDeterministicTwoUp()
+    {
+        var plan = Plan(
+            [new PlanSourceSpec("C:/print/doc.pdf", 4)],
+            [
+                Group(
+                    "2-up",
+                    [new PageSelectionSpec(0, [new PageRangeSpec(1, 4)])],
+                    nUp: new NUpSpec(2))
+            ]);
+
+        var job = Assert.Single(PrintPlanCompiler.Compile(plan).Batches).Job;
+        var layout = GridLayoutEngine.Layout(job);
+
+        Assert.Equal(PageOrientation.Landscape, job.Paper.Orientation);
+        Assert.Equal(2, layout.CapacityPerPage);
+        Assert.Equal(2, SourceJobRenderer.GetOutputPageCount(job));
+    }
+
+    [Fact]
+    public void Nup006_RowMajorOrder_IsPreserved()
+    {
+        var plan = Plan(
+            [new PlanSourceSpec("C:/print/doc.pdf", 6)],
+            [
+                Group(
+                    "2-up row major",
+                    [new PageSelectionSpec(0, [new PageRangeSpec(1, 6)])],
+                    nUp: new NUpSpec(2))
+            ]);
+
+        var job = Assert.Single(PrintPlanCompiler.Compile(plan).Batches).Job;
+        var layout = GridLayoutEngine.Layout(job);
+
+        Assert.Equal(
+            Enumerable.Range(0, 6),
+            job.Sources.Select(source => source.PageIndex));
+
+        Assert.Equal(
+            [0, 0, 1, 1, 2, 2],
+            layout.Placements.Select(placement => placement.Page).ToArray());
+    }
+
+    [Fact]
+    public void Nup007_FourUpDuplex_PreservesDuplex()
+    {
+        var plan = Plan(
+            [new PlanSourceSpec("C:/print/doc.pdf", 8)],
+            [
+                Group(
+                    "4-up duplex",
+                    [new PageSelectionSpec(0, [new PageRangeSpec(1, 8)])],
+                    duplex: DuplexMode.LongEdge,
+                    nUp: new NUpSpec(4))
+            ]);
+
+        var job = Assert.Single(PrintPlanCompiler.Compile(plan).Batches).Job;
+
+        Assert.Equal(DuplexMode.LongEdge, job.Print.Duplex);
+        Assert.Equal(2, SourceJobRenderer.GetOutputPageCount(job));
+    }
+
+    [Fact]
+    public void Nup008_EightSlidesLandscape_UsesTwoByFourGrid()
+    {
+        var plan = Plan(
+            [new PlanSourceSpec("C:/print/slides.pdf", 8)],
+            [
+                Group(
+                    "8 slides",
+                    [new PageSelectionSpec(0, [new PageRangeSpec(1, 8)])],
+                    paper: new PaperSpec(
+                        210,
+                        297,
+                        PageOrientation.Landscape),
+                    nUp: new NUpSpec(
+                        PagesPerSheet: 8,
+                        Columns: 2,
+                        AutoOrientation: false))
+            ]);
+
+        var job = Assert.Single(PrintPlanCompiler.Compile(plan).Batches).Job;
+        var layout = GridLayoutEngine.Layout(job);
+
+        Assert.Equal(PageOrientation.Landscape, job.Paper.Orientation);
+        Assert.Equal(2, layout.Columns);
+        Assert.Equal(4, layout.Rows);
+        Assert.True(job.Layout.ItemWidthMm > job.Layout.ItemHeightMm);
+    }
+
+    [Fact]
+    public void Nup009And010_GapAndBorder_AreExecutableProperties()
+    {
+        var plan = Plan(
+            [new PlanSourceSpec("C:/print/doc.pdf", 4)],
+            [
+                Group(
+                    "4-up with gap and border",
+                    [new PageSelectionSpec(0, [new PageRangeSpec(1, 4)])],
+                    nUp: new NUpSpec(
+                        PagesPerSheet: 4,
+                        GapMm: 3,
+                        Border: true))
+            ]);
+
+        var job = Assert.Single(PrintPlanCompiler.Compile(plan).Batches).Job;
+
+        Assert.Equal(3, job.Layout.GapMm);
+        Assert.True(job.Layout.ItemBorder);
+    }
+
+    [Fact]
     public void Paper004_MixedPaperAndOrientationRemainGroupSpecific()
     {
         var plan = Plan(
@@ -180,7 +294,8 @@ public sealed class PrintIntentRequestRegressionTests
         int sets = 1,
         bool collate = true,
         int sequence = 0,
-        PaperSpec? paper = null) =>
+        PaperSpec? paper = null,
+        NUpSpec? nUp = null) =>
         new(
             name,
             selections,
@@ -194,5 +309,6 @@ public sealed class PrintIntentRequestRegressionTests
             new OutputPrintSettings(color, PrintQuality.Standard, duplex),
             sets,
             collate,
-            sequence);
+            sequence,
+            nUp);
 }

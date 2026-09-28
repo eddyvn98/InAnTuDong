@@ -114,7 +114,10 @@ public static class GridLayoutEngine
         if (available < item)
             return 0;
 
-        return (int)Math.Floor((available + gap) / (item + gap));
+        const double floatingPointTolerance = 1e-9;
+        return (int)Math.Floor(
+            ((available + gap) / (item + gap)) +
+            floatingPointTolerance);
     }
 
     private sealed record SourceItem(

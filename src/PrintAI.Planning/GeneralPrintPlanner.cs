@@ -63,7 +63,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 },
                 "sets": 1,
                 "collate": true,
-                "sequence": 0
+                "sequence": 0,
+                "nUp": null
               }
             ],
             "policy": { "preview": "required" },
@@ -83,7 +84,28 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - sequence values must be unique and start at 0 in intended execution order.
         - include/exclude page numbers are one-based and must stay inside source pageCount.
         - For ordinary document pages on A4, exactSize with a 5 mm margin and 200 x 287 mm content box is a safe default unless the request specifies another physical size.
-        - Use grid only when the user explicitly requests repeated/N-up placement.
+        - General N-up is represented with outputGroup.nUp, not by guessing itemWidthMm/itemHeightMm.
+        - Supported pagesPerSheet values are exactly: 2, 4, 6, 8, 9, 16.
+        - For "N trang/tờ", "N-up", or "N slides per sheet", set nUp:
+          {
+            "pagesPerSheet": N,
+            "columns": null,
+            "gapMm": 2,
+            "marginMm": 5,
+            "border": false,
+            "fit": "contain",
+            "autoOrientation": true
+          }
+        - nUp.columns is optional. Leave it null for the deterministic standard grid.
+        - Use nUp.columns only when the request clearly implies a different grid; for example 8 presentation slides on landscape paper should use columns=2 so the four rows have landscape-shaped cells.
+        - If the user explicitly requests paper orientation, copy that orientation to paper.orientation and set nUp.autoOrientation=false.
+        - If orientation is not explicit, set nUp.autoOrientation=true; deterministic code chooses the paper orientation.
+        - If the user asks for space between N-up pages, set nUp.gapMm to the requested value, or 2 mm when space is requested without a size.
+        - If the user asks for a border around each N-up page, set nUp.border=true.
+        - N-up preserves selected source-page order in row-major order.
+        - Duplex is independent from N-up: keep print.duplex exactly as requested.
+        - Do not approximate unsupported pagesPerSheet values. Ask a concise clarification question.
+        - Use ordinary grid layout only for repeated physical items such as labels/photos, not document pages-per-sheet.
         - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 

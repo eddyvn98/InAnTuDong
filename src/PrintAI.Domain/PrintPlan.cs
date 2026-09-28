@@ -19,6 +19,15 @@ public sealed record OutputPrintSettings(
     PrintQuality Quality = PrintQuality.Standard,
     DuplexMode Duplex = DuplexMode.Off);
 
+public sealed record NUpSpec(
+    int PagesPerSheet,
+    int? Columns = null,
+    double GapMm = 2,
+    double MarginMm = 5,
+    bool Border = false,
+    FitMode Fit = FitMode.Contain,
+    bool AutoOrientation = true);
+
 public sealed record PrintOutputGroupSpec(
     string Name,
     IReadOnlyList<PageSelectionSpec> Selections,
@@ -27,7 +36,8 @@ public sealed record PrintOutputGroupSpec(
     OutputPrintSettings Print,
     int Sets = 1,
     bool Collate = true,
-    int Sequence = 0);
+    int Sequence = 0,
+    NUpSpec? NUp = null);
 
 public sealed record PrintPlan(
     string PlanName,

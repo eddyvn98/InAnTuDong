@@ -468,6 +468,8 @@ function render(s){
   planBatchStrip.innerHTML=s.Planner.Batches.map(x=>
     '<button class="chip '+(x.Index===s.Planner.SelectedBatch?'active':'')+'" data-plan-batch="'+x.Index+'">'+
     'Batch '+(x.Index+1)+'/'+s.Planner.Batches.length+' · '+esc(x.Name)+
+    (x.PagesPerSheet?' · '+x.PagesPerSheet+'-up':'')+
+    (x.ItemBorder?' · viền':'')+
     ' · '+esc(x.ColorMode)+' · '+esc(x.Duplex)+'</button>'
   ).join('');
   planBatchStrip.querySelectorAll('[data-plan-batch]').forEach(b=>

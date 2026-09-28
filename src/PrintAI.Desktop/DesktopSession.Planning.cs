@@ -148,18 +148,26 @@ public sealed partial class DesktopSession
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
-            .Select((batch, index) => new DesktopPrintBatchView(
-                Index: index,
-                Name: batch.Job.JobName,
-                SetNumber: batch.SetNumber,
-                SourcePageCount: batch.Job.Sources.Count,
-                ColorMode: batch.Job.Print.ColorMode.ToString(),
-                Duplex: batch.Job.Print.Duplex.ToString(),
-                Paper:
-                    $"{batch.Job.Paper.WidthMm:0.#} × " +
-                    $"{batch.Job.Paper.HeightMm:0.#} mm",
-                CanAutoSequence:
-                    batch.Job.Print.Duplex == DuplexMode.Off))
+            .Select((batch, index) =>
+            {
+                var group = _generalPlanResult?
+                    .Outcome.Plan.OutputGroups[batch.GroupIndex];
+
+                return new DesktopPrintBatchView(
+                    Index: index,
+                    Name: batch.Job.JobName,
+                    SetNumber: batch.SetNumber,
+                    SourcePageCount: batch.Job.Sources.Count,
+                    ColorMode: batch.Job.Print.ColorMode.ToString(),
+                    Duplex: batch.Job.Print.Duplex.ToString(),
+                    Paper:
+                        $"{batch.Job.Paper.WidthMm:0.#} × " +
+                        $"{batch.Job.Paper.HeightMm:0.#} mm",
+                    PagesPerSheet: group?.NUp?.PagesPerSheet,
+                    ItemBorder: batch.Job.Layout.ItemBorder,
+                    CanAutoSequence:
+                        batch.Job.Print.Duplex == DuplexMode.Off);
+            })
             .ToArray() ?? [];
 
         return new(

@@ -40,7 +40,8 @@ public sealed record LayoutSpec(
     bool AllowRotate = true,
     bool CutMarks = false,
     FitMode Fit = FitMode.Contain,
-    CanvasLayoutSpec? Canvas = null);
+    CanvasLayoutSpec? Canvas = null,
+    bool ItemBorder = false);
 
 public sealed record PrintSettings(
     int Copies = 1,

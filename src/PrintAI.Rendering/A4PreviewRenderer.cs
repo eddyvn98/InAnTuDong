@@ -65,6 +65,9 @@ public static class A4PreviewRenderer
                 dpi,
                 canvasPlacement);
 
+            if (job.Layout.ItemBorder)
+                DrawItemBorder(canvas, placement, dpi);
+
             if (job.Layout.CutMarks)
                 DrawCutMarks(canvas, placement, dpi);
         }
@@ -130,6 +133,27 @@ public static class A4PreviewRenderer
         var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
         canvas.DrawBitmap(source, sourceRect, destinationRect, sampling);
         canvas.Restore();
+    }
+
+    private static void DrawItemBorder(
+        SKCanvas canvas,
+        Placement placement,
+        int dpi)
+    {
+        using var paint = new SKPaint
+        {
+            Color = SKColors.Black,
+            StrokeWidth = Math.Max(1, MmToPxF(0.2, dpi)),
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke
+        };
+
+        canvas.DrawRect(
+            MmToPxF(placement.XMm, dpi),
+            MmToPxF(placement.YMm, dpi),
+            MmToPxF(placement.WidthMm, dpi),
+            MmToPxF(placement.HeightMm, dpi),
+            paint);
     }
 
     private static void DrawCutMarks(SKCanvas canvas, Placement placement, int dpi)

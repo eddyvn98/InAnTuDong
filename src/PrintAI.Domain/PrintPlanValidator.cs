@@ -137,7 +137,11 @@ public static class PrintPlanValidator
         if (group.Sets < 1)
             errors.Add(new("plan.groups.sets", $"{prefix} sets must be at least 1."));
 
-        if (group.Layout.Mode == LayoutMode.Canvas)
+        if (group.NUp is not null)
+        {
+            ValidateNUp(group, prefix, errors);
+        }
+        else if (group.Layout.Mode == LayoutMode.Canvas)
         {
             errors.Add(new(
                 "plan.groups.canvas",
@@ -174,10 +178,12 @@ public static class PrintPlanValidator
 
         if (!errors.Any(error =>
                 error.Code.StartsWith("plan.selection", StringComparison.Ordinal) ||
-                error.Code == "plan.groups.canvas"))
+                error.Code == "plan.groups.canvas" ||
+                error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
+            var (paper, layout) = NUpLayoutResolver.Resolve(group);
             var representative = new PrintJobSpec(
                 JobName: group.Name,
                 Sources:
@@ -186,8 +192,8 @@ public static class PrintPlanValidator
                         plan.Sources[firstSelection.SourceIndex].Path,
                         PageIndex: firstPage - 1)
                 ],
-                Paper: group.Paper,
-                Layout: group.Layout,
+                Paper: paper,
+                Layout: layout,
                 Print: new PrintSettings(
                     Copies: 1,
                     ColorMode: group.Print.ColorMode,
@@ -203,6 +209,56 @@ public static class PrintPlanValidator
                     $"plan.group.job.{error.Code}",
                     $"{prefix}: {error.Message}"));
             }
+        }
+    }
+
+    private static void ValidateNUp(
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var nUp = group.NUp!;
+
+        if (!NUpLayoutResolver.SupportedPagesPerSheet.Contains(
+                nUp.PagesPerSheet))
+        {
+            errors.Add(new(
+                "plan.groups.nup.pagesPerSheet",
+                $"{prefix} pagesPerSheet must be one of: " +
+                $"{string.Join(", ", NUpLayoutResolver.SupportedPagesPerSheet.Order())}."));
+        }
+
+        if (nUp.Columns is <= 0 ||
+            (nUp.Columns is int columns &&
+             nUp.PagesPerSheet % columns != 0))
+        {
+            errors.Add(new(
+                "plan.groups.nup.columns",
+                $"{prefix} N-up columns must be a positive divisor of pagesPerSheet."));
+        }
+
+        if (nUp.GapMm < 0 || nUp.MarginMm < 0)
+        {
+            errors.Add(new(
+                "plan.groups.nup.spacing",
+                $"{prefix} N-up gap and margin cannot be negative."));
+        }
+
+        if (errors.Any(error =>
+                error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal)))
+        {
+            return;
+        }
+
+        try
+        {
+            _ = NUpLayoutResolver.Resolve(group);
+        }
+        catch (ArgumentException ex)
+        {
+            errors.Add(new(
+                "plan.groups.nup.geometry",
+                $"{prefix}: {ex.Message}"));
         }
     }
 

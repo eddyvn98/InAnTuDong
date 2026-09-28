@@ -729,3 +729,68 @@ Verification:
 The M7 corpus slice is verified. The next implementation target is General N-up / pages per sheet.
 
 See `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 General N-up implementation
+
+Branch: `m7-general-nup`.
+
+General N-up / pages-per-sheet has been implemented as the next corpus-driven M7 slice.
+
+Implemented:
+
+- new high-level `NUpSpec` on `PrintOutputGroupSpec`
+- supported `pagesPerSheet`: 2, 4, 6, 8, 9, 16
+- optional explicit N-up column count when the requested grid is clear
+- deterministic standard grid and auto-orientation resolution
+- explicit paper-orientation override
+- millimetre gap and margin
+- optional per-cell border
+- `Contain` / `Cover` fit
+- row-major source/page order
+- compiler lowers N-up to existing `LayoutMode.Grid`
+- duplex remains independent and composes with N-up
+- desktop PrintPlan batch strip exposes the N-up count
+- strict GeneralPrintPlanner prompt now has an explicit N-up contract
+- unsupported pages-per-sheet values or invalid column factors are rejected
+- renderer now supports executable item borders
+- request-derived tests cover 2-up, row-major ordering, 4-up duplex, 8-slide landscape layout, gap and border
+- all 10 N-up corpus cases changed from `gap` to `supported`
+
+Corpus after this slice:
+
+- 86 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 44 / 150 deterministic gaps remain
+
+This increases immediately/conditionally executable coverage from 57.3% to 64.0% on the balanced corpus, and semantically handled coverage including clarification from 64.0% to 70.7%.
+
+Remaining gap families:
+
+- advanced scaling: 6
+- crop / asymmetric margin / position: 8
+- booklet imposition: 10
+- poster/tiled printing: 10
+- variable-size items: 10
+
+Next implementation target:
+
+**shrink-only / custom-percent scaling**
+
+Verification:
+
+- verified commit: `71a3c1b65ec0d8bc532f2e99f4c000a361ae612f`
+- GitHub CI #204: success on Ubuntu + Windows
+- shared suite: 145/145 tests pass
+- N-up geometry/corpus/regression tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #148: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The General N-up slice is verified and ready to merge.
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

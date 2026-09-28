@@ -119,7 +119,7 @@ textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{paddi
 <script>
 let sessionToken="";
 let currentState=null;
-let selectedSourceIndexes=new Set();
+let selectedSourcePaths=new Set();
 let editingQueueId=null;
 
 const $=s=>document.querySelector(s);
@@ -183,13 +183,15 @@ function render(s){
   currentState=s;
 
   const selectedPath=s.pages[s.selectedPage]?.sourcePath||"";
-  if(!selectedSourceIndexes.size&&selectedPath){
-    const initial=s.files.findIndex(f=>f.path===selectedPath);
-    if(initial>=0)selectedSourceIndexes.add(initial);
+  selectedSourcePaths=new Set(
+    [...selectedSourcePaths].filter(path=>s.files.some(f=>f.path===path))
+  );
+  if(!selectedSourcePaths.size&&selectedPath){
+    selectedSourcePaths.add(selectedPath);
   }
   $("#fileList").innerHTML=s.files.length?s.files.map((f,i)=>{
     const active=f.path===selectedPath;
-    const multi=selectedSourceIndexes.has(i);
+    const multi=selectedSourcePaths.has(f.path);
     const page=s.pages.find(p=>p.sourcePath===f.path);
     const queued=s.requestQueue.filter(q=>q.sourcePaths.includes(f.path)).sort((a,b)=>a.order-b.order);
     const badge=queued.length
@@ -206,8 +208,8 @@ function render(s){
       (page?'<div class="meta">'+(f.pageCount?f.pageCount+' trang':'Ảnh')+'</div>':'')+
       '</div>';
   }).join(""):'<div class="meta">Chưa có file.</div>';
-  $("#selectionInfo").textContent=selectedSourceIndexes.size
-    ?"Đang chọn "+selectedSourceIndexes.size+" file cho yêu cầu."
+  $("#selectionInfo").textContent=selectedSourcePaths.size
+    ?"Đang chọn "+selectedSourcePaths.size+" file cho yêu cầu."
     :"Bấm thumbnail để chọn file; Ctrl/Cmd hoặc nút chọn nhiều để gom chung yêu cầu.";
   $("#queueList").innerHTML=s.requestQueue.length
     ?'<h3>Hàng chờ AI</h3>'+s.requestQueue.map(q=>
@@ -277,12 +279,15 @@ $("#drop").ondrop=e=>{e.preventDefault();upload(e.dataTransfer.files)};
 $("#clear").onclick=()=>action("clear");
 $("#retryAgy").onclick=()=>action("configureAntigravity",{});
 $("#queueSave").onclick=async()=>{
-  if(!selectedSourceIndexes.size)return showError(new Error("Chọn ít nhất một file."));
+  if(!selectedSourcePaths.size)return showError(new Error("Chọn ít nhất một file."));
+  const sourceIndexes=[...selectedSourcePaths]
+    .map(path=>currentState.files.findIndex(f=>f.path===path))
+    .filter(index=>index>=0);
   await action("upsertQueuedRequest",{
     id:editingQueueId,
     request:$("#request").value.trim(),
     mode:$("#mode").value,
-    sourceIndexes:[...selectedSourceIndexes]
+    sourceIndexes
   });
   editingQueueId=null;
   $("#request").value="";
@@ -321,7 +326,7 @@ document.addEventListener("click",e=>{
       editingQueueId=q.id;
       $("#request").value=q.request;
       $("#mode").value=q.mode;
-      selectedSourceIndexes=new Set(q.sourcePaths.map(path=>currentState.files.findIndex(f=>f.path===path)).filter(i=>i>=0));
+      selectedSourcePaths=new Set(q.sourcePaths.filter(path=>currentState.files.some(f=>f.path===path)));
       $("#queueDelete").disabled=false;
       render(currentState);
     }
@@ -330,10 +335,12 @@ document.addEventListener("click",e=>{
   const source=e.target.closest("[data-source]");
   if(source){
     const index=Number(source.dataset.source);
+    const path=currentState.files[index]?.path;
+    if(!path)return;
     if(e.ctrlKey||e.metaKey){
-      selectedSourceIndexes.has(index)?selectedSourceIndexes.delete(index):selectedSourceIndexes.add(index);
+      selectedSourcePaths.has(path)?selectedSourcePaths.delete(path):selectedSourcePaths.add(path);
     }else{
-      selectedSourceIndexes=new Set([index]);
+      selectedSourcePaths=new Set([path]);
     }
     action("selectSource",{index});
   }

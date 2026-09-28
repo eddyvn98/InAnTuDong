@@ -18,6 +18,7 @@ Examples:
 - "In file này A4 1 bản."
 - "Mỗi ảnh 4x6 cm, 2 bản, xếp tiết kiệm giấy, có đường cắt."
 - "Ghép 2 mặt CCCD thành 3 bộ trên A4."
+- "Xếp 3 ảnh này lên giấy 4x6 inch, cho tôi vài cách để chọn."
 - "Scan 5 tờ thành một PDF rồi in 2 bản."
 
 ## V1 hardware scope
@@ -34,6 +35,7 @@ Required:
 - fit / contain / cover / exact physical size
 - spacing and cut marks
 - multi-item A4 layout
+- 4x6-inch photo paper when the installed driver advertises a matching paper size
 
 Architecture must allow other printers later.
 
@@ -58,6 +60,8 @@ Validate paper bounds, sizes, margins, copies, source readability, layout overfl
 ### Layout
 
 Support single-page fit, exact-size item, repeated items, grids, auto rotation, spacing, cut marks, and paper-saving placement.
+
+For small-photo workflows, support deterministic auto-layout alternatives. The first slice accepts 1-6 selected source pages, generates up to four 4x6-inch (101.6 x 152.4 mm) grid candidates across portrait/landscape, renders each candidate for review, and lets the user choose one before printing. The LLM does not calculate candidate coordinates.
 
 ### Preview and policy
 

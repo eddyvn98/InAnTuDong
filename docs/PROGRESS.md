@@ -421,7 +421,20 @@ Branch `feature/auto-layout-4x6` adds a release-compatible workflow extension re
 - shared auto-layout geometry tests and Windows 4x6 paper-match test
 - detailed behavior/acceptance criteria in `docs/AUTO_LAYOUT_4X6.md`
 
-Important scope boundary: schema 1.0 still uses uniform item geometry, so this slice does not yet implement irregular collage cells such as one large photo plus two smaller photos.
+Smart Collage V2 foundation is now being implemented on the same branch:
+
+- optional canvas scene graph without breaking existing grid/exact-size jobs
+- independent per-frame geometry
+- z-index and overlap
+- per-frame fit, rotation, image scale and normalized offsets
+- rectangle, rounded rectangle, ellipse and circle masks
+- deterministic canvas validation
+- initial library of 10 three-photo 4x6 portrait templates
+- Smart Collage gallery action in the desktop UI
+- scene-graph/template tests
+- architecture and staged AI plan in `docs/SMART_COLLAGE_V2.md`
+
+The next boundary is intentional: AI vision/template selection is not connected until the scene graph and renderer are green in CI.
 
 Exact next M6 work:
 

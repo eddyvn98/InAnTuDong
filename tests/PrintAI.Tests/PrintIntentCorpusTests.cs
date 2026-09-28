@@ -72,10 +72,10 @@ public sealed class PrintIntentCorpusTests
             .GroupBy(item => item.GetProperty("expectedCoverage").GetString())
             .ToDictionary(group => group.Key!, group => group.Count());
 
-        Assert.Equal(92, counts["supported"]);
+        Assert.Equal(100, counts["supported"]);
         Assert.Equal(10, counts["supportedWithCapability"]);
         Assert.Equal(10, counts["clarification"]);
-        Assert.Equal(38, counts["gap"]);
+        Assert.Equal(30, counts["gap"]);
     }
 
     [Fact]
@@ -93,7 +93,11 @@ public sealed class PrintIntentCorpusTests
         Assert.DoesNotContain("customScalePercent", gaps);
         Assert.DoesNotContain("shrinkOnly", gaps);
         Assert.DoesNotContain("maxFitWithMargin", gaps);
-        Assert.Contains("asymmetricMargins", gaps);
+        Assert.DoesNotContain("asymmetricMargins", gaps);
+        Assert.DoesNotContain("contentOffset", gaps);
+        Assert.DoesNotContain("anchorPosition", gaps);
+        Assert.DoesNotContain("cropRegion", gaps);
+        Assert.DoesNotContain("autoCropForPrint", gaps);
         Assert.Contains("bookletImposition", gaps);
         Assert.Contains("posterTiling", gaps);
         Assert.Contains("variableItemSizes", gaps);

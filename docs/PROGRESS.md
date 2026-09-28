@@ -470,16 +470,27 @@ Next Smart Collage work: manual canvas refinement and optional local face/salien
 
 Exact next M6 work:
 
-1. real 4x6 paper/driver field validation
-2. live multimodal Smart Collage field validation
-3. manual Smart Collage refinement/editor
-4. tagged preview release + release notes
-5. real iPhone HEIC and scanner/Office/printer validation matrix
+1. finish PR #29 CI and automated manual-duplex regression
+2. physically calibrate/verify manual duplex on the target simplex printer
+3. real 4x6 paper/driver field validation
+4. live multimodal Smart Collage field validation
+5. real iPhone HEIC and scanner/Office/printer/LibreOffice validation matrix
+6. tagged preview release + release notes
+7. Smart Collage manual refinement/editor after release-blocking work
 
 
-## M6 Excel Smart Print in progress
+## M6 Excel Smart Print verification
 
-Branch `m6-excel-smart-print` adds the first spreadsheet-aware print workflow:
+PR #28 is merged into `main` at `81d9c76c378c3f1f1fe07cccd75f6ca3391200d4`.
+
+Verification:
+
+- CI run #36369582921: success
+- Windows package run #36369582907: success
+- refreshed on top of Smart Collage/4x6 main without restoring stale planner code
+- shared model client supports Print Planner + Smart Collage + Excel Smart Print
+
+The merged workflow adds:
 
 - XLSX workbook inspection through Open XML
 - per-sheet row/column/header/width profile
@@ -498,6 +509,38 @@ Branch `m6-excel-smart-print` adds the first spreadsheet-aware print workflow:
 - regression workbook with 12 columns for analysis, optimizer and AI-plan validation
 
 See `docs/EXCEL_SMART_PRINT.md`.
+
+
+## M6 manual-duplex implementation
+
+PR #29 implements the release-blocking duplex execution path on top of the current main:
+
+- deterministic physical-sheet planner for long-edge/short-edge intent
+- odd-page and multiple-copy pairing
+- forward/reverse back-pass ordering
+- multi-page Windows spooler batches
+- automatic-duplex driver mapping for capable printers
+- manual front -> explicit reinsert -> back workflow for simplex printers
+- one-page/simplex submission path explicitly rejects duplex intent
+- pending back pass persisted under local app data
+- restart restores the pending back pass without reprinting fronts
+- failed back pass remains retryable
+- printer/profile mismatch between passes is blocked
+- unrelated printing is blocked while a back pass is pending
+- per-printer manual-duplex back order, rotation and reinsert instruction are persisted
+- manual-duplex verification is explicit and requires user confirmation after a real-paper test
+- desktop UI exposes Off / LongEdge / ShortEdge plus reinsert/resume controls
+
+Automated tests cover physical-sheet pairing, odd pages, multiple copies, back ordering, rotation rules and driver duplex mapping.
+
+Still required before tagged release:
+
+- PR #29 CI/package green
+- real-paper calibration/verification for the target simplex printer
+- record the verified profile result without inferring it from the printer model name
+
+See `docs/MANUAL_DUPLEX.md`.
+
 
 ## Important execution boundary
 

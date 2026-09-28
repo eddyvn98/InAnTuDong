@@ -122,6 +122,29 @@ public sealed class GeneralPrintPlanParserTests
     }
 
     [Fact]
+    public void Parse_AcceptsBookletIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup =
+            node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["booklet"] = new JsonObject
+        {
+            ["gutterMm"] = 10,
+            ["marginMm"] = 5
+        };
+
+        var outcome = GeneralPrintPlanParser.Parse(
+            node.ToJsonString());
+
+        var booklet = outcome.Plan.OutputGroups[0].Booklet;
+
+        Assert.NotNull(booklet);
+        Assert.Equal(10, booklet!.GutterMm);
+        Assert.Equal(5, booklet.MarginMm);
+    }
+
+    [Fact]
     public void Parse_RejectsUnknownFields()
     {
         var node = JsonNode.Parse(ValidJson())!.AsObject();

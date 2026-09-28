@@ -81,7 +81,7 @@ public sealed class LocalWebHost : IAsyncDisposable
 
             if (context.Request.Path.StartsWithSegments("/api"))
             {
-                context.Response.Headers.CacheControl =
+                context.Response.Headers["Cache-Control"] =
                     "no-store, no-cache, must-revalidate";
             }
 
@@ -136,12 +136,22 @@ public sealed class LocalWebHost : IAsyncDisposable
                     new { error = "multipart/form-data is required." });
             }
 
-            var form = await context.Request.ReadFormAsync(ct);
-            var state = await session.AddUploadedFilesAsync(
-                form.Files,
-                ct);
+            try
+            {
+                var form = await context.Request.ReadFormAsync(ct);
+                var state = await session.AddUploadedFilesAsync(
+                    form.Files,
+                    ct);
 
-            return Results.Ok(state);
+                return Results.Ok(state);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new
+                {
+                    error = ex.Message
+                });
+            }
         });
 
         app.MapPost("/api/action", async (

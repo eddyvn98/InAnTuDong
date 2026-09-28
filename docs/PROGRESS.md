@@ -434,7 +434,21 @@ Smart Collage V2 foundation is now being implemented on the same branch:
 - scene-graph/template tests
 - architecture and staged AI plan in `docs/SMART_COLLAGE_V2.md`
 
-The next boundary is intentional: AI vision/template selection is not connected until the scene graph and renderer are green in CI.
+Smart Collage AI selection is now connected on the same branch:
+
+- reuses the configured OpenAI-compatible chat endpoint/model/API key
+- renders compact 768px source thumbnails for multimodal input
+- sends all three images in one request
+- asks the vision model for source importance/focal points, template choice, source-to-frame assignment and bounded zoom/pan
+- strict parser rejects invented templates, duplicate/missing sources, invalid frame IDs and out-of-range transforms
+- accepted proposals are converted to deterministic CanvasLayoutSpec jobs and rendered locally
+- up to four AI alternatives are exposed in the existing preview gallery
+- network/model/schema failures automatically fall back to deterministic collage templates
+- pixel-level tests cover vision thumbnail sizing and actual circle-mask clipping
+
+Current limitation: face/saliency detection is model-estimated rather than backed by a local CV detector. User preview remains mandatory.
+
+Next Smart Collage work: manual canvas refinement and optional local face/saliency hardening.
 
 Exact next M6 work:
 

@@ -470,13 +470,12 @@ Next Smart Collage work: manual canvas refinement and optional local face/salien
 
 Exact next M6 work:
 
-1. finish PR #29 CI and automated manual-duplex regression
-2. physically calibrate/verify manual duplex on the target simplex printer
-3. real 4x6 paper/driver field validation
-4. live multimodal Smart Collage field validation
-5. real iPhone HEIC and scanner/Office/printer/LibreOffice validation matrix
-6. tagged preview release + release notes
-7. Smart Collage manual refinement/editor after release-blocking work
+1. physically calibrate/verify manual duplex on the target simplex printer
+2. real 4x6 paper/driver field validation
+3. live multimodal Smart Collage field validation
+4. real iPhone HEIC and scanner/Office/printer/LibreOffice validation matrix
+5. tagged preview release + release notes
+6. Smart Collage manual refinement/editor after release-blocking work
 
 
 ## M6 Excel Smart Print verification
@@ -513,7 +512,7 @@ See `docs/EXCEL_SMART_PRINT.md`.
 
 ## M6 manual-duplex implementation
 
-PR #29 implements the release-blocking duplex execution path on top of the current main:
+PR #29 is merged into `main` at `52ff6139cbb33d0f73e0513d085721eb198a6e04` and implements the release-blocking duplex execution path:
 
 - deterministic physical-sheet planner for long-edge/short-edge intent
 - odd-page and multiple-copy pairing
@@ -533,9 +532,14 @@ PR #29 implements the release-blocking duplex execution path on top of the curre
 
 Automated tests cover physical-sheet pairing, odd pages, multiple copies, back ordering, rotation rules and driver duplex mapping.
 
+Verification:
+
+- CI run #36370200795: success
+- Windows package run #36370200802: success
+- PR #29 merged cleanly on current `main`
+
 Still required before tagged release:
 
-- PR #29 CI/package green
 - real-paper calibration/verification for the target simplex printer
 - record the verified profile result without inferring it from the printer model name
 

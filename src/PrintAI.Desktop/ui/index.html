@@ -156,7 +156,8 @@
           <option value="MinCrop">Ít crop</option>
           <option value="Fill">Lấp đầy giấy</option>
         </select>
-        <button class="primary" id="generateAutoLayouts" style="width:100%;margin-top:8px">Tạo phương án 4×6</button>
+        <button class="primary" id="generateAutoLayouts" style="width:100%;margin-top:8px">Tạo grid tự động 4×6</button>
+        <button id="generateSmartCollages" style="width:100%;margin-top:6px">✨ Tạo Smart Collage (đúng 3 ảnh)</button>
         <div class="autoLayoutGrid" id="autoLayoutCandidates"></div>
       </div>
 
@@ -280,6 +281,13 @@ document.querySelector('#compositionNone').onclick=()=>{
     const current=compositionSelection.get(index)||{copies:1};
     compositionSelection.set(index,{checked:false,copies:current.copies||1});
   });
+};
+document.querySelector('#generateSmartCollages').onclick=()=>{
+  const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>({
+    pageIndex:Number(box.dataset.composeCheck),
+    copies:Number(document.querySelector('[data-compose-copies="'+box.dataset.composeCheck+'"]').value)
+  }));
+  post('generateSmartCollages',{items});
 };
 document.querySelector('#generateAutoLayouts').onclick=()=>{
   const items=[...document.querySelectorAll('[data-compose-check]:checked')].map(box=>({
@@ -430,6 +438,7 @@ function render(s){
   });
   document.querySelector('#composeMixed').disabled=!s.Pages.length;
   document.querySelector('#generateAutoLayouts').disabled=!s.Pages.length;
+  document.querySelector('#generateSmartCollages').disabled=!s.Pages.length;
 
   const autoLayoutCandidates=document.querySelector('#autoLayoutCandidates');
   autoLayoutCandidates.innerHTML=s.AutoLayouts.length?s.AutoLayouts.map(x=>

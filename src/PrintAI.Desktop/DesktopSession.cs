@@ -138,6 +138,7 @@ public sealed partial class DesktopSession
                 break;
         }
 
+        ReindexRequestQueue();
         RebuildPages();
         _selectedPage = Math.Clamp(
             _selectedPage,

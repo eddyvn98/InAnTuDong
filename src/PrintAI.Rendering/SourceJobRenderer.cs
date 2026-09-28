@@ -67,6 +67,45 @@ public static class SourceJobRenderer
         if (outputPageIndex < 0 || outputPageIndex >= pageCount)
             throw new ArgumentOutOfRangeException(nameof(outputPageIndex));
 
+        if (job.Layout.Mode == LayoutMode.PosterTile)
+        {
+            var placement = layout.Placements
+                .Single(item =>
+                    item.Page == outputPageIndex);
+            var sourceSpec =
+                job.Sources[placement.SourceIndex];
+
+            using var source = Decode(
+                sourceSpec.Path,
+                sourceSpec.PageIndex,
+                dpi);
+
+            var tileJob = job with
+            {
+                Sources = [sourceSpec]
+            };
+
+            var tileLayout = layout with
+            {
+                Placements =
+                [
+                    placement with
+                    {
+                        Index = 0,
+                        Page = 0,
+                        SourceIndex = 0
+                    }
+                ]
+            };
+
+            return A4PreviewRenderer.RenderPng(
+                tileJob,
+                tileLayout,
+                source,
+                page: 0,
+                dpi: dpi);
+        }
+
         var sources = new List<SKBitmap>(job.Sources.Count);
 
         try

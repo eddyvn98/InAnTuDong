@@ -29,6 +29,10 @@ public static class VariableItemsResolver
         if (usableWidth <= 0 || usableHeight <= 0)
             throw new ArgumentException("VariableItems margin leaves no printable area.");
 
+        var totalCopies = spec.Items.Sum(item => Math.Max(0, item.Copies));
+        if (totalCopies > 1000)
+            throw new ArgumentException("VariableItems supports at most 1000 physical placements per job.");
+
         var sources = new List<SourceSpec>();
         var pieces = new List<Piece>();
 

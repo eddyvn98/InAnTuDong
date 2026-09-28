@@ -25,6 +25,7 @@ public static class PrinterProfileCatalog
 
         return match ?? new PrinterDeviceProfile(
             Id: "generic-a4-default",
-            PrinterQuery: printerName);
+            PrinterQuery: printerName,
+            ManualDuplex: ManualDuplexProfile.UnverifiedDefault);
     }
 }

@@ -38,10 +38,13 @@ public sealed class GeneralPrintPlanSourceBinderTests
                     ])
             ]);
 
-        Assert.NotNull(bound.Sources[0].Pages);
-        Assert.Equal(2, bound.Sources[0].Pages!.Count);
-        Assert.Equal(210, bound.Sources[0].Pages[0].WidthMm);
-        Assert.Equal(148, bound.Sources[0].Pages[1].WidthMm);
+        var pages = Assert.IsAssignableFrom<
+            IReadOnlyList<SourcePageSizeSpec>>(
+                bound.Sources[0].Pages);
+
+        Assert.Equal(2, pages.Count);
+        Assert.Equal(210, pages[0].WidthMm);
+        Assert.Equal(148, pages[1].WidthMm);
     }
 
     [Fact]

@@ -65,7 +65,9 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 "collate": true,
                 "sequence": 0,
                 "nUp": null,
-                "scaling": null
+                "scaling": null,
+                "placement": null,
+                "crop": null
               }
             ],
             "policy": { "preview": "required" },
@@ -121,6 +123,27 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
           If a requested percent can exceed the printable target, keep the requested percent and add a warning that preview may show clipping.
         - Do not combine outputGroup.scaling with nUp in this slice.
         - Cover/fill/crop remains layout.fit="cover" with scaling=null.
+        - General page placement is represented with outputGroup.placement and currently requires layout.mode="exactSize".
+        - placement.margins contains leftMm/topMm/rightMm/bottomMm. For unspecified sides, keep the normal 5 mm default.
+        - "chừa lề trái 20 mm" -> leftMm=20, other margins=5.
+        - "chừa lề trên 15 mm và lề trái 25 mm" -> topMm=15, leftMm=25, other margins=5.
+        - placement.anchor values are center, top, bottom, left, right, topLeft, topRight, bottomLeft, bottomRight.
+        - "căn sát mép phải" -> anchor="right".
+        - "căn xuống góc dưới bên phải" -> anchor="bottomRight".
+        - placement.offsetXMm is positive to the right and negative to the left.
+        - placement.offsetYMm is positive downward and negative upward.
+        - "đưa nội dung lên trên 5 mm" -> offsetYMm=-5.
+        - placement.shrinkToFit=true allows the physical placement rectangle to shrink proportionally when asymmetric margins reduce the available area.
+        - General source crop is represented with outputGroup.crop.
+        - "cắt bỏ phần trắng xung quanh" -> { "mode": "autoTrimWhite", "edgesMm": null, "whiteThreshold": 245 }.
+        - "chỉ lấy phần giữa" -> { "mode": "centerToTargetAspect", "edgesMm": null, "whiteThreshold": 245 }.
+        - Physical edge crop uses mode="edgesMm" and explicit edge millimetres.
+          Example "cắt 10 mm ở mép trên" -> edgesMm.topMm=10 and other edge values=0.
+        - EdgesMm crop requires trusted physical page sizes. If unavailable, ask instead of guessing.
+        - Do not combine placement or crop with General N-up in this slice.
+        - Do not combine general crop with physical scaling or Canvas in this slice.
+        - Page placement may combine with crop.
+        - Cover/fill remains a separate fit/crop-to-frame behavior and should not be used to represent explicit edge removal.
         - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 

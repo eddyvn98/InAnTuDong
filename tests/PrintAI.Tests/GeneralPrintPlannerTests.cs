@@ -88,6 +88,12 @@ public sealed class GeneralPrintPlannerTests
         Assert.Contains("8,1 / 2,7 / 6,3 / 4,5", client.LastRequest.SystemInstruction);
         Assert.Contains("multiple of four", client.LastRequest.SystemInstruction);
         Assert.Contains("print.duplex=\"shortEdge\"", client.LastRequest.SystemInstruction);
+        Assert.Contains("outputGroup.poster", client.LastRequest.SystemInstruction);
+        Assert.Contains("60x90 cm", client.LastRequest.SystemInstruction);
+        Assert.Contains("A2 poster target size is 420 x 594 mm", client.LastRequest.SystemInstruction);
+        Assert.Contains("registrationMarks=true", client.LastRequest.SystemInstruction);
+        Assert.Contains("tileLabels=true", client.LastRequest.SystemInstruction);
+        Assert.Contains("minimum tile count", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"percent\"", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"maxFit\"", client.LastRequest.SystemInstruction);
 

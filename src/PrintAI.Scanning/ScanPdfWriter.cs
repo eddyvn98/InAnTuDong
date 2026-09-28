@@ -7,10 +7,28 @@ public static class ScanPdfWriter
 {
     public static string Write(
         IEnumerable<string> imagePaths,
-        string outputPath)
+        string outputPath) =>
+        Write(
+            imagePaths,
+            outputPath,
+            pageWidthMm: 210,
+            pageHeightMm: 297);
+
+    public static string Write(
+        IEnumerable<string> imagePaths,
+        string outputPath,
+        double pageWidthMm,
+        double pageHeightMm)
     {
         ArgumentNullException.ThrowIfNull(imagePaths);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputPath);
+
+        if (pageWidthMm <= 0 || pageHeightMm <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(pageWidthMm),
+                "PDF page dimensions must be positive.");
+        }
 
         var paths = imagePaths.ToArray();
         if (paths.Length == 0)
@@ -28,8 +46,8 @@ public static class ScanPdfWriter
                 throw new FileNotFoundException("Scanned image does not exist.", path);
 
             var page = document.AddPage();
-            page.Width = XUnit.FromMillimeter(210);
-            page.Height = XUnit.FromMillimeter(297);
+            page.Width = XUnit.FromMillimeter(pageWidthMm);
+            page.Height = XUnit.FromMillimeter(pageHeightMm);
 
             using var image = XImage.FromFile(path);
             using var graphics = XGraphics.FromPdfPage(page);

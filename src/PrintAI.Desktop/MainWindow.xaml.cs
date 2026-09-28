@@ -178,6 +178,14 @@ public partial class MainWindow : Window
                 case "cancelManualDuplex":
                     _session.CancelManualDuplex();
                     break;
+                case "saveManualDuplexProfile":
+                    _session.SaveManualDuplexProfile(
+                        root.GetProperty("backOrder").GetString() ?? "Reverse",
+                        root.GetProperty("longEdgeRotationDegrees").GetInt32(),
+                        root.GetProperty("shortEdgeRotationDegrees").GetInt32(),
+                        root.GetProperty("reinsertInstruction").GetString() ?? "",
+                        root.GetProperty("verified").GetBoolean());
+                    break;
                 case "clearHistory":
                     _session.ClearHistory();
                     break;

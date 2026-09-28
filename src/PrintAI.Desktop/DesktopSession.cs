@@ -17,7 +17,11 @@ public sealed partial class DesktopSession
     private readonly List<DesktopPage> _pages = [];
     private readonly string _workDir;
     private readonly JobHistoryStore _history;
+    private readonly PendingManualDuplexStore _manualDuplexStore;
+    private readonly ManualDuplexCalibrationStore _manualDuplexCalibrationStore;
     private readonly DesktopPlannerSession _planner = new();
+
+    private PendingManualDuplexJob? _pendingManualDuplex;
 
     private int _selectedPage;
     private int _selectedOutputPage;
@@ -39,6 +43,11 @@ public sealed partial class DesktopSession
         _workDir = Path.Combine(root, "work");
         Directory.CreateDirectory(_workDir);
         _history = new JobHistoryStore(Path.Combine(root, "history.json"));
+        _manualDuplexStore = new PendingManualDuplexStore(
+            Path.Combine(root, "pending-manual-duplex.json"));
+        _manualDuplexCalibrationStore = new ManualDuplexCalibrationStore(
+            Path.Combine(root, "manual-duplex-profiles.json"));
+        _pendingManualDuplex = _manualDuplexStore.Load();
 
         _planner.ConfigureFromEnvironment();
 
@@ -48,6 +57,19 @@ public sealed partial class DesktopSession
                 p.Name.Contains("L3310", StringComparison.OrdinalIgnoreCase))?.Name
             ?? printers.FirstOrDefault(p => p.IsDefault)?.Name
             ?? printers.FirstOrDefault()?.Name;
+
+        if (_pendingManualDuplex is { } pending &&
+            printers.Any(p => string.Equals(
+                p.Name,
+                pending.PrinterName,
+                StringComparison.OrdinalIgnoreCase)))
+        {
+            _selectedPrinter = pending.PrinterName;
+            _status =
+                pending.Phase == ManualDuplexPendingPhase.WaitingForReinsert
+                    ? "Có một job 2 mặt đang chờ back pass. Không in lại mặt trước; hãy nạp lại giấy rồi tiếp tục mặt sau."
+                    : "Có một manual-duplex pass ở trạng thái không chắc chắn từ lần chạy trước. App sẽ không tự in lại; hãy kiểm tra giấy trước khi hủy hoặc tiếp tục xử lý.";
+        }
     }
 
     public void PickFiles(Window owner)
@@ -240,6 +262,7 @@ public sealed partial class DesktopSession
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
             Planner: planner,
             ExcelSmartPrint: BuildExcelSmartPrintView(),
+            Duplex: BuildDuplexView(job),
             Readiness: readiness,
             History: _history.Read().Take(20).ToArray());
     }

@@ -11,6 +11,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../src/PrintAI.Domain/PrintAI.Domain.csproj" />
     <ProjectReference Include="../../src/PrintAI.Windows.Printing/PrintAI.Windows.Printing.csproj" />
   </ItemGroup>
 </Project>

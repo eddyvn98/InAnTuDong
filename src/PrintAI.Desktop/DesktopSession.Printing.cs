@@ -10,6 +10,13 @@ public sealed partial class DesktopSession
 {
     public void PrintCurrent()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         if (_printPath is null)
         {
             _status = "Chưa có trang preview có thể in.";
@@ -20,6 +27,13 @@ public sealed partial class DesktopSession
             ?? throw new InvalidOperationException("Không có trang đang chọn.");
 
         var job = CurrentJob(page);
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            _status =
+                "Job đang yêu cầu in 2 mặt. Hãy dùng 'In toàn bộ job' để app quản lý đúng front/back pass.";
+            return;
+        }
+
         var result = Submit(_printPath, job);
 
         _status = Describe(result);
@@ -28,6 +42,13 @@ public sealed partial class DesktopSession
 
     public void PrintJob()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         var page = CurrentPage();
         if (page is null)
         {
@@ -36,6 +57,13 @@ public sealed partial class DesktopSession
         }
 
         var job = CurrentJob(page);
+
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            PrintDuplexJob(page, job);
+            return;
+        }
+
         var pageCount = SourceJobRenderer.GetOutputPageCount(job);
         var submitted = 0;
 
@@ -110,6 +138,13 @@ public sealed partial class DesktopSession
 
     public void PrintAllSources()
     {
+        if (_pendingManualDuplex is not null)
+        {
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in nội dung khác.";
+            return;
+        }
+
         var submitted = 0;
 
         foreach (var page in _pages)
@@ -158,6 +193,16 @@ public sealed partial class DesktopSession
         string path,
         PrintJobSpec job)
     {
+        if (job.Print.Duplex != DuplexMode.Off)
+        {
+            return new(
+                PrintSubmissionState.Failed,
+                _selectedPrinter ?? "",
+                "",
+                Error:
+                    "Duplex intent cannot be submitted as a one-page simplex job. Use PrintJob().");
+        }
+
         if (string.IsNullOrWhiteSpace(_selectedPrinter))
         {
             return new(

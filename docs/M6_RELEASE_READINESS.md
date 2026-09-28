@@ -78,7 +78,27 @@ The report contains version/runtime, OS, non-content source counts, printer/prof
 
 It deliberately excludes credentials, AI endpoint configuration, user source paths, job history and document content.
 
-### 7. Field validation matrix
+### 7. Duplex intent correctness
+
+Duplex is release-blocking because schema 1.0 already accepts two-sided intent.
+
+Required before tagged preview release:
+
+- `duplex=off` continues through the existing simplex path
+- `duplex=longEdge|shortEdge` cannot use the one-page simplex submission path
+- automatic-duplex printers use one multi-page driver batch
+- simplex printers use the guided manual front/reinsert/back state machine
+- physical sheets, copies and odd page counts are planned deterministically
+- front and back passes are multi-page batches
+- pending back-pass state survives restart
+- back-pass failure retries backs without reprinting fronts
+- printer/profile changes between passes are blocked
+- per-printer reinsert order/rotation is explicit profile data
+- verified manual-duplex status requires real-paper confirmation
+
+Software implementation is tracked in PR #29 and `docs/MANUAL_DUPLEX.md`.
+
+### 8. Field validation matrix
 
 Track real-machine results separately from automated tests:
 
@@ -99,3 +119,4 @@ M6 can close when:
 6. install/upgrade/rollback instructions are documented and exercised.
 7. support diagnostics can be exported without exposing source content or credentials.
 8. real-world validation results are recorded without overstating unverified hardware.
+9. duplex intent cannot silently degrade to one-sided output; automated manual-duplex coverage is green and the target printer's physical behavior is recorded.

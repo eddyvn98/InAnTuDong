@@ -147,7 +147,9 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 
 ### Next slices
 
-- [ ] 100-200 real-request print-intent regression corpus
+- [x] 120-case real-request print-intent corpus — 12 categories, CI integrity guard
+- [x] live model evaluator harness — provider-neutral structural + semantic checks; execution requires configured provider credentials
+- [ ] run supported corpus against the intended production model/provider and triage failure clusters
 - [ ] general N-up / pages-per-sheet intent
 - [ ] actual-size / fit / fill / shrink-only / custom-percent scaling
 - [ ] crop / anchor / offset / asymmetric margins

@@ -8,7 +8,9 @@ public sealed record SourcePageSizeSpec(
 public sealed record PlanSourceSpec(
     string Path,
     int PageCount = 1,
-    IReadOnlyList<SourcePageSizeSpec>? Pages = null);
+    IReadOnlyList<SourcePageSizeSpec>? Pages = null,
+    int? PixelWidth = null,
+    int? PixelHeight = null);
 
 public sealed record PageRangeSpec(
     int StartPage,
@@ -24,6 +26,18 @@ public sealed record OutputPrintSettings(
     ColorMode ColorMode = ColorMode.Color,
     PrintQuality Quality = PrintQuality.Standard,
     DuplexMode Duplex = DuplexMode.Off);
+
+public sealed record PosterSpec(
+    double? TargetWidthMm = null,
+    double? TargetHeightMm = null,
+    int? Columns = null,
+    int? Rows = null,
+    double OverlapMm = 5,
+    double MarginMm = 5,
+    bool RegistrationMarks = false,
+    bool TileLabels = false,
+    bool AutoOrientation = true,
+    FitMode Fit = FitMode.Contain);
 
 public sealed record BookletSpec(
     double GutterMm = 4,
@@ -51,7 +65,8 @@ public sealed record PrintOutputGroupSpec(
     PhysicalScaleSpec? Scaling = null,
     PagePlacementSpec? Placement = null,
     SourceCropSpec? Crop = null,
-    BookletSpec? Booklet = null);
+    BookletSpec? Booklet = null,
+    PosterSpec? Poster = null);
 
 public sealed record PrintPlan(
     string PlanName,

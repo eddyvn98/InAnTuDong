@@ -98,6 +98,7 @@
       <input id="agyPath" placeholder="agy.exe hoặc C:\\...\\agy.exe">
       <button id="retryAgy">Kiểm tra AGY</button>
     </div>
+    <button id="openLocalWeb" style="margin-top:8px;width:100%">Mở web local · 127.0.0.1:5271</button>
 
     <label>Yêu cầu</label>
     <textarea id="request" placeholder="Ví dụ: In ảnh này 4x6 cm, xếp nhiều nhất trên A4, có đường cắt."></textarea>
@@ -397,6 +398,7 @@ document.querySelector('#deleteRecipe').onclick=()=>post('deleteRecipe',{
 document.querySelector('#retryAgy').onclick=()=>post('configureAntigravity',{
   cliPath:document.querySelector('#agyPath').value.trim()
 });
+document.querySelector('#openLocalWeb').onclick=()=>post('openLocalWeb');
 document.querySelector('#plan').onclick=()=>post('plan',{
   request:document.querySelector('#request').value.trim(),
   mode:document.querySelector('#safety').value

@@ -382,3 +382,21 @@ The former Smart Collage AI path used a generic multimodal chat-completions endp
 The product direction no longer accepts a hidden separate AI API-key requirement. Until the installed AGY CLI local-image/file interaction is verified on the target Windows machine, Smart Collage AI analysis is disabled on the AGY planner path and the existing deterministic template library remains available.
 
 This is an intentional capability fallback, not permission to reintroduce the generic API-key transport as a required production dependency.
+
+
+## ADR-037 - Production local web is loopback-only and shares the desktop session
+Status: accepted
+
+PrintAI's production browser surface runs inside the existing Windows `PrintAI.exe` process rather than as a Railway service or a second independent print engine.
+
+The first local endpoint binds only to `127.0.0.1:5271`. The server rejects non-loopback remote addresses and unexpected Host headers, does not enable CORS, and requires a random process-local session token for state-changing API requests.
+
+Browser uploads are copied into a controlled process-scoped workspace below LocalAppData. The browser API does not accept arbitrary local filesystem paths and does not expose a generic shell/command endpoint.
+
+The local server reuses the same `DesktopSession`, AGY planner, deterministic validators/layout/renderers and Windows spooler path as the WPF/WebView2 desktop UI. A second print-domain implementation is not created.
+
+ASP.NET Core request threads may not mutate `DesktopSession` directly. Browser operations are serialized and marshalled onto the WPF Dispatcher because the original application/session and Windows device boundaries are desktop-oriented.
+
+The WPF shell remains the process owner for this first slice. A later browser-first startup mode may make the visible WPF window optional without changing the loopback security or deterministic print boundaries.
+
+See `docs/LOCAL_WEB.md`.

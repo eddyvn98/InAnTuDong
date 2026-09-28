@@ -1179,3 +1179,61 @@ Automated verification for commit `8520e9bca87811371deb98421b0c7400621fec52`:
 - package-windows #190: success
 
 Target-machine AGY availability has now been manually confirmed by the user. M8 may merge to `main`; latency tuning, persistent-session work, Smart Collage AGY image handling and the loopback local host remain follow-up work.
+
+
+## M8 local web core slice
+
+Branch: `m8-local-web-core`.
+
+This slice moves the primary browser workflow onto the same Windows process that owns AGY and printer access.
+
+Implemented:
+
+- `PrintAI.exe` hosts ASP.NET Core on `http://127.0.0.1:5271/`
+- the local server shares the existing in-process `DesktopSession`
+- desktop UI includes **Mở web local** to launch the loopback browser surface
+- browser file upload into a process-scoped LocalAppData workspace
+- source/page list and preview state in the browser
+- printer selection
+- natural-language AGY planning from the browser
+- PrintPlan batch/output-page selection
+- print current output / current job / all-simplex plan
+- manual-duplex continue/cancel controls
+- AGY/readiness/status feedback
+- loopback address + Host-header guard
+- no CORS exposure
+- random per-process session token required for local API actions
+- no arbitrary shell endpoint and no arbitrary-path file-read API
+- browser requests are serialized and marshalled onto the WPF Dispatcher before mutating `DesktopSession`
+- packaged self-test now requires both desktop and local-web UI assets
+- Windows package verification requires `local-web/index.html`
+- Windows install guide updated to remove the obsolete API-key planner instructions
+
+Current local-web limitation:
+
+- scanner, recipes, Smart Collage and advanced workflow/composition controls still live in the desktop WebView2 surface
+- the WPF shell still owns process lifetime; closing it stops the local web host
+- browser-first/headless startup mode is not implemented yet
+- target-Windows browser validation is still required for this slice
+
+See `docs/LOCAL_WEB.md`.
+
+Automated verification for commit `f3f923e2e00aa06680b6c1fda09ebff875cbf947`:
+
+- GitHub CI #251: success on Ubuntu + Windows
+- shared suite: 264/264 tests pass
+- Windows printer tests/probe: success
+- Windows desktop shell build: success
+- package-windows #195: success
+- self-contained Windows publish: success
+- package layout including `local-web/index.html`: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+Next concrete task after merge:
+
+1. validate upload → AGY → preview → print in the packaged app on the real Windows target;
+2. measure AGY cold/warm latency through the browser path;
+3. decide whether persistent `stream-json` is justified;
+4. migrate the highest-value remaining desktop controls to browser mode.

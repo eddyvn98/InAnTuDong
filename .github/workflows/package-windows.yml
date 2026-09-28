@@ -56,6 +56,7 @@ jobs:
           $required = @(
             "artifacts/PrintAI-win-x64/PrintAI.exe",
             "artifacts/PrintAI-win-x64/ui/index.html",
+            "artifacts/PrintAI-win-x64/local-web/index.html",
             "artifacts/PrintAI-win-x64/INSTALL_WINDOWS.md",
             "artifacts/PrintAI-win-x64/BUILD.txt",
             "artifacts/PrintAI-win-x64/Install-PrintAI.ps1",

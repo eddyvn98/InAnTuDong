@@ -77,17 +77,26 @@ internal static partial class DesktopSelfTest
     private static void CheckUiAssets(
         ICollection<DesktopSelfTestCheck> checks)
     {
-        var indexPath = Path.Combine(
+        var desktopIndex = Path.Combine(
             AppContext.BaseDirectory,
             "ui",
             "index.html");
 
+        var localWebIndex = Path.Combine(
+            AppContext.BaseDirectory,
+            "local-web",
+            "index.html");
+
+        var present =
+            File.Exists(desktopIndex) &&
+            File.Exists(localWebIndex);
+
         checks.Add(new(
             "ui-assets",
-            File.Exists(indexPath),
-            File.Exists(indexPath)
-                ? indexPath
-                : "ui/index.html is missing from the package."));
+            present,
+            present
+                ? $"desktop={desktopIndex}; local-web={localWebIndex}"
+                : "ui/index.html or local-web/index.html is missing from the package."));
     }
 
     private static void CheckRasterPipeline(

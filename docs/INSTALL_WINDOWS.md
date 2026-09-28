@@ -87,32 +87,36 @@ powershell -ExecutionPolicy Bypass -File .\Uninstall-PrintAI.ps1 -RemoveData
 You may still use Print AI without installing it:
 
 1. Extract the whole ZIP to a normal folder.
-2. Keep all DLL/native files and the `ui` folder beside `PrintAI.exe`.
+2. Keep all DLL/native files plus the `ui` and `local-web` folders beside `PrintAI.exe`.
 3. Run `PrintAI.exe`.
-4. Select or drag a JPG, PNG, HEIC, PDF or supported Office document into the app.
-5. Review the A4 preview before printing.
+4. Use the desktop UI or click **Mở web local**.
+5. The browser surface is available only on `http://127.0.0.1:5271/`.
+6. Select/upload a JPG, PNG, HEIC, PDF or supported Office document.
+7. Review the preview before printing.
 
 Do not move only `PrintAI.exe` out of the extracted folder. WebView2, PDFium and other native/runtime files are shipped beside it.
 
-## AI planner
+## Antigravity AI planner
 
-AI is optional. Manual preview and printing work without an AI endpoint.
+Natural-language planning uses the installed/authenticated Antigravity CLI on the same Windows machine.
 
-You can configure the planner in the app with:
+PrintAI does not require an AI API key.
 
-- chat-completions-compatible endpoint
-- model name
-- optional API key
-
-The API key entered in the UI is kept only for the current process.
-
-Managed/local configuration can instead use:
+Optional non-secret tuning:
 
 ```text
-PRINTAI_AI_ENDPOINT=https://your-endpoint/chat/completions
-PRINTAI_AI_MODEL=your-model
-PRINTAI_AI_API_KEY=optional-key
+PRINTAI_AGY_PATH
+PRINTAI_AGY_FAST_MODEL
+PRINTAI_AGY_DEEP_MODEL
+PRINTAI_AGY_FAST_EFFORT
+PRINTAI_AGY_DEEP_EFFORT
+PRINTAI_AGY_ESCALATE_BELOW
+PRINTAI_AGY_TIMEOUT
 ```
+
+If AGY is unavailable, deterministic manual preview/printing remains available.
+
+See `ANTIGRAVITY_PLANNER.md` and `LOCAL_WEB.md`.
 
 ## Epson L3310
 

@@ -17,8 +17,14 @@ public partial class App : Application
             var outputPath = ReadOption(
                 e.Args,
                 "--self-test-output");
+            var pdfOutputPath = ReadOption(
+                e.Args,
+                "--self-test-pdf-output");
 
-            Shutdown(DesktopSelfTest.Run(outputPath));
+            Shutdown(
+                DesktopSelfTest.Run(
+                    outputPath,
+                    pdfOutputPath));
             return;
         }
 

@@ -49,6 +49,22 @@ Current schema version: `1.0`.
 }
 ```
 
+## Duplex semantics
+
+`print.duplex` is printer-neutral user intent:
+
+- `off` — one-sided output
+- `longEdge` — two-sided output flipped/bound on the long edge
+- `shortEdge` — two-sided output flipped/bound on the short edge
+
+The value does not mean that the physical printer must have an automatic duplex unit. After printer selection, deterministic execution resolves the intent to either automatic duplex or guided manual duplex.
+
+A runtime must never silently execute `longEdge` or `shortEdge` as simplex output. If automatic duplex is unavailable, use the manual-duplex path or block with an explicit actionable state.
+
+Manual duplex does not require a schema change; it is an execution strategy for the existing schema 1.0 intent.
+
+See `docs/MANUAL_DUPLEX.md`.
+
 ## Validation invariants
 
 - width/height > 0

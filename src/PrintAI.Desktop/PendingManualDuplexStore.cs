@@ -4,6 +4,13 @@ using PrintAI.Domain;
 
 namespace PrintAI.Desktop;
 
+internal enum ManualDuplexPendingPhase
+{
+    PrintingFront,
+    WaitingForReinsert,
+    PrintingBack
+}
+
 internal sealed record PendingManualDuplexSide(
     string PngPath,
     int RotationDegrees);
@@ -15,6 +22,7 @@ internal sealed record PendingManualDuplexJob(
     string PrinterProfileId,
     DuplexMode Mode,
     DateTimeOffset CreatedAt,
+    ManualDuplexPendingPhase Phase,
     int SheetCount,
     bool ProfileVerified,
     string ReinsertInstruction,

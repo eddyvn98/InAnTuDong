@@ -101,10 +101,12 @@ These are validation tasks, not missing software architecture.
 - [x] packaged Windows smoke test — published EXE self-test verified in package CI
 - [x] install / upgrade / rollback flow — lifecycle scripts verified by Windows package CI
 - [x] support diagnostics / error export — privacy-safe support report verified
+- [ ] manual duplex correctness — guided two-pass printing for simplex printers; see `docs/MANUAL_DUPLEX.md`
+- [ ] manual duplex persistence/calibration — resume back pass and store verified reinsert behavior per printer profile
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 
-Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing.
+Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing. Duplex intent must not silently degrade to one-sided output.
 
 See `docs/M6_RELEASE_READINESS.md`.
 

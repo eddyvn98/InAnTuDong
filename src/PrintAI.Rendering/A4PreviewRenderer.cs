@@ -71,7 +71,7 @@ public static class A4PreviewRenderer
 
                 if (sourceSpec.PosterTile.RegistrationMarks)
                 {
-                    PosterTileRenderer.DrawRegistrationMarks(
+                    PosterTileGuidesRenderer.DrawRegistrationMarks(
                         canvas,
                         placement,
                         sourceSpec.PosterTile,
@@ -80,7 +80,7 @@ public static class A4PreviewRenderer
 
                 if (sourceSpec.PosterTile.TileLabel)
                 {
-                    PosterTileRenderer.DrawTileLabel(
+                    PosterTileGuidesRenderer.DrawTileLabel(
                         canvas,
                         sourceSpec.PosterTile,
                         job.Layout.MarginMm,

@@ -19,18 +19,30 @@ public static class SpreadsheetWorkbookInspector
         var workbookPart = document.WorkbookPart
             ?? throw new InvalidDataException("Workbook part is missing.");
 
+        var workbook = workbookPart.Workbook
+            ?? throw new InvalidDataException("Workbook is missing.");
         var sharedStrings = workbookPart.SharedStringTablePart?.SharedStringTable;
         var profiles = new List<SpreadsheetSheetProfile>();
 
-        foreach (var sheet in workbookPart.Workbook.Sheets?.Elements<Sheet>() ?? [])
+        foreach (var sheet in workbook.Sheets?.Elements<Sheet>() ?? [])
         {
-            if (sheet.Id is null || sheet.Name is null)
-                continue;
+            var relationshipId = sheet.Id?.Value;
+            var sheetName = sheet.Name?.Value;
 
-            var worksheetPart = (WorksheetPart)workbookPart.GetPartById(sheet.Id);
+            if (string.IsNullOrWhiteSpace(relationshipId) ||
+                string.IsNullOrWhiteSpace(sheetName))
+            {
+                continue;
+            }
+
+            var worksheetPart =
+                (WorksheetPart)workbookPart.GetPartById(relationshipId);
+            var worksheet = worksheetPart.Worksheet
+                ?? throw new InvalidDataException("Worksheet is missing.");
+
             profiles.Add(InspectSheet(
-                sheet.Name.Value,
-                worksheetPart.Worksheet,
+                sheetName,
+                worksheet,
                 sharedStrings));
         }
 
@@ -75,7 +87,7 @@ public static class SpreadsheetWorkbookInspector
                     continue;
 
                 maxColumn = Math.Max(maxColumn, column);
-                maxRow = Math.Max(maxRow, row.RowIndex?.Value ?? 0);
+                maxRow = Math.Max(maxRow, row.RowIndex?.Value ?? 0u);
 
                 var text = ReadCellText(cell, sharedStrings);
                 if (string.IsNullOrWhiteSpace(text))
@@ -90,7 +102,7 @@ public static class SpreadsheetWorkbookInspector
 
             if (rowHasText && firstNonEmptyRow == 0)
             {
-                firstNonEmptyRow = (int)(row.RowIndex?.Value ?? 1);
+                firstNonEmptyRow = (int)(row.RowIndex?.Value ?? 1u);
 
                 foreach (var cell in row.Elements<Cell>())
                 {
@@ -149,7 +161,7 @@ public static class SpreadsheetWorkbookInspector
             if (column.Hidden?.Value != true)
                 continue;
 
-            var min = (int)(column.Min?.Value ?? 1);
+            var min = (int)(column.Min?.Value ?? 1u);
             var max = (int)(column.Max?.Value ?? min);
 
             for (var index = min;

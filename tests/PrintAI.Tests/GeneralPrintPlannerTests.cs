@@ -94,6 +94,10 @@ public sealed class GeneralPrintPlannerTests
         Assert.Contains("registrationMarks=true", client.LastRequest.SystemInstruction);
         Assert.Contains("tileLabels=true", client.LastRequest.SystemInstruction);
         Assert.Contains("minimum tile count", client.LastRequest.SystemInstruction);
+        Assert.Contains("outputGroup.variableItems", client.LastRequest.SystemInstruction);
+        Assert.Contains("allowRotate=true", client.LastRequest.SystemInstruction);
+        Assert.Contains("packer may rotate that individual item", client.LastRequest.SystemInstruction);
+        Assert.Contains("model must never author Canvas coordinates", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"percent\"", client.LastRequest.SystemInstruction);
         Assert.Contains("\"mode\": \"maxFit\"", client.LastRequest.SystemInstruction);
 

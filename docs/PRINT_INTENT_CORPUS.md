@@ -214,6 +214,8 @@ Implemented behavior:
 
 The 10 booklet cases moved from `gap` to `supported`, reducing deterministic gaps from 30 to 20.
 
+Verification for this coverage change: CI #221 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #165 passed including packaged self-test and install lifecycle smoke checks.
+
 ### Next: poster / tiled printing
 
 Poster/tiled printing is selected next because it is now the largest missing page-space primitive that can still reuse the existing physical-sheet renderer.

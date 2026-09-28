@@ -136,10 +136,18 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 - [x] unit tests added for the foundation slice
 - [x] CI verification for the foundation slice — CI #174 and package-windows #118 succeeded
 
+### Product integration slice
+
+- [x] desktop integration for complex natural-language requests — GeneralPrintPlanner is the main AI request path
+- [x] multi-batch preview UX — explicit batch strip + selected batch preview
+- [x] multi-batch execution coordinator — full-plan auto sequence for simplex; duplex remains safe batch-by-batch
+- [x] cross-group complete-set ordering
+- [x] Windows driver execution honors color/grayscale intent
+- [x] integration verification — CI #191 + package-windows #135 succeeded
+
 ### Next slices
 
-- [ ] desktop integration for complex natural-language requests
-- [ ] multi-batch execution coordinator and preview UX
+- [ ] 100-200 real-request print-intent regression corpus
 - [ ] general N-up / pages-per-sheet intent
 - [ ] actual-size / fit / fill / shrink-only / custom-percent scaling
 - [ ] crop / anchor / offset / asymmetric margins

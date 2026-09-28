@@ -18,7 +18,7 @@ button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;bor
 button:disabled{opacity:.45;cursor:not-allowed}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45;margin-top:9px}
 .ok{background:#effbf3;color:#17683a}.warn{background:#fff6e9;color:#855600}.err{background:#fff0f0;color:#9b2727}
-.source-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.source-card{position:relative;flex:0 0 96px;border:1px solid #dce2eb;border-radius:10px;padding:6px;background:#fff;cursor:pointer}.source-card.active{border:2px solid #182033;padding:5px}.source-card.multi{box-shadow:0 0 0 2px #8290a6 inset}.queue-badge{position:absolute;left:3px;top:3px;z-index:2;padding:3px 6px;border-radius:999px;background:#182033;color:#fff;font-size:10px;font-weight:700}.queue-badge.processing{background:#855600}.queue-badge.done{background:#17683a}.queue-badge.error{background:#a42b2b}.source-thumb{width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f5;overflow:hidden}.source-thumb img{width:100%;height:100%;object-fit:cover}.source-name{font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-remove{position:absolute;right:3px;top:3px;width:24px;height:24px;padding:0;border-radius:999px;background:#fff;color:#a42b2b;box-shadow:0 1px 5px rgba(0,0,0,.18)}
+.source-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.source-card{position:relative;flex:0 0 96px;border:1px solid #dce2eb;border-radius:10px;padding:6px;background:#fff;cursor:pointer}.source-card.active{border:2px solid #182033;padding:5px}.source-card.multi{box-shadow:0 0 0 2px #8290a6 inset}.source-check{position:absolute;left:4px;bottom:4px;width:18px;height:18px;padding:0;z-index:2;accent-color:#182033}.queue-badge{position:absolute;left:3px;top:3px;z-index:2;padding:3px 6px;border-radius:999px;background:#182033;color:#fff;font-size:10px;font-weight:700}.queue-badge.processing{background:#855600}.queue-badge.done{background:#17683a}.queue-badge.error{background:#a42b2b}.source-thumb{width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f5;overflow:hidden}.source-thumb img{width:100%;height:100%;object-fit:cover}.source-name{font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-remove{position:absolute;right:3px;top:3px;width:24px;height:24px;padding:0;border-radius:999px;background:#fff;color:#a42b2b;box-shadow:0 1px 5px rgba(0,0,0,.18)}
 .meta{font-size:11px;color:#70798a;margin-top:3px}.chips{display:flex;gap:6px;overflow:auto;padding-bottom:5px}
 .chip{width:auto;white-space:nowrap;padding:7px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
 .preview{display:flex;align-items:center;justify-content:center;width:100%;min-height:0;height:calc(100% - 95px);max-height:calc(100vh - 190px);background:#eef1f5;border-radius:12px;padding:14px;overflow:hidden}
@@ -207,6 +207,7 @@ function render(s){
       :'<span class="meta">'+esc(f.kind)+'</span>';
     return '<div class="source-card '+(active?'active ':'')+(multi?'multi':'')+'" data-source="'+i+'" title="'+esc(f.name)+'">'+
       badge+
+      '<input class="source-check" type="checkbox" data-select-source="'+i+'" '+(multi?'checked':'')+' title="Chọn file cho yêu cầu">'+
       '<button class="source-remove" data-remove-source="'+i+'" title="Xóa file" aria-label="Xóa '+esc(f.name)+'">×</button>'+
       '<div class="source-thumb">'+thumb+'</div>'+
       '<div class="source-name">'+esc(f.name)+'</div>'+
@@ -215,7 +216,7 @@ function render(s){
   }).join(""):'<div class="meta">Chưa có file.</div>';
   $("#selectionInfo").textContent=selectedSourcePaths.size
     ?"Đang chọn "+selectedSourcePaths.size+" file cho yêu cầu."
-    :"Bấm thumbnail để chọn file; Ctrl/Cmd hoặc nút chọn nhiều để gom chung yêu cầu.";
+    :"Bấm thumbnail để xem; dùng checkbox trên thumbnail để chọn một hoặc nhiều file cho yêu cầu.";
   $("#queueList").innerHTML=s.requestQueue.length
     ?'<h3>Hàng chờ AI</h3>'+s.requestQueue.map(q=>
       '<div class="box" data-queue="'+q.id+'" style="cursor:pointer"><b>#'+q.order+' · '+esc(q.status)+'</b>'+
@@ -320,6 +321,17 @@ $("#duplexContinue").onclick=()=>action("continueManualDuplex");
 $("#duplexCancel").onclick=()=>action("cancelManualDuplex");
 
 document.addEventListener("click",e=>{
+  const select=e.target.closest("[data-select-source]");
+  if(select){
+    e.stopPropagation();
+    const index=Number(select.dataset.selectSource);
+    const path=currentState.files[index]?.path;
+    if(path){
+      select.checked?selectedSourcePaths.add(path):selectedSourcePaths.delete(path);
+      render(currentState);
+    }
+    return;
+  }
   const remove=e.target.closest("[data-remove-source]");
   if(remove){
     e.stopPropagation();

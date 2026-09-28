@@ -79,8 +79,8 @@ public sealed class GeneralPrintPlannerTests
         Assert.Contains("pagesPerSheet", client.LastRequest.SystemInstruction);
         Assert.Contains("Supported pagesPerSheet values are exactly: 2, 4, 6, 8, 9, 16", client.LastRequest.SystemInstruction);
         Assert.Contains("shrinkOnly", client.LastRequest.SystemInstruction);
-        Assert.Contains(""mode": "percent"", client.LastRequest.SystemInstruction);
-        Assert.Contains(""mode": "maxFit"", client.LastRequest.SystemInstruction);
+        Assert.Contains("\"mode\": \"percent\"", client.LastRequest.SystemInstruction);
+        Assert.Contains("\"mode\": \"maxFit\"", client.LastRequest.SystemInstruction);
 
         using var payload = JsonDocument.Parse(client.LastRequest.UserPayload);
         Assert.Equal(

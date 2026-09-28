@@ -38,7 +38,7 @@ public sealed partial class DesktopSession
                 fitMode));
 
         _selectedWorkflowId = LabelSheetWorkflow.CustomId;
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = "workflow:label-custom-sheet";
         _selectedOutputPage = 0;
 

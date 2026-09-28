@@ -48,6 +48,7 @@ public sealed class SmartCollagePlanner(IMultimodalModelClient modelClient)
         - notes: concise optional text
 
         candidates must contain 1..4 visually distinct proposals ordered best first.
+        Prefer returning four proposals when four good distinct choices are available.
         Each candidate:
         - templateId: one allowed template ID
         - confidence: 0..1

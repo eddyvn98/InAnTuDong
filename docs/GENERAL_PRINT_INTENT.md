@@ -79,8 +79,9 @@ Each source stores:
 
 - approved file path
 - inspected page count
+- trusted per-page physical size in millimetres when the source format exposes it
 
-The model may not invent a path or change page count.
+For PDF, physical page size comes from deterministic source inspection. The model may not invent or change path, page count, or physical page size. The source binder replaces planner-side metadata with the inspected values before compilation.
 
 ### Page selection
 
@@ -178,14 +179,14 @@ Verification for the desktop integration slice:
 
 ## Corpus-driven M7 extensions
 
-The balanced real-request corpus now reflects the General N-up implementation:
+The balanced real-request corpus now reflects General N-up plus physical scaling:
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 86 directly supported
+- 92 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 44 expose missing deterministic primitives
+- 38 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
@@ -218,13 +219,34 @@ N-up supports:
 
 The existing grid renderer, preview pipeline and Windows spooler remain unchanged below the compiled PrintJobSpec boundary.
 
+### Physical scaling
+
+Physical scaling is represented separately from `FitMode`.
+
+Supported modes:
+
+- `MaxFit`: preserve all content and use the largest size that fits the target placement.
+- `ShrinkOnly`: preserve the source's inspected physical size unless it must shrink to fit; never upscale.
+- `Percent`: render at an explicit percentage of the source's inspected physical page size.
+
+Examples:
+
+- 80% -> `Percent(80)`
+- 125% -> `Percent(125)`
+- 1:2 -> `Percent(50)`
+- "chỉ thu nhỏ nếu lớn hơn" -> `ShrinkOnly`
+- "phóng tối đa nhưng vẫn giữ toàn bộ" -> `MaxFit`
+
+`ShrinkOnly` and `Percent` require trusted physical source dimensions. PDF page dimensions are supplied by SourceInspector and rebound deterministically after AI planning. If trustworthy physical size is unavailable, the planner must ask instead of guessing.
+
+Percent scaling is centered and preserves physical proportions. A requested percentage may extend beyond the target placement; preview then shows the deterministic clipping. `Cover` remains a separate crop/fill intent.
+
 The next capabilities are now prioritized from the remaining gaps:
 
-1. richer scaling: shrink-only and custom percent
-2. crop, anchor, offset and asymmetric margins
-3. booklet imposition
-4. poster/tiled printing
-5. variable-size independent items in one sheet
+1. crop, anchor, offset and asymmetric margins
+2. booklet imposition
+3. poster/tiled printing
+4. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

@@ -205,7 +205,7 @@ jobs:
             artifacts/PrintAI-win-x64.zip
             artifacts/PrintAI-win-x64.sha256.txt
             artifacts/PrintAI-selftest.json
-            artifacts/PrintAI-selftest-output.pdf
+            artifacts/PrintAI-selftest-*.pdf
             artifacts/PrintAI-installed-selftest.json
           if-no-files-found: error
           retention-days: 14

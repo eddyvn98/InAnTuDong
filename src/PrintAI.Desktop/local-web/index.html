@@ -3,247 +3,162 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Print AI Local</title>
+<title>Print AI</title>
 <style>
-:root{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#182033;background:#f4f6fa}
-*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}
-header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 22px;background:#fff;border-bottom:1px solid #e1e6ef}
-h1{font-size:21px;margin:0}.sub{font-size:12px;color:#6e7685;margin-top:3px}
-.badge{font-size:12px;padding:7px 10px;border-radius:999px;background:#eafff0;color:#176b3a}
-main{display:grid;grid-template-columns:330px minmax(360px,1fr) 320px;gap:14px;padding:14px;height:calc(100vh - 73px)}
-.panel{background:#fff;border:1px solid #e1e6ef;border-radius:15px;padding:14px;overflow:auto}
-h2{font-size:15px;margin:0 0 11px}h3{font-size:13px;margin:16px 0 8px}
-button,input,select,textarea{border:1px solid #ccd4e0;border-radius:9px;background:#fff;padding:9px 10px;width:100%}
-button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;border-color:#182033}.danger{color:#a42b2b}
-button:disabled{opacity:.45;cursor:not-allowed}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-textarea{min-height:92px;resize:vertical}.box{padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45;margin-top:9px}
-.ok{background:#effbf3;color:#17683a}.warn{background:#fff6e9;color:#855600}.err{background:#fff0f0;color:#9b2727}
-.file{padding:8px 0;border-bottom:1px solid #edf0f4}.file b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.meta{font-size:11px;color:#70798a;margin-top:3px}.chips{display:flex;gap:6px;overflow:auto;padding-bottom:5px}
-.chip{width:auto;white-space:nowrap;padding:7px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
-.preview{display:flex;align-items:center;justify-content:center;min-height:360px;height:calc(100% - 95px);background:#eef1f5;border-radius:12px;padding:14px;overflow:hidden}
-.preview img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 8px 28px rgba(20,30,50,.14)}
-.empty{color:#737c8c;text-align:center;line-height:1.5}.drop{border:1px dashed #aab5c5;border-radius:11px;padding:14px;text-align:center;color:#6d7583;margin:8px 0}
-.status{white-space:pre-wrap}.stack{display:grid;gap:8px}.manual{display:none}
-@media(max-width:1000px){main{grid-template-columns:1fr;height:auto}.panel{min-height:0}.preview{height:520px}}
+:root{font-family:Inter,Segoe UI,system-ui,sans-serif;color:#172033;background:#f5f6f8}
+*{box-sizing:border-box}body{margin:0;overflow:hidden}button,textarea{font:inherit}
+.app{height:100vh;display:grid;grid-template-rows:54px 1fr 76px}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid #e6e8ed}
+.brand{display:flex;align-items:center;gap:9px;font-weight:750;font-size:16px}.logo{width:28px;height:28px;border-radius:9px;background:#172033;color:#fff;display:grid;place-items:center}
+.stage{min-height:0;display:grid;grid-template-columns:104px 1fr;gap:0}
+.sources{background:#fff;border-right:1px solid #e6e8ed;padding:10px 8px;overflow:auto}
+.iconBtn,.thumb{border:1px solid #dfe3ea;background:#fff;cursor:pointer}
+.iconBtn{width:34px;height:34px;border-radius:10px;padding:0;display:grid;place-items:center}
+.iconBtn:hover,.thumb:hover{background:#f7f8fa}.iconBtn:disabled{opacity:.35;cursor:not-allowed}
+.iconBtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+.add{width:100%;height:38px;margin-bottom:8px;border-style:dashed}
+.thumb{width:100%;aspect-ratio:1/1.12;border-radius:10px;padding:5px;margin-bottom:7px;position:relative;overflow:hidden}
+.thumb.active{border-color:#172033;box-shadow:0 0 0 1px #172033 inset}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:6px;background:#eef1f5}
+.fileIcon{height:100%;display:grid;place-items:center;background:#f1f3f6;border-radius:6px;color:#737b89;font-size:10px;font-weight:750;padding:6px;text-align:center}
+.pageNo{position:absolute;right:5px;bottom:5px;background:rgba(23,32,51,.82);color:#fff;border-radius:999px;font-size:9px;padding:2px 5px}
+.previewArea{min-width:0;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:20px;background:#eef1f4}
+.previewArea img{max-width:100%;max-height:100%;object-fit:contain;background:#fff;box-shadow:0 12px 42px rgba(22,30,50,.14)}
+.empty{color:#7a828f;text-align:center;max-width:330px;line-height:1.5;font-size:14px}
+.printBtn{position:absolute;top:14px;right:14px;background:#172033;color:#fff;border-color:#172033}
+.status{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);max-width:min(620px,80%);background:rgba(255,255,255,.94);border:1px solid #e0e4ea;border-radius:10px;padding:7px 10px;font-size:11px;color:#596171;box-shadow:0 5px 18px rgba(20,30,50,.08);white-space:pre-wrap}
+.status:empty{display:none}.status.error{color:#9a2525;background:#fff5f5}
+.composer{background:#fff;border-top:1px solid #e6e8ed;display:flex;align-items:center;gap:8px;padding:10px 14px}
+.composerBox{flex:1;display:flex;align-items:center;gap:7px;border:1px solid #d9dee6;border-radius:15px;padding:6px 7px 6px 12px;background:#fff}
+textarea{flex:1;border:0;outline:0;resize:none;min-height:38px;max-height:70px;padding:9px 2px;background:transparent;color:#172033}
+.send{background:#172033;color:#fff;border-color:#172033;flex:0 0 auto}
+.hidden{display:none!important}
+@media(max-width:700px){.stage{grid-template-columns:82px 1fr}.sources{padding:8px 6px}.previewArea{padding:12px}.app{grid-template-rows:50px 1fr 72px}}
 </style>
 </head>
 <body>
+<div class="app">
 <header>
-  <div>
-    <h1>Print AI Local</h1>
-    <div class="sub">Browser → AGY → deterministic preview → Windows printer · chỉ 127.0.0.1</div>
+  <div class="brand">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7z" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </span>
+    Print AI
   </div>
-  <div class="badge">Local only · :5271</div>
 </header>
-<main>
-<section class="panel">
-  <h2>Nguồn in</h2>
-  <input id="files" type="file" multiple accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
-  <div class="drop" id="drop">Kéo thả file vào đây hoặc bấm chọn file.</div>
-  <button class="danger" id="clear">Xóa nguồn</button>
-  <div id="fileList"></div>
 
-  <h3>Source page</h3>
-  <div class="chips" id="pages"></div>
+<div class="stage">
+  <aside class="sources" id="sources">
+    <button class="iconBtn add" id="pick" title="Chọn file" aria-label="Chọn file">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <input class="hidden" id="files" type="file" multiple accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+    <div id="thumbs"></div>
+  </aside>
 
-  <h3>Antigravity</h3>
-  <div id="agy" class="box">Đang kiểm tra...</div>
-  <button id="retryAgy" style="margin-top:8px">Kiểm tra lại AGY</button>
+  <main class="previewArea" id="drop">
+    <button class="iconBtn printBtn" id="print" title="In" aria-label="In">
+      <svg viewBox="0 0 24 24"><path d="M7 9V4h10v5M7 17H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2M7 14h10v7H7z"/></svg>
+    </button>
+    <div id="preview" class="empty">Chọn file để bắt đầu.</div>
+    <div class="status" id="status"></div>
+  </main>
+</div>
 
-  <h3>Yêu cầu in</h3>
-  <textarea id="request" placeholder="Ví dụ: In file này 2 bản, bìa màu, phần còn lại trắng đen hai mặt."></textarea>
-  <div class="row">
-    <select id="mode">
-      <option>Safe</option>
-      <option selected>Smart</option>
-      <option>Auto</option>
-    </select>
-    <button class="primary" id="plan">AGY lập kế hoạch</button>
+<div class="composer">
+  <div class="composerBox">
+    <textarea id="request" rows="1" placeholder="Bạn muốn in thế nào? Ví dụ: 20 ảnh 4×6 cm, xếp tiết kiệm A4 và có đường cắt."></textarea>
+    <button class="iconBtn send" id="send" title="Gửi yêu cầu" aria-label="Gửi yêu cầu">
+      <svg viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-6-7-2zM11 14l3-3"/></svg>
+    </button>
   </div>
-  <div id="planInfo"></div>
-</section>
-
-<section class="panel">
-  <div class="row">
-    <div>
-      <h2>PrintPlan batch</h2>
-      <div class="chips" id="batches"></div>
-    </div>
-    <div>
-      <h2>Output page</h2>
-      <div class="chips" id="outputs"></div>
-    </div>
-  </div>
-  <div class="preview" id="preview">
-    <div class="empty">Upload file để tạo preview.</div>
-  </div>
-</section>
-
-<section class="panel">
-  <h2>Máy in</h2>
-  <select id="printer"></select>
-
-  <div class="box" id="readiness"></div>
-  <div class="box status" id="status">Chưa có job.</div>
-
-  <div class="box manual" id="duplexBox">
-    <b>Đang chờ in mặt sau</b>
-    <div class="meta" id="duplexInfo"></div>
-    <div class="stack" style="margin-top:8px">
-      <button class="primary" id="duplexContinue">Đã nạp lại giấy · in mặt sau</button>
-      <button class="danger" id="duplexCancel">Hủy job 2 mặt</button>
-    </div>
-  </div>
-
-  <h3>In</h3>
-  <div class="stack">
-    <button class="primary" id="printJob">In toàn bộ batch/job</button>
-    <button id="printPlan">In toàn bộ PrintPlan simplex</button>
-    <button id="printPage">In output đang xem</button>
-  </div>
-
-  <div class="box warn">
-    Slice local web đầu tiên tập trung luồng chính: upload → AGY → preview → print.
-    Scanner, recipes, collage và các workflow nâng cao vẫn dùng desktop UI trong giai đoạn này.
-  </div>
-</section>
-</main>
+</div>
+</div>
 
 <script>
 let sessionToken="";
 let currentState=null;
-
+const thumbUrls=new Map();
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ext=name=>(name.split(".").pop()||"FILE").toUpperCase();
+const isRaster=name=>/\.(jpe?g|png)$/i.test(name);
 
 async function readJson(response){
-  const text=await response.text();
-  let data={};
+  const text=await response.text();let data={};
   try{data=text?JSON.parse(text):{}}catch{}
   if(!response.ok)throw new Error(data.error||text||("HTTP "+response.status));
   return data;
 }
-
 async function bootstrap(){
   const data=await readJson(await fetch("/api/bootstrap",{cache:"no-store"}));
-  sessionToken=data.sessionToken;
-  render(data.state);
+  sessionToken=data.sessionToken;render(data.state);
 }
-
 async function api(path,options={}){
   options.headers={...(options.headers||{}),"X-PrintAI-Session":sessionToken};
   return readJson(await fetch(path,options));
 }
-
 async function action(name,payload={}){
   try{
-    render(await api("/api/action",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:name,payload})
-    }));
+    render(await api("/api/action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:name,payload})}));
   }catch(e){showError(e)}
 }
-
 async function upload(files){
-  if(!files||!files.length)return;
-  const form=new FormData();
-  [...files].forEach(file=>form.append("files",file,file.name));
-  try{
-    render(await api("/api/files",{method:"POST",body:form}));
-  }catch(e){showError(e)}
+  if(!files?.length)return;
+  [...files].forEach(file=>{
+    if(isRaster(file.name)){
+      const old=thumbUrls.get(file.name);if(old)URL.revokeObjectURL(old);
+      thumbUrls.set(file.name,URL.createObjectURL(file));
+    }
+  });
+  const form=new FormData();[...files].forEach(file=>form.append("files",file,file.name));
+  try{render(await api("/api/files",{method:"POST",body:form}))}catch(e){showError(e)}
 }
-
 function showError(e){
-  $("#status").textContent="Lỗi: "+e.message;
-  $("#status").className="box status err";
+  $("#status").textContent="Lỗi: "+e.message;$("#status").className="status error";
 }
-
 function render(s){
   currentState=s;
-
-  $("#fileList").innerHTML=s.files.length?s.files.map(f=>
-    '<div class="file"><b>'+esc(f.name)+'</b><div class="meta">'+esc(f.kind)+(f.pageCount?' · '+f.pageCount+' trang':'')+'</div></div>'
-  ).join(""):'<div class="meta">Chưa có file.</div>';
-
-  $("#pages").innerHTML=s.pages.map((p,i)=>
-    '<button class="chip '+(i===s.selectedPage?'active':'')+'" data-page="'+i+'">'+esc(p.pageLabel)+'</button>'
-  ).join("");
-
-  $("#outputs").innerHTML=Array.from({length:s.outputPageCount},(_,i)=>
-    '<button class="chip '+(i===s.selectedOutputPage?'active':'')+'" data-output="'+i+'">Output '+(i+1)+'</button>'
-  ).join("");
-
-  $("#batches").innerHTML=s.planner.batches.map(b=>
-    '<button class="chip '+(b.index===s.planner.selectedBatch?'active':'')+'" data-batch="'+b.index+'">'+esc(b.name)+'</button>'
-  ).join("");
-
-  $("#preview").innerHTML=s.previewDataUrl
-    ?'<img alt="Print preview" src="'+s.previewDataUrl+'">'
-    :'<div class="empty">Chưa có preview.</div>';
-
-  const printer=$("#printer");
-  printer.innerHTML=s.printers.length?s.printers.map(p=>
-    '<option value="'+esc(p.name)+'" '+(p.name===s.selectedPrinter?'selected':'')+'>'+esc(p.name)+(p.isDefault?' · default':'')+'</option>'
-  ).join(""):'<option value="">Không có printer</option>';
-
-  $("#agy").className=s.planner.configured?"box ok":"box warn";
-  $("#agy").innerHTML=s.planner.configured
-    ?'<b>✓ Antigravity Ready</b><div class="meta">'+esc(s.planner.model||"AGY")+'</div>'
-    :'<b>AGY chưa sẵn sàng</b><div class="meta">Kiểm tra agy.exe / phiên đăng nhập Antigravity.</div>';
-
-  const info=[];
-  if(s.planner.decision){
-    info.push('<div class="box"><b>'+esc(s.planner.decision)+'</b>'+
-      (s.planner.confidence!=null?' · '+Math.round(s.planner.confidence*100)+'%':'')+
-      (s.planner.isGeneralPlan?' · '+s.planner.batches.length+' batch':'')+'</div>');
-  }
-  if(s.planner.questions.length)info.push('<div class="box warn"><b>Cần trả lời:</b><br>'+s.planner.questions.map(esc).join("<br>")+'</div>');
-  if(s.planner.warnings.length)info.push('<div class="box warn"><b>Warning:</b><br>'+s.planner.warnings.map(esc).join("<br>")+'</div>');
-  $("#planInfo").innerHTML=info.join("");
-
-  $("#readiness").className=s.readiness.readyForCorePrinting?"box ok":"box warn";
-  $("#readiness").textContent=s.readiness.readyForCorePrinting
-    ?"Core printing ready · "+s.readiness.warningCount+" warning"
-    :"Chưa sẵn sàng · "+s.readiness.failureCount+" lỗi · "+s.readiness.warningCount+" warning";
-
-  $("#status").className="box status";
-  $("#status").textContent=s.status||"Chưa có job.";
-
-  $("#printPage").disabled=!s.canPrint||s.duplex.pending||s.duplex.mode!=="Off";
-  $("#printJob").disabled=!s.canPrintJob||s.duplex.pending;
-  $("#printPlan").disabled=!s.canPrintPlan||s.duplex.pending;
-
-  $("#duplexBox").style.display=s.duplex.pending?"block":"none";
-  $("#duplexContinue").disabled=!s.duplex.canContinueBack;
-  $("#duplexInfo").textContent=s.duplex.pending
-    ?(s.duplex.printerName||"")+" · "+s.duplex.sheetCount+" tờ · "+(s.duplex.instruction||"")
-    :"";
+  $("#thumbs").innerHTML=s.pages.map((p,i)=>{
+    const url=thumbUrls.get(p.sourceName);
+    const inner=url?'<img src="'+url+'" alt="">':'<div class="fileIcon">'+esc(ext(p.sourceName))+'<br>'+esc(p.sourceName)+'</div>';
+    return '<button class="thumb '+(i===s.selectedPage?'active':'')+'" data-page="'+i+'" title="'+esc(p.pageLabel)+'">'+inner+
+      (s.pages.length>1?'<span class="pageNo">'+(i+1)+'</span>':'')+'</button>';
+  }).join("");
+  $("#preview").className=s.previewDataUrl?"":"empty";
+  $("#preview").innerHTML=s.previewDataUrl?'<img alt="Preview trước khi in" src="'+s.previewDataUrl+'">':'Chọn file để bắt đầu.';
+  const note=[];
+  if(s.planner.questions?.length)note.push(s.planner.questions.join(" · "));
+  else if(s.status)note.push(s.status);
+  $("#status").textContent=note.join("\n");
+  $("#status").className="status";
+  $("#print").disabled=!(s.canPrint||s.canPrintJob||s.canPrintPlan||s.duplex?.canContinueBack);
 }
-
+async function plan(){
+  const request=$("#request").value.trim();
+  if(!request)return;
+  $("#send").disabled=true;
+  $("#status").textContent="AI đang chuẩn bị bản in…";
+  try{await action("plan",{request,mode:"Smart"})}finally{$("#send").disabled=false}
+}
+async function printBest(){
+  if(!currentState)return;
+  if(currentState.duplex?.pending&&currentState.duplex?.canContinueBack)return action("continueManualDuplex");
+  if(currentState.canPrintPlan)return action("printPlan");
+  if(currentState.canPrintJob)return action("printJob");
+  if(currentState.canPrint)return action("print");
+}
+$("#pick").onclick=()=>$("#files").click();
 $("#files").onchange=e=>upload(e.target.files);
 $("#drop").ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect="copy"};
 $("#drop").ondrop=e=>{e.preventDefault();upload(e.dataTransfer.files)};
-$("#clear").onclick=()=>action("clear");
-$("#retryAgy").onclick=()=>action("configureAntigravity",{});
-$("#plan").onclick=()=>action("plan",{request:$("#request").value.trim(),mode:$("#mode").value});
-$("#printer").onchange=e=>action("selectPrinter",{printer:e.target.value});
-$("#printPage").onclick=()=>action("print");
-$("#printJob").onclick=()=>action("printJob");
-$("#printPlan").onclick=()=>action("printPlan");
-$("#duplexContinue").onclick=()=>action("continueManualDuplex");
-$("#duplexCancel").onclick=()=>action("cancelManualDuplex");
-
+$("#send").onclick=plan;
+$("#print").onclick=printBest;
+$("#request").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();plan()}};
 document.addEventListener("click",e=>{
   const p=e.target.closest("[data-page]");
   if(p)action("selectPage",{index:Number(p.dataset.page)});
-  const o=e.target.closest("[data-output]");
-  if(o)action("selectOutputPage",{index:Number(o.dataset.output)});
-  const b=e.target.closest("[data-batch]");
-  if(b)action("selectPlanBatch",{index:Number(b.dataset.batch)});
 });
-
 bootstrap().catch(showError);
 </script>
 </body>

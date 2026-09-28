@@ -1237,3 +1237,22 @@ Next concrete task after merge:
 2. measure AGY cold/warm latency through the browser path;
 3. decide whether persistent `stream-json` is justified;
 4. migrate the highest-value remaining desktop controls to browser mode.
+
+
+## Minimal AI-first UI refinement
+
+Branch: `ui/minimal-ai-first`.
+
+User testing showed that the local browser surface exposed too many implementation controls. The browser UI is now intentionally reduced to the primary human flow:
+
+- choose/drop files
+- see compact source/page thumbnails
+- enter one natural-language print request
+- inspect the deterministic preview
+- print from one compact SVG icon after preview
+
+Printer selection, Smart policy, PrintPlan batch selection, output-page controls, AGY readiness actions, manual-duplex actions and other technical controls remain available behind the existing session/action boundary but are no longer exposed as primary browser controls. The UI chooses the existing default/verified printer path and uses Smart planning by default.
+
+Raster uploads use client-side thumbnails where available; non-raster sources use compact file/page tiles. Existing deterministic preview and print execution are unchanged.
+
+Verification still required: CI/package build and real packaged Windows browser test.

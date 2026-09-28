@@ -28,6 +28,28 @@ internal static class LocalWebActionDispatcher
                     ReadString(payload, "mode"));
                 break;
 
+            case "upsertQueuedRequest":
+                desktop.UpsertQueuedRequest(
+                    ReadOptionalString(payload, "id"),
+                    ReadString(payload, "request"),
+                    ReadString(payload, "mode"),
+                    ReadIntArray(payload, "sourceIndexes"));
+                break;
+
+            case "removeQueuedRequest":
+                desktop.RemoveQueuedRequest(
+                    ReadString(payload, "id"));
+                break;
+
+            case "processQueuedRequest":
+                await desktop.ProcessQueuedRequestAsync(
+                    ReadString(payload, "id"));
+                break;
+
+            case "processNextQueuedRequest":
+                await desktop.ProcessNextQueuedRequestAsync();
+                break;
+
             case "selectPrinter":
                 desktop.SelectPrinter(
                     ReadString(payload, "printer"));
@@ -167,6 +189,14 @@ internal static class LocalWebActionDispatcher
         JsonElement payload,
         string name) =>
         payload.GetProperty(name).GetInt32();
+
+    private static IReadOnlyList<int> ReadIntArray(
+        JsonElement payload,
+        string name) =>
+        payload.GetProperty(name)
+            .EnumerateArray()
+            .Select(value => value.GetInt32())
+            .ToArray();
 
     private static double ReadDouble(
         JsonElement payload,

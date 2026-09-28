@@ -61,7 +61,9 @@ Validate paper bounds, sizes, margins, copies, source readability, layout overfl
 
 Support single-page fit, exact-size item, repeated items, grids, auto rotation, spacing, cut marks, and paper-saving placement.
 
-For small-photo workflows, support deterministic auto-layout alternatives. The first slice accepts 1-6 selected source pages, generates up to four 4x6-inch (101.6 x 152.4 mm) grid candidates across portrait/landscape, renders each candidate for review, and lets the user choose one before printing. The LLM does not calculate candidate coordinates.
+For small-photo workflows, support deterministic auto-layout alternatives. The first slice accepts 1-6 selected source pages, generates up to four 4x6-inch (101.6 x 152.4 mm) grid candidates across portrait/landscape, renders each candidate for review, and lets the user choose one before printing. The LLM does not calculate auto-grid candidate coordinates.
+
+Smart Collage / Layout V2 extends this with an explicit canvas scene graph: each frame can have independent geometry, z-order, mask shape, rotation, fit, image scale and image offset. The first template library targets three-photo 4x6 portrait collages with at least ten deterministic designs. AI photo analysis and template/transform selection are layered on top of this validated renderer rather than replacing it.
 
 ### Preview and policy
 

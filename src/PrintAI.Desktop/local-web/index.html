@@ -18,7 +18,7 @@ button{cursor:pointer;font-weight:650}.primary{background:#182033;color:#fff;bor
 button:disabled{opacity:.45;cursor:not-allowed}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{padding:10px;border-radius:10px;background:#f3f5f8;font-size:12px;line-height:1.45;margin-top:9px}
 .ok{background:#effbf3;color:#17683a}.warn{background:#fff6e9;color:#855600}.err{background:#fff0f0;color:#9b2727}
-.source-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.source-card{position:relative;flex:0 0 96px;border:1px solid #dce2eb;border-radius:10px;padding:6px;background:#fff;cursor:pointer}.source-card.active{border:2px solid #182033;padding:5px}.source-thumb{width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f5;overflow:hidden}.source-thumb img{width:100%;height:100%;object-fit:cover}.source-name{font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-remove{position:absolute;right:3px;top:3px;width:24px;height:24px;padding:0;border-radius:999px;background:#fff;color:#a42b2b;box-shadow:0 1px 5px rgba(0,0,0,.18)}
+.source-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:thin}.source-card{position:relative;flex:0 0 96px;border:1px solid #dce2eb;border-radius:10px;padding:6px;background:#fff;cursor:pointer}.source-card.active{border:2px solid #182033;padding:5px}.source-card.multi{box-shadow:0 0 0 2px #8290a6 inset}.queue-badge{position:absolute;left:3px;top:3px;z-index:2;padding:3px 6px;border-radius:999px;background:#182033;color:#fff;font-size:10px;font-weight:700}.queue-badge.processing{background:#855600}.queue-badge.done{background:#17683a}.queue-badge.error{background:#a42b2b}.source-thumb{width:100%;height:72px;display:flex;align-items:center;justify-content:center;border-radius:7px;background:#eef1f5;overflow:hidden}.source-thumb img{width:100%;height:100%;object-fit:cover}.source-name{font-size:11px;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-remove{position:absolute;right:3px;top:3px;width:24px;height:24px;padding:0;border-radius:999px;background:#fff;color:#a42b2b;box-shadow:0 1px 5px rgba(0,0,0,.18)}
 .meta{font-size:11px;color:#70798a;margin-top:3px}.chips{display:flex;gap:6px;overflow:auto;padding-bottom:5px}
 .chip{width:auto;white-space:nowrap;padding:7px 9px;font-size:11px}.chip.active{background:#182033;color:#fff;border-color:#182033}
 .preview{display:flex;align-items:center;justify-content:center;width:100%;min-height:0;height:calc(100% - 95px);max-height:calc(100vh - 190px);background:#eef1f5;border-radius:12px;padding:14px;overflow:hidden}
@@ -59,8 +59,14 @@ textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{paddi
       <option selected>Smart</option>
       <option>Auto</option>
     </select>
-    <button class="primary" id="plan">AGY lập kế hoạch</button>
+    <button class="primary" id="queueSave">Thêm vào hàng chờ</button>
   </div>
+  <div class="row" style="margin-top:8px">
+    <button id="queueRun">Xử lý yêu cầu kế tiếp</button>
+    <button class="danger" id="queueDelete" disabled>Xóa yêu cầu đang sửa</button>
+  </div>
+  <div id="selectionInfo" class="meta"></div>
+  <div id="queueList"></div>
   <div id="planInfo"></div>
 </section>
 
@@ -113,6 +119,8 @@ textarea{min-height:48px;max-height:180px;resize:none;overflow-y:auto}.box{paddi
 <script>
 let sessionToken="";
 let currentState=null;
+let selectedSourceIndexes=new Set();
+let editingQueueId=null;
 
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -175,19 +183,38 @@ function render(s){
   currentState=s;
 
   const selectedPath=s.pages[s.selectedPage]?.sourcePath||"";
+  if(!selectedSourceIndexes.size&&selectedPath){
+    const initial=s.files.findIndex(f=>f.path===selectedPath);
+    if(initial>=0)selectedSourceIndexes.add(initial);
+  }
   $("#fileList").innerHTML=s.files.length?s.files.map((f,i)=>{
     const active=f.path===selectedPath;
+    const multi=selectedSourceIndexes.has(i);
     const page=s.pages.find(p=>p.sourcePath===f.path);
+    const queued=s.requestQueue.filter(q=>q.sourcePaths.includes(f.path)).sort((a,b)=>a.order-b.order);
+    const badge=queued.length
+      ?'<span class="queue-badge '+esc(queued[0].status)+'">#'+queued.map(q=>q.order).join(",#")+'</span>'
+      :'';
     const thumb=active&&s.previewDataUrl
       ?'<img alt="" src="'+s.previewDataUrl+'">'
       :'<span class="meta">'+esc(f.kind)+'</span>';
-    return '<div class="source-card '+(active?'active':'')+'" data-source="'+i+'" title="'+esc(f.name)+'">'+
+    return '<div class="source-card '+(active?'active ':'')+(multi?'multi':'')+'" data-source="'+i+'" title="'+esc(f.name)+'">'+
+      badge+
       '<button class="source-remove" data-remove-source="'+i+'" title="Xóa file" aria-label="Xóa '+esc(f.name)+'">×</button>'+
       '<div class="source-thumb">'+thumb+'</div>'+
       '<div class="source-name">'+esc(f.name)+'</div>'+
       (page?'<div class="meta">'+(f.pageCount?f.pageCount+' trang':'Ảnh')+'</div>':'')+
       '</div>';
   }).join(""):'<div class="meta">Chưa có file.</div>';
+  $("#selectionInfo").textContent=selectedSourceIndexes.size
+    ?"Đang chọn "+selectedSourceIndexes.size+" file cho yêu cầu."
+    :"Bấm thumbnail để chọn file; Ctrl/Cmd hoặc nút chọn nhiều để gom chung yêu cầu.";
+  $("#queueList").innerHTML=s.requestQueue.length
+    ?'<h3>Hàng chờ AI</h3>'+s.requestQueue.map(q=>
+      '<div class="box" data-queue="'+q.id+'" style="cursor:pointer"><b>#'+q.order+' · '+esc(q.status)+'</b>'+
+      '<div>'+esc(q.request)+'</div><div class="meta">'+q.sourcePaths.length+' file'+(q.error?' · '+esc(q.error):'')+'</div></div>'
+    ).join("")
+    :'';
 
   $("#pages").innerHTML=s.pages.map((p,i)=>
     '<button class="chip '+(i===s.selectedPage?'active':'')+'" data-page="'+i+'">'+esc(p.pageLabel)+'</button>'
@@ -249,7 +276,26 @@ $("#drop").ondragover=e=>{e.preventDefault();e.dataTransfer.dropEffect="copy"};
 $("#drop").ondrop=e=>{e.preventDefault();upload(e.dataTransfer.files)};
 $("#clear").onclick=()=>action("clear");
 $("#retryAgy").onclick=()=>action("configureAntigravity",{});
-$("#plan").onclick=()=>action("plan",{request:$("#request").value.trim(),mode:$("#mode").value});
+$("#queueSave").onclick=async()=>{
+  if(!selectedSourceIndexes.size)return showError(new Error("Chọn ít nhất một file."));
+  await action("upsertQueuedRequest",{
+    id:editingQueueId,
+    request:$("#request").value.trim(),
+    mode:$("#mode").value,
+    sourceIndexes:[...selectedSourceIndexes]
+  });
+  editingQueueId=null;
+  $("#request").value="";
+  $("#queueDelete").disabled=true;
+};
+$("#queueRun").onclick=()=>action("processNextQueuedRequest");
+$("#queueDelete").onclick=async()=>{
+  if(!editingQueueId)return;
+  await action("removeQueuedRequest",{id:editingQueueId});
+  editingQueueId=null;
+  $("#request").value="";
+  $("#queueDelete").disabled=true;
+};
 $("#request").addEventListener("input",e=>{
   e.target.style.height="auto";
   e.target.style.height=Math.min(180,Math.max(48,e.target.scrollHeight))+"px";
@@ -268,8 +314,29 @@ document.addEventListener("click",e=>{
     action("removeSource",{index:Number(remove.dataset.removeSource)});
     return;
   }
+  const queued=e.target.closest("[data-queue]");
+  if(queued){
+    const q=currentState.requestQueue.find(x=>x.id===queued.dataset.queue);
+    if(q){
+      editingQueueId=q.id;
+      $("#request").value=q.request;
+      $("#mode").value=q.mode;
+      selectedSourceIndexes=new Set(q.sourcePaths.map(path=>currentState.files.findIndex(f=>f.path===path)).filter(i=>i>=0));
+      $("#queueDelete").disabled=false;
+      render(currentState);
+    }
+    return;
+  }
   const source=e.target.closest("[data-source]");
-  if(source)action("selectSource",{index:Number(source.dataset.source)});
+  if(source){
+    const index=Number(source.dataset.source);
+    if(e.ctrlKey||e.metaKey){
+      selectedSourceIndexes.has(index)?selectedSourceIndexes.delete(index):selectedSourceIndexes.add(index);
+    }else{
+      selectedSourceIndexes=new Set([index]);
+    }
+    action("selectSource",{index});
+  }
   const p=e.target.closest("[data-page]");
   if(p)action("selectPage",{index:Number(p.dataset.page)});
   const o=e.target.closest("[data-output]");

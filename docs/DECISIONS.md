@@ -269,3 +269,28 @@ It currently applies only to `LayoutMode.ExactSize`. Offsets may move content ou
 Crop is applied before Contain/Cover pixel mapping. General crop is not combined with N-up, Canvas, or physical scaling in this slice; placement and crop may be combined.
 
 This separation prevents margin/position requests from being misrepresented as source crop, and prevents source crop from silently changing paper-space positioning.
+
+
+## ADR-032 - Booklet imposition reorders logical pages before the existing Grid and duplex paths
+Status: accepted
+
+Booklet is represented at the PrintPlan layer by `BookletSpec`. It does not introduce a new executable layout mode or printer adapter.
+
+The model keeps selected pages in normal reading order. Deterministic code pads the logical page sequence to a multiple of four, then emits booklet side order per physical sheet.
+
+For eight logical pages:
+
+- front sheet 1: 8, 1
+- back sheet 1: 2, 7
+- front sheet 2: 6, 3
+- back sheet 2: 4, 5
+
+Missing logical pages are represented as `SourceSpec.IsBlank=true` with no source file path. The renderer creates a white raster locally for those placements. Blank padding never invents a path or page in an approved source.
+
+The imposed sequence is lowered to the existing two-column `LayoutMode.Grid` on landscape paper. The center gutter is the grid gap; the booklet outer margin is the grid margin.
+
+Booklet execution uses `DuplexMode.ShortEdge`. Automatic duplex remains a driver decision, and simplex printers reuse the existing guided manual-duplex planner/profile. The booklet layer does not implement a second duplex engine.
+
+Booklet sets require collated complete-set semantics. General N-up, physical scaling, general crop, page placement, and Canvas are not combined with booklet in this slice.
+
+This keeps page-order logic deterministic while preserving the existing preview, raster, Windows spooler, and manual-duplex execution boundaries.

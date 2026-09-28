@@ -187,11 +187,88 @@ public static class SourceJobRenderer
             extension.Equals(".heif", StringComparison.OrdinalIgnoreCase))
         {
             var png = HeicDecoder.DecodeToPng(sourcePath);
-            return SKBitmap.Decode(png)
-                ?? throw new InvalidDataException("The decoded HEIC image could not be rendered.");
+            return DecodeOriented(png);
         }
 
-        return SKBitmap.Decode(sourcePath)
+        return DecodeOriented(File.ReadAllBytes(sourcePath));
+    }
+
+    private static SKBitmap DecodeOriented(byte[] encoded)
+    {
+        using var stream = new SKMemoryStream(encoded);
+        using var codec = SKCodec.Create(stream)
             ?? throw new InvalidDataException("The raster source could not be decoded.");
+
+        var info = codec.Info;
+        var swapsAxes = codec.EncodedOrigin is
+            SKEncodedOrigin.LeftTop or
+            SKEncodedOrigin.RightTop or
+            SKEncodedOrigin.RightBottom or
+            SKEncodedOrigin.LeftBottom;
+
+        var output = new SKBitmap(
+            swapsAxes ? info.Height : info.Width,
+            swapsAxes ? info.Width : info.Height);
+
+        using var decoded = new SKBitmap(info.Width, info.Height);
+        var result = codec.GetPixels(decoded.Info, decoded.GetPixels());
+
+        if (result is not SKCodecResult.Success and
+            not SKCodecResult.IncompleteInput)
+        {
+            output.Dispose();
+            throw new InvalidDataException(
+                $"The raster source could not be decoded ({result}).");
+        }
+
+        using var canvas = new SKCanvas(output);
+        ApplyEncodedOrigin(
+            canvas,
+            codec.EncodedOrigin,
+            decoded.Width,
+            decoded.Height);
+        canvas.DrawBitmap(decoded, 0, 0);
+        canvas.Flush();
+        return output;
+    }
+
+    private static void ApplyEncodedOrigin(
+        SKCanvas canvas,
+        SKEncodedOrigin origin,
+        int width,
+        int height)
+    {
+        switch (origin)
+        {
+            case SKEncodedOrigin.TopRight:
+                canvas.Translate(width, 0);
+                canvas.Scale(-1, 1);
+                break;
+            case SKEncodedOrigin.BottomRight:
+                canvas.Translate(width, height);
+                canvas.RotateDegrees(180);
+                break;
+            case SKEncodedOrigin.BottomLeft:
+                canvas.Translate(0, height);
+                canvas.Scale(1, -1);
+                break;
+            case SKEncodedOrigin.LeftTop:
+                canvas.RotateDegrees(90);
+                canvas.Scale(1, -1);
+                break;
+            case SKEncodedOrigin.RightTop:
+                canvas.Translate(height, 0);
+                canvas.RotateDegrees(90);
+                break;
+            case SKEncodedOrigin.RightBottom:
+                canvas.Translate(height, width);
+                canvas.RotateDegrees(90);
+                canvas.Scale(-1, 1);
+                break;
+            case SKEncodedOrigin.LeftBottom:
+                canvas.Translate(0, width);
+                canvas.RotateDegrees(-90);
+                break;
+        }
     }
 }

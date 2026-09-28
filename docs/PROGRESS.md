@@ -923,16 +923,73 @@ Next implementation target:
 Verification:
 
 - verified commit: `c9fda4eeeef45178f58dc4fa06b15a917e3fbafb`
-- GitHub CI #218: success on Ubuntu + Windows
+- GitHub CI #219: success on Ubuntu + Windows
 - shared suite: 191/191 tests pass
 - crop/placement layout, parser, calculator, renderer and corpus regressions: success
 - Windows printer tests/probe: success
 - Windows desktop build: success
-- package-windows #162: success
+- package-windows #163: success
 - packaged self-test: success
 - install -> upgrade -> rollback -> uninstall smoke flow: success
 - ZIP/checksum/artifact upload: success
 
-The crop/placement slice is verified and ready to merge.
+The crop/placement slice was merged through PR #35. Final PR-head verification: CI #219 and package-windows #163 succeeded.
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 booklet imposition
+
+Branch: `m7-booklet`.
+
+The next corpus-driven M7 slice implements deterministic booklet page imposition while reusing the existing Grid renderer and duplex execution path.
+
+Implemented:
+
+- new high-level `BookletSpec`
+- configurable center gutter and outer margin
+- standard A4 paper forced to landscape execution
+- two logical pages per printed side
+- automatic logical-page padding to a multiple of four
+- virtual blank sources with no fake file path
+- deterministic booklet ordering per physical sheet
+- eight-page order: `8,1 / 2,7 / 6,3 / 4,5`
+- 16 logical pages compile to 8 output sides / 4 physical sheets
+- booklet execution forces short-edge duplex
+- automatic-duplex printers reuse Windows driver duplex submission
+- simplex printers reuse the existing guided manual-duplex planner/profile
+- `sets=N` produces N complete collated booklet batches
+- wider center gutter is deterministic grid gap
+- desktop plan batch strip exposes booklet/gutter intent
+- booklet cannot combine with N-up, physical scaling, page placement, general crop, or Canvas in this slice
+- imposition, compiler, virtual-blank renderer, parser, planner and corpus-derived regression tests added
+- BOOK-001 through BOOK-010 moved from `gap` to `supported`
+
+Corpus after this slice:
+
+- 110 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 20 / 150 deterministic gaps remain
+
+Coverage on the balanced corpus:
+
+- immediately/conditionally executable: 120 / 150 = 80.0%
+- semantically handled including clarification: 130 / 150 = 86.7%
+
+Remaining gap families:
+
+- poster/tiled printing: 10
+- variable-size items: 10
+
+Next implementation target:
+
+**poster / tiled printing**
+
+Verification status:
+
+- implementation and docs committed on feature branch
+- CI/package verification pending
+- do not merge until Ubuntu + Windows tests and Windows package are green
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

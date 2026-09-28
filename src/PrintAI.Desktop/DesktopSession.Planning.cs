@@ -15,11 +15,127 @@ public sealed partial class DesktopSession
     }
 
 
-    public async Task PlanAsync(string request, string mode)
+    public void UpsertQueuedRequest(
+        string? id,
+        string request,
+        string mode,
+        IReadOnlyList<int> sourceIndexes)
     {
-        _ = CurrentPage()
-            ?? throw new InvalidOperationException(
-                "Chọn ít nhất một file/trang trước khi dùng AI.");
+        if (string.IsNullOrWhiteSpace(request))
+            throw new ArgumentException("Nhập yêu cầu trước khi thêm vào hàng chờ.");
+
+        if (!Enum.TryParse<SafetyMode>(mode, true, out _))
+            throw new ArgumentException("Safety mode không hợp lệ.");
+
+        var paths = sourceIndexes
+            .Distinct()
+            .Select(index => index >= 0 && index < _paths.Count
+                ? _paths[index]
+                : throw new ArgumentOutOfRangeException(nameof(sourceIndexes)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (paths.Length == 0)
+            throw new ArgumentException("Chọn ít nhất một file cho yêu cầu.");
+
+        var existingIndex = string.IsNullOrWhiteSpace(id)
+            ? -1
+            : _requestQueue.FindIndex(item => item.Id == id);
+
+        if (existingIndex >= 0)
+        {
+            var existing = _requestQueue[existingIndex];
+            _requestQueue[existingIndex] = existing with
+            {
+                Request = request.Trim(),
+                Mode = mode,
+                SourcePaths = paths,
+                Status = "waiting",
+                Error = null
+            };
+            _status = $"Đã cập nhật yêu cầu #{existing.Order}.";
+            return;
+        }
+
+        var item = new DesktopQueuedRequest(
+            Guid.NewGuid().ToString("N"),
+            _nextRequestOrder++,
+            request.Trim(),
+            mode,
+            paths,
+            "waiting");
+
+        _requestQueue.Add(item);
+        _status = $"Đã thêm yêu cầu #{item.Order} vào hàng chờ.";
+    }
+
+    public void RemoveQueuedRequest(string id)
+    {
+        var index = _requestQueue.FindIndex(item => item.Id == id);
+        if (index < 0)
+            return;
+
+        var order = _requestQueue[index].Order;
+        _requestQueue.RemoveAt(index);
+        _status = $"Đã xóa yêu cầu #{order}.";
+    }
+
+    public async Task ProcessQueuedRequestAsync(string id)
+    {
+        var index = _requestQueue.FindIndex(item => item.Id == id);
+        if (index < 0)
+            throw new ArgumentException("Không tìm thấy yêu cầu trong hàng chờ.");
+
+        var item = _requestQueue[index];
+        _requestQueue[index] = item with { Status = "processing", Error = null };
+
+        try
+        {
+            await PlanForSourcesAsync(
+                item.Request,
+                item.Mode,
+                item.SourcePaths);
+
+            _requestQueue[index] = item with
+            {
+                Status = "done",
+                Error = null
+            };
+        }
+        catch (Exception ex)
+        {
+            _requestQueue[index] = item with
+            {
+                Status = "error",
+                Error = ex.Message
+            };
+            throw;
+        }
+    }
+
+    public async Task ProcessNextQueuedRequestAsync()
+    {
+        var next = _requestQueue
+            .Where(item => item.Status is "waiting" or "error")
+            .OrderBy(item => item.Order)
+            .FirstOrDefault();
+
+        if (next is null)
+        {
+            _status = "Hàng chờ AI không còn yêu cầu.";
+            return;
+        }
+
+        await ProcessQueuedRequestAsync(next.Id);
+    }
+
+    private async Task PlanForSourcesAsync(
+        string request,
+        string mode,
+        IReadOnlyList<string> sourcePaths)
+    {
+        if (sourcePaths.Count == 0)
+            throw new InvalidOperationException("Yêu cầu không có file nguồn.");
 
         if (!Enum.TryParse<SafetyMode>(
                 mode,
@@ -35,7 +151,7 @@ public sealed partial class DesktopSession
 
         var result = await _planner.PlanGeneralAsync(
             request,
-            _paths,
+            sourcePaths,
             safetyMode,
             IsVerifiedPrinter());
 
@@ -88,6 +204,9 @@ public sealed partial class DesktopSession
                 PrintPlan();
         }
     }
+
+    public Task PlanAsync(string request, string mode) =>
+        PlanForSourcesAsync(request, mode, _paths.ToArray());
 
     public void SelectPlanBatch(int index)
     {

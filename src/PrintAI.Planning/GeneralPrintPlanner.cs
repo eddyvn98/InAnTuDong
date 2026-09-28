@@ -89,12 +89,15 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - For "N trang/tờ", "N-up", or "N slides per sheet", set nUp:
           {
             "pagesPerSheet": N,
+            "columns": null,
             "gapMm": 2,
             "marginMm": 5,
             "border": false,
             "fit": "contain",
             "autoOrientation": true
           }
+        - nUp.columns is optional. Leave it null for the deterministic standard grid.
+        - Use nUp.columns only when the request clearly implies a different grid; for example 8 presentation slides on landscape paper should use columns=2 so the four rows have landscape-shaped cells.
         - If the user explicitly requests paper orientation, copy that orientation to paper.orientation and set nUp.autoOrientation=false.
         - If orientation is not explicit, set nUp.autoOrientation=true; deterministic code chooses the paper orientation.
         - If the user asks for space between N-up pages, set nUp.gapMm to the requested value, or 2 mm when space is requested without a size.

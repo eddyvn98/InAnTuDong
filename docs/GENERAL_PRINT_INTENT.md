@@ -413,6 +413,8 @@ If a natural-language request says only that items must be different sizes but p
 
 Variable-size items are intentionally not combined with N-up, booklet, poster, physical scaling, general crop, or page placement in this slice.
 
+Variable-size verification: CI #239 passed on Ubuntu + Windows with 261/261 shared tests, and package-windows #183 passed.
+
 With this slice, all deterministic primitive gap families in the balanced 150-request corpus have an execution path. Business/order-management features remain out of scope.
 
 ## Compatibility rule

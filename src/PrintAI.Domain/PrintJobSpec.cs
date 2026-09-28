@@ -40,6 +40,30 @@ public sealed record PhysicalScaleSpec(
     PhysicalScaleMode Mode,
     double Percent = 100);
 
+public sealed record PageMarginsSpec(
+    double LeftMm = 5,
+    double TopMm = 5,
+    double RightMm = 5,
+    double BottomMm = 5);
+
+public sealed record PagePlacementSpec(
+    PageMarginsSpec Margins,
+    PageAnchor Anchor = PageAnchor.Center,
+    double OffsetXMm = 0,
+    double OffsetYMm = 0,
+    bool ShrinkToFit = true);
+
+public sealed record CropEdgesSpec(
+    double LeftMm = 0,
+    double TopMm = 0,
+    double RightMm = 0,
+    double BottomMm = 0);
+
+public sealed record SourceCropSpec(
+    SourceCropMode Mode,
+    CropEdgesSpec? EdgesMm = null,
+    byte WhiteThreshold = 245);
+
 public sealed record LayoutSpec(
     LayoutMode Mode,
     double ItemWidthMm,
@@ -51,7 +75,9 @@ public sealed record LayoutSpec(
     FitMode Fit = FitMode.Contain,
     CanvasLayoutSpec? Canvas = null,
     bool ItemBorder = false,
-    PhysicalScaleSpec? PhysicalScale = null);
+    PhysicalScaleSpec? PhysicalScale = null,
+    PagePlacementSpec? PagePlacement = null,
+    SourceCropSpec? SourceCrop = null);
 
 public sealed record PrintSettings(
     int Copies = 1,
@@ -74,6 +100,24 @@ public enum PageOrientation { Portrait, Landscape }
 public enum LayoutMode { Grid, ExactSize, Canvas }
 public enum FitMode { Contain, Cover }
 public enum PhysicalScaleMode { MaxFit, ShrinkOnly, Percent }
+public enum PageAnchor
+{
+    Center,
+    Top,
+    Bottom,
+    Left,
+    Right,
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight
+}
+public enum SourceCropMode
+{
+    AutoTrimWhite,
+    CenterToTargetAspect,
+    EdgesMm
+}
 public enum FrameShape { Rectangle, RoundedRectangle, Ellipse, Circle }
 public enum ColorMode { Color, Grayscale }
 public enum PrintQuality { Draft, Standard, High }

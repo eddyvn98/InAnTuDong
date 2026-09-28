@@ -76,6 +76,8 @@ public sealed class GeneralPrintPlannerTests
         Assert.Contains("Required JSON shape", client.LastRequest!.SystemInstruction);
         Assert.Contains("Do not use pricing", client.LastRequest.SystemInstruction);
         Assert.Contains("complete multi-group document", client.LastRequest.SystemInstruction);
+        Assert.Contains("pagesPerSheet", client.LastRequest.SystemInstruction);
+        Assert.Contains("Supported pagesPerSheet values are exactly: 2, 4, 6, 8, 9, 16", client.LastRequest.SystemInstruction);
 
         using var payload = JsonDocument.Parse(client.LastRequest.UserPayload);
         Assert.Equal(

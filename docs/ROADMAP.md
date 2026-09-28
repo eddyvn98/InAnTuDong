@@ -166,7 +166,7 @@ Baseline after corpus creation: 76 supported, 10 capability-dependent, 10 clarif
 - [x] item border rendering
 - [x] N-up + duplex composition
 - [x] all 10 N-up corpus cases moved from gap to supported
-- [~] General N-up CI/package verification
+- [x] General N-up CI/package verification — CI #204 and package-windows #148 succeeded
 
 Updated corpus: 86 supported, 10 capability-dependent, 10 clarification, 44 deterministic gaps.
 

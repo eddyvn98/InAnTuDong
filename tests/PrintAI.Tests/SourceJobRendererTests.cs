@@ -92,6 +92,67 @@ public sealed class SourceJobRendererTests
         }
     }
 
+
+    [Fact]
+    public void GridItemBorder_DrawsVisibleRectangle()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"{Guid.NewGuid():N}.png");
+
+        try
+        {
+            using (var bitmap = new SKBitmap(100, 100))
+            {
+                bitmap.Erase(SKColors.White);
+                using var image = SKImage.FromBitmap(bitmap);
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = File.Create(path);
+                data.SaveTo(stream);
+            }
+
+            var job = new PrintJobSpec(
+                "border",
+                [new SourceSpec(path, Copies: 4)],
+                new PaperSpec(),
+                new LayoutSpec(
+                    LayoutMode.Grid,
+                    ItemWidthMm: 99,
+                    ItemHeightMm: 141.5,
+                    GapMm: 2,
+                    MarginMm: 5,
+                    AllowRotate: false,
+                    Fit: FitMode.Contain,
+                    ItemBorder: true),
+                new PrintSettings(),
+                new PolicySpec());
+
+            var png = SourceJobRenderer.RenderA4(
+                job,
+                path,
+                sourcePageIndex: 0,
+                outputPageIndex: 0,
+                dpi: 100);
+
+            using var rendered = SKBitmap.Decode(png);
+            Assert.NotNull(rendered);
+
+            static int Px(double mm) =>
+                (int)Math.Round(mm / 25.4 * 100);
+
+            var border = rendered.GetPixel(Px(5), Px(5));
+            var center = rendered.GetPixel(Px(50), Px(50));
+
+            Assert.True(border.Red < 120 && border.Green < 120 && border.Blue < 120);
+            Assert.True(center.Red > 240 && center.Green > 240 && center.Blue > 240);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+
     [Fact]
     public void CanvasCircleMask_ClipsBoundingBoxCorners()
     {

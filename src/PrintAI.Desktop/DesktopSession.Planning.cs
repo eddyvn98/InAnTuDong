@@ -137,7 +137,7 @@ public sealed partial class DesktopSession
 
         var current = CurrentJob(page);
         _activeJob = DesktopJobEditor.Apply(current, edits);
-        _planResult = null;
+        ClearPlannerResults();
         _selectedOutputPage = 0;
 
         RebuildPreview();

@@ -161,6 +161,8 @@ Initial implementation complete:
 - up to four ranked AI candidates
 - automatic four-template fallback when AI is unavailable, malformed or non-vision-capable
 
+Privacy boundary: invoking AI Smart Collage sends downscaled thumbnails (maximum 768px per source) for the three selected images to the configured AI endpoint. Deterministic grid/template fallback remains local and sends no image pixels.
+
 Current limitation: there is no local face detector yet. Face/subject awareness is inferred by the configured vision model and therefore remains advisory. Preview remains required before printing.
 
 ### V2.5 - manual refinement

@@ -178,25 +178,53 @@ Verification for the desktop integration slice:
 
 ## Corpus-driven M7 extensions
 
-The first balanced real-request corpus is now implemented:
+The balanced real-request corpus now reflects the General N-up implementation:
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 76 directly supported
+- 86 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 54 expose missing deterministic primitives
+- 44 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
-The next capabilities are now prioritized from those gaps:
+### General N-up
 
-1. general N-up/page-per-sheet intent
-2. richer scaling: shrink-only and custom percent
-3. crop, anchor, offset and asymmetric margins
-4. booklet imposition
-5. poster/tiled printing
-6. variable-size independent items in one sheet
+General N-up is implemented as a high-level `NUpSpec` on a PrintPlan output group.
+
+Supported `pagesPerSheet` values:
+
+- 2
+- 4
+- 6
+- 8
+- 9
+- 16
+
+Deterministic code resolves N-up into an ordinary `LayoutMode.Grid` execution job. The AI does not calculate physical cell width/height.
+
+N-up supports:
+
+- row-major source-page ordering
+- automatic deterministic paper orientation
+- explicit orientation override
+- optional explicit column count for clearly implied grids, such as 8 presentation slides in 2 columns x 4 rows
+- gap and margin in millimetres
+- optional border around each page cell
+- Contain/Cover fit
+- duplex without changing duplex semantics
+- incomplete final sheets when the selected page count is not divisible by pages-per-sheet
+
+The existing grid renderer, preview pipeline and Windows spooler remain unchanged below the compiled PrintJobSpec boundary.
+
+The next capabilities are now prioritized from the remaining gaps:
+
+1. richer scaling: shrink-only and custom percent
+2. crop, anchor, offset and asymmetric margins
+3. booklet imposition
+4. poster/tiled printing
+5. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

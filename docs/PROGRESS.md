@@ -4,7 +4,7 @@ Last updated: 2026-09-28
 
 ## Current milestone
 
-**M6 - Hardening & Release**
+**M8 - Antigravity local planner & latency**
 
 ## Completed milestones
 
@@ -31,7 +31,7 @@ M3 now includes:
 - strict PrintJobSpec 1.0 parsing/validation
 - source-path allowlist
 - Safe / Smart / Auto policy gate
-- configurable chat-completions transport
+- legacy provider-neutral chat-completions transport (superseded as primary path by M8 Antigravity CLI)
 - natural-language planning UI
 - deterministic editable layout/print settings
 - Windows printer selection/submission
@@ -85,17 +85,21 @@ After merge, the same package workflow runs on `main` so the canonical main comm
 
 ## AI configuration
 
-Optional planner configuration can be entered in the desktop UI or supplied through:
+The primary planner path is now the locally installed Antigravity CLI. PrintAI does not require an AI API key.
+
+Optional non-secret configuration:
 
 ```text
-PRINTAI_AI_ENDPOINT
-PRINTAI_AI_MODEL
-PRINTAI_AI_API_KEY
+PRINTAI_AGY_PATH
+PRINTAI_AGY_FAST_MODEL
+PRINTAI_AGY_DEEP_MODEL
+PRINTAI_AGY_FAST_EFFORT
+PRINTAI_AGY_DEEP_EFFORT
+PRINTAI_AGY_ESCALATE_BELOW
+PRINTAI_AGY_TIMEOUT
 ```
 
-UI-entered API keys remain process-memory only and are not persisted in history.
-
-See `docs/AI_PLANNER.md`.
+See `docs/ANTIGRAVITY_PLANNER.md` and `docs/AI_PLANNER.md`.
 
 ## Physical verification
 
@@ -1128,3 +1132,38 @@ The variable-size slice is verified and ready to merge.
 This completes the planned M7 deterministic primitive coverage. Remaining work after verification should shift from adding broad primitives to field validation, UX refinement, planner quality, and release hardening.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M8 Antigravity local planner implementation
+
+Branch: `m8-antigravity-fast-planner`.
+
+Implemented in this branch:
+
+- `AntigravityLocator` discovers the installed AGY CLI without owning credentials
+- `AntigravityProcessRunner` runs headless AGY with JSON output, JSON Schema, explicit model/effort and terminal sandboxing
+- `AntigravityPlannerClient` implements the existing `IPlannerModelClient` boundary
+- fast-first execution uses the configured fast model + low effort
+- the fast pass generates the final planner payload directly; there is no extra router call for ordinary requests
+- strict existing PrintJobSpec/PrintPlan parsers validate the fast result before acceptance
+- low confidence, invalid planner output or fast transport failure escalates once to the configured deep model
+- clarification questions are returned to the user instead of spending a larger-model call guessing
+- desktop startup auto-configures AGY from PATH/`PRINTAI_AGY_PATH`
+- endpoint/model/API-key credential controls were removed from the desktop planner UI
+- the planner UI now exposes Antigravity readiness, CLI path and fast/deep model summary
+- planning status reports whether the accepted result came from AGY fast or deep tier
+- Smart Collage vision no longer depends on a hidden generic API endpoint; deterministic template fallback remains while AGY image/file behavior is verified
+- unit tests added for fast accept, low-confidence escalation and transport-failure escalation
+- architecture, planner docs, README, roadmap and agent instructions updated
+
+Not yet verified on the real target Windows machine:
+
+1. AGY CLI discovery from the installed Antigravity setup
+2. cached-login headless execution under the user's Antigravity Pro session
+3. exact available model slugs on that machine
+4. cold/warm end-to-end planner latency
+5. whether persistent `stream-json` materially improves repeated requests
+6. Smart Collage image analysis through AGY
+7. loopback-only browser local host replacing the desktop-only shell
+
+Do **not** mark M8 complete until CI is green and the target-machine AGY checks above are exercised.

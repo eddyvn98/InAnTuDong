@@ -5,7 +5,8 @@ public sealed record SourceSpec(
     int Copies = 1,
     int PageIndex = 0,
     double? OriginalWidthMm = null,
-    double? OriginalHeightMm = null);
+    double? OriginalHeightMm = null,
+    bool IsBlank = false);
 
 public sealed record PaperSpec(
     double WidthMm = 210,

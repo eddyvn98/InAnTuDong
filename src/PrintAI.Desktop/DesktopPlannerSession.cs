@@ -144,7 +144,13 @@ public sealed class DesktopPlannerSession
                     Kind: metadata.Kind.ToString(),
                     PixelWidth: metadata.PixelWidth,
                     PixelHeight: metadata.PixelHeight,
-                    PageCount: metadata.PageCount ?? 1);
+                    PageCount: metadata.PageCount ?? 1,
+                    Pages: metadata.Pages?
+                        .Select(page => new SourcePageSizeSpec(
+                            page.Page,
+                            page.WidthMm,
+                            page.HeightMm))
+                        .ToArray());
             })
             .ToArray();
 
@@ -192,7 +198,13 @@ public sealed class DesktopPlannerSession
             Kind: metadata.Kind.ToString(),
             PixelWidth: metadata.PixelWidth,
             PixelHeight: metadata.PixelHeight,
-            PageCount: metadata.PageCount);
+            PageCount: metadata.PageCount,
+            Pages: metadata.Pages?
+                .Select(page => new SourcePageSizeSpec(
+                    page.Page,
+                    page.WidthMm,
+                    page.HeightMm))
+                .ToArray());
 
         var outcome = await _planner.PlanAsync(
             new PlanningRequest(request, [source]),

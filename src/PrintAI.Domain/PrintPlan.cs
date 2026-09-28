@@ -1,8 +1,14 @@
 namespace PrintAI.Domain;
 
+public sealed record SourcePageSizeSpec(
+    int PageIndex,
+    double WidthMm,
+    double HeightMm);
+
 public sealed record PlanSourceSpec(
     string Path,
-    int PageCount = 1);
+    int PageCount = 1,
+    IReadOnlyList<SourcePageSizeSpec>? Pages = null);
 
 public sealed record PageRangeSpec(
     int StartPage,
@@ -37,7 +43,8 @@ public sealed record PrintOutputGroupSpec(
     int Sets = 1,
     bool Collate = true,
     int Sequence = 0,
-    NUpSpec? NUp = null);
+    NUpSpec? NUp = null,
+    PhysicalScaleSpec? Scaling = null);
 
 public sealed record PrintPlan(
     string PlanName,

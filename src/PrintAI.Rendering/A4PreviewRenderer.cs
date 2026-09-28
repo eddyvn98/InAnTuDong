@@ -60,8 +60,10 @@ public static class A4PreviewRenderer
             DrawPlacement(
                 canvas,
                 sources[placement.SourceIndex],
+                job.Sources[placement.SourceIndex],
                 placement,
                 canvasPlacement?.Fit ?? job.Layout.Fit,
+                job.Layout.PhysicalScale,
                 dpi,
                 canvasPlacement);
 
@@ -80,8 +82,10 @@ public static class A4PreviewRenderer
     private static void DrawPlacement(
         SKCanvas canvas,
         SKBitmap source,
+        SourceSpec sourceSpec,
         Placement placement,
         FitMode fit,
+        PhysicalScaleSpec? physicalScale,
         int dpi,
         CanvasPlacementSpec? canvasPlacement = null)
     {
@@ -116,12 +120,30 @@ public static class A4PreviewRenderer
 
         ClipFrame(canvas, target, canvasPlacement?.Shape, dpi);
 
-        var geometry = ContentFitCalculator.Calculate(
-            source.Width,
-            source.Height,
-            target.Width,
-            target.Height,
-            fit);
+        var targetWidthMm = placement.Rotated
+            ? placement.HeightMm
+            : placement.WidthMm;
+        var targetHeightMm = placement.Rotated
+            ? placement.WidthMm
+            : placement.HeightMm;
+
+        var geometry = physicalScale is null
+            ? ContentFitCalculator.Calculate(
+                source.Width,
+                source.Height,
+                target.Width,
+                target.Height,
+                fit)
+            : PhysicalScaleCalculator.Calculate(
+                source.Width,
+                source.Height,
+                target.Width,
+                target.Height,
+                targetWidthMm,
+                targetHeightMm,
+                sourceSpec.OriginalWidthMm,
+                sourceSpec.OriginalHeightMm,
+                physicalScale);
 
         var transform = canvasPlacement?.Transform ?? new ImageTransformSpec();
         var sourceRect = TransformSourceRect(

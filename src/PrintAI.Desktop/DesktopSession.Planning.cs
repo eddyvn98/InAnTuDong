@@ -145,6 +145,16 @@ public sealed partial class DesktopSession
             "Đã áp dụng chỉnh sửa deterministic và render lại preview.";
     }
 
+    private static string? FormatPhysicalScaling(
+        PhysicalScaleSpec? scaling) =>
+        scaling?.Mode switch
+        {
+            PhysicalScaleMode.MaxFit => "max-fit",
+            PhysicalScaleMode.ShrinkOnly => "shrink-only",
+            PhysicalScaleMode.Percent => $"{scaling.Percent:0.##}%",
+            _ => null
+        };
+
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
@@ -165,6 +175,8 @@ public sealed partial class DesktopSession
                         $"{batch.Job.Paper.HeightMm:0.#} mm",
                     PagesPerSheet: group?.NUp?.PagesPerSheet,
                     ItemBorder: batch.Job.Layout.ItemBorder,
+                    PhysicalScaling: FormatPhysicalScaling(
+                        batch.Job.Layout.PhysicalScale),
                     CanAutoSequence:
                         batch.Job.Print.Duplex == DuplexMode.Off);
             })

@@ -141,7 +141,11 @@ public static class PrintPlanValidator
         {
             ValidateNUp(group, prefix, errors);
         }
-        else if (group.Layout.Mode == LayoutMode.Canvas)
+
+        ValidateScaling(group, prefix, errors);
+
+        if (group.NUp is null &&
+            group.Layout.Mode == LayoutMode.Canvas)
         {
             errors.Add(new(
                 "plan.groups.canvas",
@@ -179,11 +183,18 @@ public static class PrintPlanValidator
         if (!errors.Any(error =>
                 error.Code.StartsWith("plan.selection", StringComparison.Ordinal) ||
                 error.Code == "plan.groups.canvas" ||
-                error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
-            var (paper, layout) = NUpLayoutResolver.Resolve(group);
+            var (paper, resolvedLayout) = NUpLayoutResolver.Resolve(group);
+            var layout = resolvedLayout with
+            {
+                PhysicalScale = group.Scaling?.Mode == PhysicalScaleMode.MaxFit
+                    ? group.Scaling
+                    : null
+            };
             var representative = new PrintJobSpec(
                 JobName: group.Name,
                 Sources:
@@ -209,6 +220,47 @@ public static class PrintPlanValidator
                     $"plan.group.job.{error.Code}",
                     $"{prefix}: {error.Message}"));
             }
+        }
+    }
+
+    private static void ValidateScaling(
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var scaling = group.Scaling;
+        if (scaling is null)
+            return;
+
+        if (group.NUp is not null)
+        {
+            errors.Add(new(
+                "plan.groups.scaling.nup",
+                $"{prefix} cannot combine General N-up with physical page scaling in the current slice."));
+        }
+
+        if (group.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "plan.groups.scaling.canvas",
+                $"{prefix} cannot combine physical page scaling with Canvas layout."));
+        }
+
+        if (group.Layout.Fit != FitMode.Contain)
+        {
+            errors.Add(new(
+                "plan.groups.scaling.fit",
+                $"{prefix} physical scaling requires Contain fit."));
+        }
+
+        if (scaling.Mode == PhysicalScaleMode.Percent &&
+            (!double.IsFinite(scaling.Percent) ||
+             scaling.Percent <= 0 ||
+             scaling.Percent > 1000))
+        {
+            errors.Add(new(
+                "plan.groups.scaling.percent",
+                $"{prefix} scale percent must be greater than 0 and at most 1000."));
         }
     }
 

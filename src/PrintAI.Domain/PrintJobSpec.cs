@@ -1,6 +1,11 @@
 namespace PrintAI.Domain;
 
-public sealed record SourceSpec(string Path, int Copies = 1, int PageIndex = 0);
+public sealed record SourceSpec(
+    string Path,
+    int Copies = 1,
+    int PageIndex = 0,
+    double? OriginalWidthMm = null,
+    double? OriginalHeightMm = null);
 
 public sealed record PaperSpec(
     double WidthMm = 210,
@@ -31,6 +36,10 @@ public sealed record CanvasPlacementSpec(
 public sealed record CanvasLayoutSpec(
     IReadOnlyList<CanvasPlacementSpec> Placements);
 
+public sealed record PhysicalScaleSpec(
+    PhysicalScaleMode Mode,
+    double Percent = 100);
+
 public sealed record LayoutSpec(
     LayoutMode Mode,
     double ItemWidthMm,
@@ -41,7 +50,8 @@ public sealed record LayoutSpec(
     bool CutMarks = false,
     FitMode Fit = FitMode.Contain,
     CanvasLayoutSpec? Canvas = null,
-    bool ItemBorder = false);
+    bool ItemBorder = false,
+    PhysicalScaleSpec? PhysicalScale = null);
 
 public sealed record PrintSettings(
     int Copies = 1,
@@ -63,6 +73,7 @@ public sealed record PrintJobSpec(
 public enum PageOrientation { Portrait, Landscape }
 public enum LayoutMode { Grid, ExactSize, Canvas }
 public enum FitMode { Contain, Cover }
+public enum PhysicalScaleMode { MaxFit, ShrinkOnly, Percent }
 public enum FrameShape { Rectangle, RoundedRectangle, Ellipse, Circle }
 public enum ColorMode { Color, Grayscale }
 public enum PrintQuality { Draft, Standard, High }

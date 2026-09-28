@@ -46,9 +46,44 @@ public static class GeneralPrintPlanSourceBinder
                     $"expected {approvedPageCount}, got {source.PageCount}.");
             }
 
-            boundSources[index] = source with { Path = fullPath };
+            var approvedPages = approved.Pages;
+            if (source.Pages is { Count: > 0 } &&
+                !PageSizesMatch(source.Pages, approvedPages))
+            {
+                throw new PlanningFormatException(
+                    $"Planner changed physical page sizes for source {source.Path}.");
+            }
+
+            boundSources[index] = source with
+            {
+                Path = fullPath,
+                Pages = approvedPages
+            };
         }
 
         return proposal with { Sources = boundSources };
+    }
+
+    private static bool PageSizesMatch(
+        IReadOnlyList<SourcePageSizeSpec> proposed,
+        IReadOnlyList<SourcePageSizeSpec>? approved)
+    {
+        if (approved is null || proposed.Count != approved.Count)
+            return false;
+
+        for (var index = 0; index < proposed.Count; index++)
+        {
+            var left = proposed[index];
+            var right = approved[index];
+
+            if (left.PageIndex != right.PageIndex ||
+                Math.Abs(left.WidthMm - right.WidthMm) > 0.01 ||
+                Math.Abs(left.HeightMm - right.HeightMm) > 0.01)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

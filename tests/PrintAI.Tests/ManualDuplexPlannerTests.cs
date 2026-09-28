@@ -14,8 +14,8 @@ public sealed class ManualDuplexPlannerTests
             backOrder: ManualDuplexBackOrder.Forward);
 
         Assert.Equal(3, plan.Sheets.Count);
-        Assert.Equal([0, 2, 4], plan.FrontPass.Select(x => x.OutputPageIndex));
-        Assert.Equal([1, 3], plan.BackPass.Select(x => x.OutputPageIndex));
+        Assert.Equal(new[] { 0, 2, 4 }, plan.FrontPass.Select(x => x.OutputPageIndex));
+        Assert.Equal(new[] { 1, 3 }, plan.BackPass.Select(x => x.OutputPageIndex));
         Assert.Null(plan.Sheets[2].BackOutputPageIndex);
     }
 
@@ -27,8 +27,8 @@ public sealed class ManualDuplexPlannerTests
             copies: 1,
             backOrder: ManualDuplexBackOrder.Reverse);
 
-        Assert.Equal([5, 3, 1], plan.BackPass.Select(x => x.OutputPageIndex));
-        Assert.Equal([2, 1, 0], plan.BackPass.Select(x => x.SheetIndex));
+        Assert.Equal(new[] { 5, 3, 1 }, plan.BackPass.Select(x => x.OutputPageIndex));
+        Assert.Equal(new[] { 2, 1, 0 }, plan.BackPass.Select(x => x.SheetIndex));
     }
 
     [Fact]

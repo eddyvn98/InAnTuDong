@@ -7,7 +7,8 @@ public sealed record PlanningSource(
     string Kind,
     int? PixelWidth = null,
     int? PixelHeight = null,
-    int? PageCount = null);
+    int? PageCount = null,
+    IReadOnlyList<SourcePageSizeSpec>? Pages = null);
 
 public sealed record PlanningRequest(
     string UserRequest,

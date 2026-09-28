@@ -848,10 +848,19 @@ Next implementation target:
 
 **crop / anchor / offset / asymmetric margins**
 
-Verification status:
+Verification:
 
-- implementation and docs are committed on the feature branch
-- CI/package verification pending
-- do not merge until Ubuntu + Windows tests and Windows package are green
+- verified commit: `7f311bbd129a70f8bdc487895c671b47cd34bf87`
+- GitHub CI #209: success on Ubuntu + Windows
+- shared suite: 167/167 tests pass
+- physical scaling calculator/compiler/binder/parser/renderer regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #153: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The physical scaling slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

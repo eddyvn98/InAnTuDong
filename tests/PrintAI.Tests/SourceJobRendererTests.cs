@@ -58,4 +58,103 @@ public sealed class SourceJobRendererTests
             File.Delete(path);
         }
     }
+    [Fact]
+    public void SourceThumbnail_IsDownscaledForVision()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"{Guid.NewGuid():N}.png");
+
+        try
+        {
+            using (var bitmap = new SKBitmap(1200, 600))
+            {
+                bitmap.Erase(SKColors.CornflowerBlue);
+                using var image = SKImage.FromBitmap(bitmap);
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = File.Create(path);
+                data.SaveTo(stream);
+            }
+
+            var png = SourceJobRenderer.RenderSourceThumbnailPng(
+                path,
+                sourcePageIndex: 0,
+                maxDimension: 256);
+
+            using var decoded = SKBitmap.Decode(png);
+            Assert.NotNull(decoded);
+            Assert.Equal(256, decoded.Width);
+            Assert.Equal(128, decoded.Height);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void CanvasCircleMask_ClipsBoundingBoxCorners()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"{Guid.NewGuid():N}.png");
+
+        try
+        {
+            using (var bitmap = new SKBitmap(200, 200))
+            {
+                bitmap.Erase(SKColors.Red);
+                using var image = SKImage.FromBitmap(bitmap);
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var stream = File.Create(path);
+                data.SaveTo(stream);
+            }
+
+            var job = new PrintJobSpec(
+                "circle mask",
+                [new SourceSpec(path)],
+                new PaperSpec(101.6, 152.4),
+                new LayoutSpec(
+                    LayoutMode.Canvas,
+                    ItemWidthMm: 1,
+                    ItemHeightMm: 1,
+                    Canvas: new CanvasLayoutSpec(
+                    [
+                        new CanvasPlacementSpec(
+                            SourceIndex: 0,
+                            XMm: 10,
+                            YMm: 10,
+                            WidthMm: 50,
+                            HeightMm: 50,
+                            Shape: new ShapeSpec(FrameShape.Circle),
+                            Fit: FitMode.Cover)
+                    ])),
+                new PrintSettings(),
+                new PolicySpec());
+
+            var png = SourceJobRenderer.RenderA4(
+                job,
+                path,
+                sourcePageIndex: 0,
+                outputPageIndex: 0,
+                dpi: 100);
+
+            using var rendered = SKBitmap.Decode(png);
+            Assert.NotNull(rendered);
+
+            static int Px(double mm) =>
+                (int)Math.Round(mm / 25.4 * 100);
+
+            var corner = rendered.GetPixel(Px(12), Px(12));
+            var center = rendered.GetPixel(Px(35), Px(35));
+
+            Assert.True(corner.Red > 240 && corner.Green > 240 && corner.Blue > 240);
+            Assert.True(center.Red > 240 && center.Green < 30 && center.Blue < 30);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
 }

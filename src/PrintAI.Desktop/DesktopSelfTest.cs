@@ -36,6 +36,7 @@ internal static partial class DesktopSelfTest
         {
             CheckUiAssets(checks);
             CheckRasterPipeline(checks, tempDirectory);
+            CheckRequestQueueLifecycle(checks, tempDirectory);
             CheckSpreadsheetPipeline(checks, tempDirectory);
             CheckPrinterProbe(checks);
             CheckOfficeDiscovery(checks);
@@ -172,6 +173,65 @@ internal static partial class DesktopSelfTest
             throw new InvalidOperationException("Could not encode self-test PNG.");
 
         File.WriteAllBytes(path, data.ToArray());
+    }
+
+    private static void CheckRequestQueueLifecycle(
+        ICollection<DesktopSelfTestCheck> checks,
+        string tempDirectory)
+    {
+        var first = Path.Combine(tempDirectory, "queue-a.png");
+        var second = Path.Combine(tempDirectory, "queue-b.png");
+        WriteSmokePng(first);
+        WriteSmokePng(second);
+
+        var session = new DesktopSession();
+        session.AddPaths([first, second]);
+        session.UpsertQueuedRequest(
+            id: null,
+            request: "In hai ảnh này",
+            mode: "Smart",
+            sourceIndexes: [0, 1]);
+
+        var before = session.GetState();
+        if (before.RequestQueue.Count != 1 ||
+            before.RequestQueue[0].SourcePaths.Count != 2)
+        {
+            checks.Add(new(
+                "request-queue-lifecycle",
+                false,
+                "Could not create a two-source queued request."));
+            return;
+        }
+
+        session.RemoveSourceAt(0);
+        var afterRemove = session.GetState();
+
+        if (afterRemove.RequestQueue.Count != 1 ||
+            afterRemove.RequestQueue[0].SourcePaths.Count != 1 ||
+            !string.Equals(
+                afterRemove.RequestQueue[0].SourcePaths[0],
+                second,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            checks.Add(new(
+                "request-queue-lifecycle",
+                false,
+                "Removing a source left stale queue source references."));
+            return;
+        }
+
+        session.ClearSources();
+        var afterClear = session.GetState();
+        var passed =
+            afterClear.Files.Count == 0 &&
+            afterClear.RequestQueue.Count == 0;
+
+        checks.Add(new(
+            "request-queue-lifecycle",
+            passed,
+            passed
+                ? "Queued requests track source removal and clear with sources."
+                : "Clearing sources left stale queued requests."));
     }
 
     private static void CheckPrinterProbe(

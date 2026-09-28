@@ -167,7 +167,8 @@ public sealed partial class DesktopSession
         _selectedPage = index;
         _selectedOutputPage = 0;
 
-        if (!string.Equals(
+        if (_compiledPlan is null &&
+            !string.Equals(
                 oldPath,
                 CurrentPage()?.SourcePath,
                 StringComparison.OrdinalIgnoreCase))
@@ -364,15 +365,20 @@ public sealed partial class DesktopSession
             ? _pages[_selectedPage]
             : null;
 
-    private PrintJobSpec CurrentJob(DesktopPage page) =>
-        _activeJob is not null &&
-        _activeJob.Sources.Any(s =>
-            string.Equals(
-                s.Path,
-                page.SourcePath,
-                StringComparison.OrdinalIgnoreCase))
+    private PrintJobSpec CurrentJob(DesktopPage page)
+    {
+        if (_compiledPlan is not null && _activeJob is not null)
+            return _activeJob;
+
+        return _activeJob is not null &&
+               _activeJob.Sources.Any(s =>
+                   string.Equals(
+                       s.Path,
+                       page.SourcePath,
+                       StringComparison.OrdinalIgnoreCase))
             ? _activeJob
             : CreateDefaultJob(page.SourcePath);
+    }
 
     private void ResetPlan()
     {

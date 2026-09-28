@@ -986,10 +986,19 @@ Next implementation target:
 
 **poster / tiled printing**
 
-Verification status:
+Verification:
 
-- implementation and docs committed on feature branch
-- CI/package verification pending
-- do not merge until Ubuntu + Windows tests and Windows package are green
+- verified commit: `e235e0dc11c06431ea14c6c388f0e3fb5239385f`
+- GitHub CI #221: success on Ubuntu + Windows
+- shared suite: 212/212 tests pass
+- booklet imposition/compiler/blank-renderer/parser/planner/corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #165: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The booklet slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

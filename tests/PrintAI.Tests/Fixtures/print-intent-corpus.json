@@ -1,0 +1,1930 @@
+{
+  "schemaVersion": "1.0",
+  "title": "PrintAI Real-Request Intent Corpus",
+  "description": "Balanced Vietnamese print-only request corpus used to measure semantic coverage. It is a coverage set, not a market-frequency sample.",
+  "sourceProfiles": {
+    "singlePdf20": "One approved 20-page PDF source.",
+    "multiSource": "At least two approved PDF/image sources with stable source order.",
+    "mixedImages": "Multiple approved raster/PDF pages usable as independent print items.",
+    "largeImage": "One approved image or one-page PDF intended for oversized tiled output."
+  },
+  "coverageLabels": {
+    "supported": "Representable by current PrintPlan 2.0 / PrintJobSpec 1.0 plus existing deterministic workflows.",
+    "supportedWithCapability": "Semantically representable, but physical execution depends on the selected printer/driver advertising the requested paper/capability.",
+    "clarification": "The request is materially ambiguous and should produce a user question rather than a guessed print plan.",
+    "gap": "Not faithfully representable by the current general print-intent contract/execution path.",
+    "mixed": "Category contains both supported and gap cases; each case carries its own label."
+  },
+  "cases": [
+    {
+      "id": "DOC-001",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In file PDF này A4 một bản.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-002",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In tài liệu này 2 bản, giữ nguyên thứ tự trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-003",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In toàn bộ file này khổ A4 dọc.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-004",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In file này màu, chất lượng thường.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-005",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In file này trắng đen một bản.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-006",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In toàn bộ 12 trang, mỗi trang một tờ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-007",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In file này theo đúng thứ tự từ trang đầu đến trang cuối.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-008",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In 3 bản tài liệu này, một mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-009",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In ảnh này vừa trang A4, căn giữa.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DOC-010",
+      "language": "vi",
+      "category": "simple_document",
+      "request": "In file này A4 ngang một bản.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "basicPrint"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-001",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "Chỉ in trang 1 đến trang 5.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-002",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In các trang 1, 3, 7 và 10.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-003",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "Chỉ in các trang lẻ từ 1 đến 19.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-004",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "Chỉ in các trang chẵn từ 2 đến 20.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-005",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In từ trang 5 đến trang 12 nhưng bỏ trang 8.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-006",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In 5 trang đầu của file.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-007",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In 3 trang cuối của file 20 trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-008",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In toàn bộ trừ trang 1.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-009",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In trang 2 đến 10, bỏ trang 4 và 6.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAGE-010",
+      "language": "vi",
+      "category": "page_selection",
+      "request": "In trang đầu và trang cuối.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-001",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Trang 1 in màu, các trang còn lại in trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-002",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Trang 1 đến 3 in màu, trang 4 đến 20 in grayscale.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-003",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Chỉ trang 5 và 10 in màu, còn lại trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-004",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Bìa trang 1 in màu, ruột trang 2 đến 30 in trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-005",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Trang 1 màu, trang 2 đến 9 trắng đen, trang 10 màu.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-006",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "In các trang 1, 4, 8 màu; những trang khác grayscale.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-007",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "File này 12 trang, 2 trang đầu màu, 10 trang sau trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-008",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Trang cuối in màu, tất cả trang trước đó trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-009",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "Trang 1 đến 5 màu, từ trang 6 trở đi trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "COLOR-010",
+      "language": "vi",
+      "category": "mixed_color_rules",
+      "request": "In 3 bộ, mỗi bộ trang 1 màu và phần còn lại trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "pageSelection",
+        "mixedColor"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-001",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In toàn bộ file hai mặt lật cạnh dài.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-002",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In hai mặt kiểu sách.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-003",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In hai mặt lật cạnh ngắn.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-004",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "Trang bìa in một mặt, phần ruột in hai mặt cạnh dài.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-005",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "Trang 1 một mặt, trang 2 đến 20 hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-006",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In trang 1 đến 10 hai mặt cạnh dài.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-007",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In 2 bộ tài liệu này, mỗi bộ in hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-008",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "Bìa trước màu một mặt, ruột trắng đen hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-009",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "Trang cuối in một mặt riêng, các trang trước in hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "DUP-010",
+      "language": "vi",
+      "category": "duplex_rules",
+      "request": "In file ngang hai mặt, lật theo cạnh ngắn.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "duplex",
+        "pageSelection"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-001",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 5 bộ tài liệu này.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-002",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 3 bộ, mỗi bộ đủ từ trang 1 đến trang 20.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-003",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 4 bộ có sắp xếp theo từng bộ hoàn chỉnh.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-004",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 10 bản từng trang, không cần ghép thành bộ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-005",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 2 bộ file này, giữ nguyên thứ tự từng bộ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-006",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "Mỗi trang in 3 bản rồi mới sang trang tiếp theo.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-007",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 6 bộ, trang 1 màu còn ruột trắng đen.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-008",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 2 bộ, mỗi bộ gồm file A rồi file B.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-009",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 5 bộ hai mặt, không trộn trang giữa các bộ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SET-010",
+      "language": "vi",
+      "category": "sets_collation",
+      "request": "In 3 bộ, mỗi bộ bìa một mặt và ruột hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "sets",
+        "collation"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-001",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In file A trước rồi file B.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-002",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "Ghép file A và file B thành một bộ rồi in 2 bộ.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-003",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In trang 1 đến 3 file A rồi trang 2 file B.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-004",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In file B trước, sau đó file A.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-005",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "Mỗi bộ gồm toàn bộ file A, trang 1 file B và ảnh C.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-006",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In 3 bộ theo thứ tự file A, file C, file B.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-007",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "Lấy trang 2 file A và trang 4 file B, in thành một bộ.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-008",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In file A một bản và file B hai bản theo thứ tự đã chọn.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-009",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "Ghép trang đầu của ba file thành một chuỗi rồi in.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "MULTI-010",
+      "language": "vi",
+      "category": "multi_file_sequence",
+      "request": "In trang 1 file A, trang 1 file B, rồi trang 2 file A.",
+      "sourceProfile": "multiSource",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "multiFile",
+        "pageSelection",
+        "ordering"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-001",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "Ảnh này 3x4 cm, in 8 tấm trên A4.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-002",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "Ảnh này 4x6 cm, in 6 tấm.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-003",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "Logo này rộng 30 mm, lặp 20 cái trên A4.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-004",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In 12 tem giống nhau kích thước 40x60 mm.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-005",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "Ảnh này đúng 10x15 cm, không phóng to.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-006",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In ảnh 5x5 cm, xếp được bao nhiêu trên A4 thì xếp.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-007",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In 24 nhãn giống nhau 30x20 mm có đường cắt.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-008",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In ảnh này 40x60 mm 10 bản, chừa khe 2 mm.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-009",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In 2 ảnh này cùng kích thước 4x6 cm, mỗi ảnh 4 bản.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PHOTO-010",
+      "language": "vi",
+      "category": "photo_repeat_exact_size",
+      "request": "In ảnh này kích thước thật 90x54 mm, 10 bản.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "exactSize",
+        "repeat",
+        "grid"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-001",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In giúp tôi file này cho đẹp.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-002",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In nhỏ lại một chút.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-003",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In nhiều bản giúp tôi.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-004",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In hai mặt như bình thường.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-005",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In ảnh này cỡ vừa vừa.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-006",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In tiết kiệm giấy nhất có thể nhưng đừng nhỏ quá.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-007",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In giống lần trước.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-008",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In phần cần thiết thôi.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-009",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In màu những trang quan trọng.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "ASK-010",
+      "language": "vi",
+      "category": "clarification",
+      "request": "In file này sao cho dễ đọc.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "clarification",
+      "requiredCapabilities": [
+        "clarification"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "NUP-001",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 2 trang PDF trên một mặt giấy A4.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-002",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 4 trang trên một tờ A4.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-003",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 6 trang tài liệu trên mỗi tờ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-004",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 9 trang trên một tờ để xem nhanh.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-005",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 16 trang trên một tờ A4.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-006",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 2-up, thứ tự từ trái sang phải rồi xuống hàng.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-007",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 4-up hai mặt.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-008",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 8 slide trên một tờ A4 ngang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-009",
+      "language": "vi",
+      "category": "n_up",
+      "request": "Mỗi tờ chứa 2 trang PDF, có khoảng cách giữa hai trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "NUP-010",
+      "language": "vi",
+      "category": "n_up",
+      "request": "In 4 trang trên một tờ và có viền quanh từng trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "nUp"
+      ],
+      "gapCapability": "generalNUp"
+    },
+    {
+      "id": "SCALE-001",
+      "language": "vi",
+      "category": "scaling",
+      "request": "In vừa trang A4, giữ nguyên tỉ lệ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SCALE-002",
+      "language": "vi",
+      "category": "scaling",
+      "request": "In đúng kích thước thật, không phóng to.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SCALE-003",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Thu nhỏ cho vừa trang nếu lớn hơn, nhưng không phóng lớn nếu nhỏ hơn.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "shrinkOnly"
+    },
+    {
+      "id": "SCALE-004",
+      "language": "vi",
+      "category": "scaling",
+      "request": "In ở 80% kích thước gốc.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "customScalePercent"
+    },
+    {
+      "id": "SCALE-005",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Phóng lên 125%.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "customScalePercent"
+    },
+    {
+      "id": "SCALE-006",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Lấp đầy A4, chấp nhận cắt bớt mép.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SCALE-007",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Fit to page nhưng không cắt nội dung.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "SCALE-008",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Chỉ thu nhỏ các trang vượt A4, trang nhỏ giữ nguyên.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "shrinkOnly"
+    },
+    {
+      "id": "SCALE-009",
+      "language": "vi",
+      "category": "scaling",
+      "request": "In theo tỉ lệ 1:2 so với bản gốc.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "customScalePercent"
+    },
+    {
+      "id": "SCALE-010",
+      "language": "vi",
+      "category": "scaling",
+      "request": "Phóng tối đa nhưng vẫn giữ toàn bộ nội dung trong lề.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "scaling"
+      ],
+      "gapCapability": "maxFitWithMargin"
+    },
+    {
+      "id": "POS-001",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Chừa lề đều 10 mm quanh trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "POS-002",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Chừa lề đều 5 mm.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supported",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "POS-003",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Cắt bỏ phần trắng xung quanh ảnh trước khi in.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "autoCropForPrint"
+    },
+    {
+      "id": "POS-004",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Chừa lề trái 20 mm để đóng hồ sơ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "asymmetricMargins"
+    },
+    {
+      "id": "POS-005",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Đưa nội dung lên trên 5 mm.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "contentOffset"
+    },
+    {
+      "id": "POS-006",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Căn ảnh sát mép phải.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "anchorPosition"
+    },
+    {
+      "id": "POS-007",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Chỉ lấy phần giữa của ảnh rồi in.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "cropRegion"
+    },
+    {
+      "id": "POS-008",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Cắt 10 mm ở mép trên trước khi in.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "cropRegion"
+    },
+    {
+      "id": "POS-009",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Chừa lề trên 15 mm và lề trái 25 mm.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "asymmetricMargins"
+    },
+    {
+      "id": "POS-010",
+      "language": "vi",
+      "category": "crop_margin_position",
+      "request": "Căn nội dung xuống góc dưới bên phải.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "crop",
+        "margin",
+        "position"
+      ],
+      "gapCapability": "anchorPosition"
+    },
+    {
+      "id": "PAPER-001",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In file này khổ A5.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-002",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In ảnh này trên giấy 10x15 cm.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-003",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In tài liệu A4 ngang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-004",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "Trang 1 A4 dọc, trang 2 A5 ngang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-005",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In đúng khổ giấy khai báo trong từng nhóm trang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-006",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In trên giấy 4x6 inch.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-007",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In file này A5 hai mặt nếu máy hỗ trợ.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-008",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In ảnh ngang trên giấy 10x15 theo chiều ngang.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-009",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "Trang 1-2 A4, trang 3-4 A5.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "PAPER-010",
+      "language": "vi",
+      "category": "paper_orientation_capability",
+      "request": "In khổ tùy chỉnh 100x150 mm nếu driver có khổ đó.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "supportedWithCapability",
+      "requiredCapabilities": [
+        "paper",
+        "orientation",
+        "printerCapability"
+      ],
+      "gapCapability": null
+    },
+    {
+      "id": "BOOK-001",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In file này dạng booklet để gấp đôi thành quyển.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-002",
+      "language": "vi",
+      "category": "booklet",
+      "request": "Sắp trang kiểu booklet A4 gấp thành A5.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-003",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In booklet hai mặt lật đúng để gấp lại đọc theo thứ tự.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-004",
+      "language": "vi",
+      "category": "booklet",
+      "request": "Tài liệu 16 trang, dàn booklet 4 tờ A4.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-005",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In booklet nhưng chừa mép giữa rộng hơn.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-006",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In dạng sách nhỏ, trang tự đảo thứ tự để gấp.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-007",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In 2 bộ booklet từ PDF này.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-008",
+      "language": "vi",
+      "category": "booklet",
+      "request": "Booklet A5 từ giấy A4, có trang trắng bù nếu thiếu.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-009",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In booklet 20 trang và tự thêm trang trắng cho đủ chữ ký.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "BOOK-010",
+      "language": "vi",
+      "category": "booklet",
+      "request": "In booklet ngang để gấp giữa.",
+      "sourceProfile": "singlePdf20",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "booklet"
+      ],
+      "gapCapability": "bookletImposition"
+    },
+    {
+      "id": "POSTER-001",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In ảnh này kích thước 60x90 cm bằng nhiều tờ A4.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-002",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "Chia poster A2 thành nhiều tờ A4 để ghép.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-003",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In ảnh 50x70 cm dạng tiled trên A4.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-004",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "Chia bản vẽ lớn thành 3x3 tờ A4.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-005",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In poster bằng nhiều tờ, chồng mép 5 mm.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-006",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In ảnh lớn 1 mét ngang bằng các tờ A4 ghép lại.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-007",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "Chia file này thành nhiều tờ A4 có dấu căn ghép.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-008",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In poster 70x100 cm với overlap 10 mm.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-009",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "Tự chia bản đồ lớn thành số tờ A4 ít nhất.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "POSTER-010",
+      "language": "vi",
+      "category": "poster_tile",
+      "request": "In tiled poster có số thứ tự từng tờ để dễ ghép.",
+      "sourceProfile": "largeImage",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "posterTile"
+      ],
+      "gapCapability": "posterTiling"
+    },
+    {
+      "id": "VAR-001",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Trên cùng A4, ảnh A 3x4 cm và ảnh B 4x6 cm.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-002",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Xếp logo 2x2 cm, QR 3x3 cm và ảnh 5x7 cm trên một tờ.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-003",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Mỗi ảnh trong 3 ảnh này có kích thước khác nhau.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-004",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "In 4 tem 40x60 mm và 6 tem 30x30 mm trên cùng A4.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-005",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Ảnh 1 rộng 50 mm, ảnh 2 rộng 80 mm, tự xếp tiết kiệm giấy.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-006",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Trộn card 90x54 mm và nhãn 40x60 mm trên một tờ.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-007",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Mỗi source giữ kích thước riêng rồi xếp chung A4.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-008",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "In hai QR 25 mm và một logo 60 mm trên cùng trang.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-009",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "Xếp nhiều kích thước khác nhau, cho phép xoay từng item.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    },
+    {
+      "id": "VAR-010",
+      "language": "vi",
+      "category": "variable_size_items",
+      "request": "In 3 loại nhãn kích thước khác nhau trên cùng một sheet.",
+      "sourceProfile": "mixedImages",
+      "expectedCoverage": "gap",
+      "requiredCapabilities": [
+        "variableItemSize"
+      ],
+      "gapCapability": "variableItemSizes"
+    }
+  ]
+}

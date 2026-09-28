@@ -176,18 +176,27 @@ Verification for the desktop integration slice:
 - packaged self-test: success
 - install / upgrade / rollback / uninstall smoke flow: success
 
-## Planned M7 extensions
+## Corpus-driven M7 extensions
 
-The next capabilities are:
+The first balanced real-request corpus is now implemented:
 
-1. build the first 100-200 real-request print-intent regression corpus
-2. general N-up/page-per-sheet intent
-3. richer scaling: actual size, fit, fill, shrink-only and custom percent
-4. crop, anchor, offset and asymmetric margins
-5. mixed paper/orientation capability reporting
-6. booklet imposition
-7. poster/tiled printing
-8. variable-size independent items in one sheet
+- 150 Vietnamese print requests
+- 15 categories, 10 cases each
+- 76 directly supported
+- 10 supported subject to printer/driver capability
+- 10 correctly require clarification
+- 54 expose missing deterministic primitives
+
+See `docs/PRINT_INTENT_CORPUS.md`.
+
+The next capabilities are now prioritized from those gaps:
+
+1. general N-up/page-per-sheet intent
+2. richer scaling: shrink-only and custom percent
+3. crop, anchor, offset and asymmetric margins
+4. booklet imposition
+5. poster/tiled printing
+6. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 
@@ -198,3 +207,6 @@ Do not migrate existing working workflows to PrintPlan 2.0 merely for consistenc
 Use PrintJobSpec 1.0 directly for simple uniform jobs. Use PrintPlan 2.0 when a request requires multiple page/source/rule groups or explicit sets/collation.
 
 This keeps the current execution layer stable while expanding natural-language print coverage.
+
+
+Corpus rule: a case is not considered supported merely because the LLM can describe it. A deterministic validated execution path must exist.

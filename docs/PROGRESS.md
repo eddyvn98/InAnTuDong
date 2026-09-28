@@ -660,3 +660,72 @@ The next concrete M7 task is no longer plumbing. It is coverage validation:
 4. only then move to booklet/poster/variable-size layout
 
 See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## M7 print-intent corpus and coverage baseline
+
+Branch: `m7-print-intent-corpus`.
+
+The next M7 step after desktop PrintPlan integration is implemented as a balanced coverage corpus rather than another guessed feature.
+
+Added:
+
+- `tests/PrintAI.Tests/Fixtures/print-intent-corpus.json`
+- 150 Vietnamese print-only requests
+- 15 categories with 10 requests each
+- stable IDs and source-profile metadata
+- explicit expected coverage label per request
+- explicit missing capability for every unsupported request
+- CI corpus integrity tests
+- deterministic request-derived compiler regressions for representative supported cases
+- `docs/PRINT_INTENT_CORPUS.md`
+
+Current baseline:
+
+- 76 / 150 directly supported
+- 10 / 150 semantically supported but dependent on selected printer/driver capability
+- 10 / 150 materially ambiguous and correctly expected to trigger clarification
+- 54 / 150 require missing deterministic primitives
+
+Current 54-gap breakdown:
+
+- general N-up / pages per sheet: 10
+- advanced scaling: 6
+- crop / asymmetric margin / position: 8
+- booklet imposition: 10
+- poster/tiled printing: 10
+- variable-size items on one sheet: 10
+
+The corpus is intentionally category-balanced. These counts measure breadth, not real customer-frequency weighting.
+
+Regression fixtures now protect representative existing behavior for:
+
+- odd-page selection
+- mixed color groups repeated as complete sets
+- explicit multi-file/page ordering
+- non-collated per-page copies
+- simplex cover + duplex body separation
+- mixed paper/orientation grouping
+
+Priority decision:
+
+**General N-up is the next M7 implementation slice.**
+
+Reason: it closes a full gap family while reusing the existing deterministic grid/layout/rendering pipeline and requires less schema disruption than booklet, poster tiling or variable-size general composition.
+
+Verification:
+
+- verified commit: `17d3cd563c9c432693e5c0694938a6ea736e61a6`
+- GitHub CI #199: success on Ubuntu + Windows
+- corpus integrity tests: success
+- request-derived PrintPlan regression tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #143: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The M7 corpus slice is verified. The next implementation target is General N-up / pages per sheet.
+
+See `docs/PRINT_INTENT_CORPUS.md`.

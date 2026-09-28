@@ -34,6 +34,7 @@ Required:
 - fit / contain / cover / exact physical size
 - spacing and cut marks
 - multi-item A4 layout
+- guided two-sided printing on simplex printers through manual duplex
 
 Architecture must allow other printers later.
 
@@ -58,6 +59,19 @@ Validate paper bounds, sizes, margins, copies, source readability, layout overfl
 ### Layout
 
 Support single-page fit, exact-size item, repeated items, grids, auto rotation, spacing, cut marks, and paper-saving placement.
+
+### Duplex printing
+
+`PrintJobSpec` expresses two-sided intent independently from printer hardware.
+
+- printers that advertise automatic duplex may execute through the driver,
+- simplex printers use a guided manual-duplex workflow,
+- the user should not need to manually select odd/even pages or calculate reverse order,
+- duplex intent must never be silently ignored and printed one-sided.
+
+Manual duplex uses two deterministic print passes with one explicit paper-reinsert step. Printer-specific feed/order/rotation behavior must be physically calibrated before it is described as verified.
+
+See `docs/MANUAL_DUPLEX.md`.
 
 ### Preview and policy
 

@@ -145,17 +145,24 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 - [x] Windows driver execution honors color/grayscale intent
 - [x] integration verification — CI #191 + package-windows #135 succeeded
 
+### Coverage-validation slice
+
+- [x] 150-case real-request print-intent corpus across 15 balanced categories
+- [x] explicit supported / capability-dependent / clarification / gap labels
+- [x] CI validation for corpus size, category balance, IDs and gap labels
+- [x] request-derived deterministic compiler regression fixtures
+- [~] corpus slice CI verification
+
+Baseline: 76 supported, 10 capability-dependent, 10 clarification, 54 deterministic gaps. See `docs/PRINT_INTENT_CORPUS.md`.
+
 ### Next slices
 
-- [ ] 100-200 real-request print-intent regression corpus
-- [ ] general N-up / pages-per-sheet intent
-- [ ] actual-size / fit / fill / shrink-only / custom-percent scaling
+- [ ] general N-up / pages-per-sheet intent — selected next from corpus
+- [ ] shrink-only / custom-percent scaling
 - [ ] crop / anchor / offset / asymmetric margins
-- [ ] mixed paper/orientation capability reporting
 - [ ] booklet imposition
 - [ ] poster/tiled printing
 - [ ] independent per-item physical sizes on one sheet
-- [ ] 100-200 real-request print-intent regression corpus
 
 Exit: representative real print requests can be expressed as a validated PrintPlan, compiled deterministically into executable jobs, previewed and printed without adding business-management scope.
 

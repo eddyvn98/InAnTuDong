@@ -73,7 +73,8 @@ public sealed partial class DesktopSession
             pending.Landscape,
             profile,
             copies: 1,
-            duplex: DuplexMode.Off);
+            duplex: DuplexMode.Off,
+            colorMode: pending.ColorMode);
 
         if (result.State == PrintSubmissionState.Failed)
         {
@@ -250,7 +251,8 @@ public sealed partial class DesktopSession
             job.Paper.Orientation == PageOrientation.Landscape,
             profile,
             copies: (short)job.Print.Copies,
-            duplex: job.Print.Duplex);
+            duplex: job.Print.Duplex,
+            colorMode: job.Print.ColorMode);
 
         _status = result.State == PrintSubmissionState.Failed
             ? $"In 2 mặt tự động lỗi: {result.Error}"
@@ -295,6 +297,7 @@ public sealed partial class DesktopSession
                 PrinterName: _selectedPrinter!,
                 PrinterProfileId: profile.Id,
                 Mode: job.Print.Duplex,
+                ColorMode: job.Print.ColorMode,
                 CreatedAt: DateTimeOffset.Now,
                 Phase: ManualDuplexPendingPhase.PrintingFront,
                 SheetCount: plan.Sheets.Count,
@@ -323,7 +326,8 @@ public sealed partial class DesktopSession
             job.Paper.Orientation == PageOrientation.Landscape,
             profile,
             copies: 1,
-            duplex: DuplexMode.Off);
+            duplex: DuplexMode.Off,
+            colorMode: job.Print.ColorMode);
 
         if (result.State == PrintSubmissionState.Failed)
         {

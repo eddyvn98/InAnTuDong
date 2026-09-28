@@ -170,11 +170,25 @@ Baseline after corpus creation: 76 supported, 10 capability-dependent, 10 clarif
 
 Updated corpus: 86 supported, 10 capability-dependent, 10 clarification, 44 deterministic gaps.
 
+### Physical scaling slice
+
+- [x] trusted per-page PDF physical dimensions from SourceInspector
+- [x] planner binder rejects rewritten physical page sizes
+- [x] `PhysicalScaleMode.MaxFit`
+- [x] `PhysicalScaleMode.ShrinkOnly`
+- [x] `PhysicalScaleMode.Percent`
+- [x] explicit percent / ratio mapping
+- [x] per-page physical sizes survive compilation
+- [x] renderer applies scaling in physical mm
+- [x] desktop batch UI exposes scaling mode
+- [x] all 6 scaling gap cases moved to supported
+- [~] physical scaling CI/package verification
+
+Updated corpus: 92 supported, 10 capability-dependent, 10 clarification, 38 deterministic gaps.
+
 ### Next slices
 
-- [ ] shrink-only / custom-percent scaling — selected next from corpus
-
-- [ ] crop / anchor / offset / asymmetric margins
+- [ ] crop / anchor / offset / asymmetric margins — selected next from corpus
 - [ ] booklet imposition
 - [ ] poster/tiled printing
 - [ ] independent per-item physical sizes on one sheet

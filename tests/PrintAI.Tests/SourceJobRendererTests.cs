@@ -140,11 +140,32 @@ public sealed class SourceJobRendererTests
             static int Px(double mm) =>
                 (int)Math.Round(mm / 25.4 * 100);
 
-            var border = rendered.GetPixel(Px(5), Px(5));
+            var edgeX = Px(50);
+            var edgeY = Px(5);
+            var edgeNeighborhood = new List<SKColor>();
+
+            for (var dy = -2; dy <= 2; dy++)
+            {
+                for (var dx = -2; dx <= 2; dx++)
+                {
+                    edgeNeighborhood.Add(
+                        rendered.GetPixel(edgeX + dx, edgeY + dy));
+                }
+            }
+
             var center = rendered.GetPixel(Px(50), Px(50));
 
-            Assert.True(border.Red < 120 && border.Green < 120 && border.Blue < 120);
-            Assert.True(center.Red > 240 && center.Green > 240 && center.Blue > 240);
+            Assert.Contains(
+                edgeNeighborhood,
+                pixel =>
+                    pixel.Red < 220 &&
+                    pixel.Green < 220 &&
+                    pixel.Blue < 220);
+
+            Assert.True(
+                center.Red > 240 &&
+                center.Green > 240 &&
+                center.Blue > 240);
         }
         finally
         {

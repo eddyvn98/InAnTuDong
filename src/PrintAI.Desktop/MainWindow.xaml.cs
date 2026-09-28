@@ -114,8 +114,11 @@ public partial class MainWindow : Window
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
                 case "generateSmartCollages":
-                    _session.GenerateSmartCollages(
-                        ReadCompositionItems(root));
+                    await _session.GenerateSmartCollagesAsync(
+                        ReadCompositionItems(root),
+                        root.TryGetProperty("instruction", out var collageInstruction)
+                            ? collageInstruction.GetString()
+                            : null);
                     break;
                 case "generateAutoLayouts":
                     _session.GenerateAutoLayouts(

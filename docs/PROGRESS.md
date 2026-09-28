@@ -1110,11 +1110,20 @@ Coverage on the balanced corpus:
 - immediately/conditionally executable: 140 / 150 = 93.3%
 - semantically handled including intentional clarification: 150 / 150 = 100.0%
 
-Verification status:
+Verification:
 
-- implementation and docs committed on feature branch
-- CI/package verification pending
-- do not merge until Ubuntu + Windows tests and Windows package are green
+- verified commit: `1d348bcf5ed54498c27556f3293156e105b9edaa`
+- GitHub CI #239: success on Ubuntu + Windows
+- shared suite: 261/261 tests pass
+- variable-size resolver/packer/multi-page Canvas/parser/planner/corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #183: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The variable-size slice is verified and ready to merge.
 
 This completes the planned M7 deterministic primitive coverage. Remaining work after verification should shift from adding broad primitives to field validation, UX refinement, planner quality, and release hardening.
 

@@ -19,12 +19,12 @@ public static class CanvasLayoutEngine
         var placements = canvas.Placements
             .Select((placement, index) => new Placement(
                 Index: index,
-                Page: 0,
+                Page: placement.Page,
                 XMm: placement.XMm,
                 YMm: placement.YMm,
                 WidthMm: placement.WidthMm,
                 HeightMm: placement.HeightMm,
-                Rotated: false,
+                Rotated: placement.UseRotatedFootprint,
                 SourceIndex: placement.SourceIndex,
                 SourceCopyIndex: 0))
             .ToArray();

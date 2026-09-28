@@ -322,3 +322,33 @@ A target with only width or height may derive the missing dimension from trusted
 Poster tiles are simplex and currently operate on one selected source page. Poster is not combined with N-up, booklet, physical scaling, page placement, general crop, or Canvas in this slice.
 
 The Windows printer path remains unchanged: each PosterTile output page is still an ordinary physical A4-or-smaller raster submitted through the existing spooler path.
+
+
+## ADR-034 - Variable-size general composition compiles to deterministic multi-page Canvas placements
+Status: accepted
+
+General mixed-size print requests are represented by `VariableItemsSpec` at the PrintPlan layer.
+
+Each item declares only semantic input:
+
+- approved source index/page
+- requested physical width/height
+- copies
+- fit
+- whether 90-degree rotation is allowed
+
+The AI does not author X/Y coordinates, page numbers for output sheets, z-order, or packing decisions.
+
+Deterministic code resolves missing dimensions only from trusted inspected metadata. A single width/height may derive the other dimension from source aspect ratio. No explicit dimensions may preserve a trusted physical PDF page size. If neither rule can determine a physical size, planning must ask instead of guessing.
+
+The compiler expands physical copies and uses a deterministic shelf-based packer inside paper margins/gaps. Items may rotate independently when allowed. When one physical sheet is full, packing continues on the next Canvas page.
+
+`CanvasPlacementSpec.Page` extends the existing Canvas execution path to multiple output pages.
+
+`CanvasPlacementSpec.UseRotatedFootprint` is separate from Smart Collage's arbitrary `RotationDegrees`. The packer uses the former for exact 90-degree physical footprint rotation, preventing variable-item packing from changing existing collage rotation semantics.
+
+The compiled job still uses the existing Canvas renderer, preview, policy and Windows spooler path. No second mixed-size renderer is introduced.
+
+Variable-size jobs are capped at 1000 physical placements. Complete repeated sets are emitted as separate collated batches.
+
+This closes the final deterministic primitive gap family in the balanced M7 corpus without expanding PrintAI into non-print business workflows.

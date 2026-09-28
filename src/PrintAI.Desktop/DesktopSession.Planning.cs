@@ -228,6 +228,12 @@ public sealed partial class DesktopSession
         return $"poster {target} · {string.Join(" · ", extras)}";
     }
 
+    private static string? FormatVariableItems(
+        VariableItemsSpec? spec) =>
+        spec is null
+            ? null
+            : $"mixed-size · {spec.Items.Count} loại · gap {spec.GapMm:0.##}mm";
+
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
@@ -258,6 +264,8 @@ public sealed partial class DesktopSession
                         group?.Booklet),
                     Poster: FormatPoster(
                         group?.Poster),
+                    VariableItems: FormatVariableItems(
+                        group?.VariableItems),
                     CanAutoSequence:
                         batch.Job.Print.Duplex == DuplexMode.Off);
             })

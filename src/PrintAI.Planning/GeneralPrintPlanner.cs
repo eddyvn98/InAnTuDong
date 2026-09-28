@@ -69,7 +69,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 "placement": null,
                 "crop": null,
                 "booklet": null,
-                "poster": null
+                "poster": null,
+                "variableItems": null
               }
             ],
             "policy": { "preview": "required" },
@@ -187,7 +188,28 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - Poster tiles are always one-sided; set print.duplex="off".
         - Do not combine poster with nUp, booklet, physical scaling, page placement, general crop, or Canvas in this slice.
         - Poster source mapping is deterministic; the model never calculates per-tile crop coordinates.
-        - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
+        - Variable-size mixed items are represented with outputGroup.variableItems.
+        - variableItems.items contains explicit sourceIndex, one-based page, widthMm, heightMm, copies, allowRotate and fit for each independently sized source item.
+        - Example: image A 3x4 cm and image B 4x6 cm:
+          {
+            "items": [
+              { "sourceIndex": 0, "page": 1, "widthMm": 30, "heightMm": 40, "copies": 1, "allowRotate": true, "fit": "cover" },
+              { "sourceIndex": 1, "page": 1, "widthMm": 40, "heightMm": 60, "copies": 1, "allowRotate": true, "fit": "cover" }
+            ],
+            "gapMm": 2,
+            "marginMm": 5,
+            "cutMarks": false
+          }
+        - A single dimension may be used only when trusted source aspect is available after binding; deterministic code derives the other dimension.
+        - If neither width nor height is given, deterministic code may preserve trusted physical PDF page size. For raster sources without trusted physical size, ask the user for dimensions.
+        - When a request names one size for an explicitly square item such as QR 25 mm or logo 60 mm, use equal widthMm and heightMm.
+        - copies belongs to each variable item; for example 4 labels 40x60 and 6 labels 30x30 become two item entries with copies 4 and 6.
+        - allowRotate=true means the packer may rotate that individual item by 90 degrees to save paper.
+        - Deterministic code owns X/Y coordinates, packing, page breaks, and rotations. The model must never author Canvas coordinates.
+        - variableItems may span multiple A4 output pages if all items do not fit one sheet.
+        - Use collate=true. sets=N means N complete packed sheets/sets.
+        - Do not combine variableItems with nUp, booklet, poster, scaling, page placement, general crop, or planner-authored Canvas.
+        - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns planner-authored canvas layouts. VariableItems is the only general-intent feature that compiles to Canvas internally.
         """;
 
     public async Task<GeneralPlanningOutcome> PlanAsync(

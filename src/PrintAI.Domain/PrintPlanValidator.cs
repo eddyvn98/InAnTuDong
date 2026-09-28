@@ -163,8 +163,10 @@ public static class PrintPlanValidator
         ValidateCrop(plan, group, prefix, errors);
         ValidateBooklet(group, prefix, errors);
         ValidatePoster(plan, group, prefix, errors);
+        ValidateVariableItems(plan, group, prefix, errors);
 
         if (group.NUp is null &&
+            group.VariableItems is null &&
             group.Layout.Mode == LayoutMode.Canvas)
         {
             errors.Add(new(
@@ -208,7 +210,8 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.poster", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.poster", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.variableItems", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
@@ -228,7 +231,58 @@ public static class PrintPlanValidator
 
             PrintJobSpec representative;
 
-            if (group.Poster is not null)
+            if (group.VariableItems is not null)
+            {
+                var canResolvePreBind =
+                    group.VariableItems.Items.All(item =>
+                    {
+                        if (item.WidthMm is not null &&
+                            item.HeightMm is not null)
+                            return true;
+
+                        if (item.SourceIndex < 0 ||
+                            item.SourceIndex >= plan.Sources.Count)
+                            return false;
+
+                        var source = plan.Sources[item.SourceIndex];
+                        var physicalSize = source.Pages?
+                            .FirstOrDefault(page =>
+                                page.PageIndex == item.Page - 1);
+
+                        var hasAspect =
+                            physicalSize is not null ||
+                            (source.PixelWidth is > 0 &&
+                             source.PixelHeight is > 0);
+
+                        var hasPhysical =
+                            physicalSize is not null;
+
+                        return item.WidthMm is not null ||
+                               item.HeightMm is not null
+                            ? hasAspect
+                            : hasPhysical;
+                    });
+
+                if (!canResolvePreBind)
+                    return;
+
+                try
+                {
+                    representative =
+                        VariableItemsResolver.Resolve(
+                            plan,
+                            group,
+                            group.Name);
+                }
+                catch (ArgumentException ex)
+                {
+                    errors.Add(new(
+                        "plan.groups.variableItems.geometry",
+                        $"{prefix}: {ex.Message}"));
+                    return;
+                }
+            }
+            else if (group.Poster is not null)
             {
                 var canResolvePreBind =
                     (group.Poster.TargetWidthMm is not null &&
@@ -331,6 +385,99 @@ public static class PrintPlanValidator
                 errors.Add(new(
                     $"plan.group.job.{error.Code}",
                     $"{prefix}: {error.Message}"));
+            }
+        }
+    }
+
+    private static void ValidateVariableItems(
+        PrintPlan plan,
+        PrintOutputGroupSpec group,
+        string prefix,
+        List<ValidationError> errors)
+    {
+        var spec = group.VariableItems;
+        if (spec is null)
+            return;
+
+        if (!group.Collate)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.collate",
+                $"{prefix} variable-size sets must use collate=true."));
+        }
+
+        if (group.NUp is not null ||
+            group.Scaling is not null ||
+            group.Placement is not null ||
+            group.Crop is not null ||
+            group.Booklet is not null ||
+            group.Poster is not null)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.combination",
+                $"{prefix} variable-size items cannot combine with N-up, scaling, placement, crop, booklet, or poster."));
+        }
+
+        if (spec.Items is null || spec.Items.Count == 0)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.empty",
+                $"{prefix} variable-size items require at least one item."));
+            return;
+        }
+
+        if (!double.IsFinite(spec.GapMm) ||
+            spec.GapMm < 0 ||
+            !double.IsFinite(spec.MarginMm) ||
+            spec.MarginMm < 0)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.spacing",
+                $"{prefix} variable-size gap/margin must be finite and non-negative."));
+        }
+
+        if (spec.Items.Sum(item => Math.Max(0, item.Copies)) > 1000)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.limit",
+                $"{prefix} variable-size items support at most 1000 physical placements."));
+        }
+
+        for (var index = 0; index < spec.Items.Count; index++)
+        {
+            var item = spec.Items[index];
+            if (item.SourceIndex < 0 ||
+                item.SourceIndex >= plan.Sources.Count)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.source",
+                    $"{prefix} variable item {index} references unavailable source."));
+                continue;
+            }
+
+            var source = plan.Sources[item.SourceIndex];
+            if (item.Page < 1 || item.Page > source.PageCount)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.page",
+                    $"{prefix} variable item {index} page is outside the source."));
+            }
+
+            if (item.Copies < 1)
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.copies",
+                    $"{prefix} variable item {index} copies must be at least 1."));
+            }
+
+            if (item.WidthMm is double width &&
+                (!double.IsFinite(width) || width <= 0) ||
+                item.HeightMm is double height &&
+                (!double.IsFinite(height) || height <= 0))
+            {
+                errors.Add(new(
+                    "plan.groups.variableItems.size",
+                    $"{prefix} variable item {index} dimensions must be finite and positive."));
             }
         }
     }

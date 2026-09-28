@@ -181,6 +181,43 @@ public sealed class GeneralPrintPlanParserTests
     }
 
     [Fact]
+    public void Parse_AcceptsVariableItemsIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup = node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["variableItems"] = new JsonObject
+        {
+            ["items"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["sourceIndex"] = 0,
+                    ["page"] = 1,
+                    ["widthMm"] = 30,
+                    ["heightMm"] = 40,
+                    ["copies"] = 2,
+                    ["allowRotate"] = true,
+                    ["fit"] = "cover"
+                }
+            },
+            ["gapMm"] = 2,
+            ["marginMm"] = 5,
+            ["cutMarks"] = true
+        };
+
+        var outcome = GeneralPrintPlanParser.Parse(node.ToJsonString());
+        var spec = outcome.Plan.OutputGroups[0].VariableItems;
+
+        Assert.NotNull(spec);
+        Assert.Single(spec!.Items);
+        Assert.Equal(30, spec.Items[0].WidthMm);
+        Assert.Equal(40, spec.Items[0].HeightMm);
+        Assert.Equal(2, spec.Items[0].Copies);
+        Assert.True(spec.CutMarks);
+    }
+
+    [Fact]
     public void Parse_RejectsUnknownFields()
     {
         var node = JsonNode.Parse(ValidJson())!.AsObject();

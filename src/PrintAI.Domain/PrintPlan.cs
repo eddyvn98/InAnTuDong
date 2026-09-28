@@ -27,6 +27,21 @@ public sealed record OutputPrintSettings(
     PrintQuality Quality = PrintQuality.Standard,
     DuplexMode Duplex = DuplexMode.Off);
 
+public sealed record VariableItemSpec(
+    int SourceIndex,
+    int Page = 1,
+    double? WidthMm = null,
+    double? HeightMm = null,
+    int Copies = 1,
+    bool AllowRotate = true,
+    FitMode Fit = FitMode.Contain);
+
+public sealed record VariableItemsSpec(
+    IReadOnlyList<VariableItemSpec> Items,
+    double GapMm = 2,
+    double MarginMm = 5,
+    bool CutMarks = false);
+
 public sealed record PosterSpec(
     double? TargetWidthMm = null,
     double? TargetHeightMm = null,
@@ -66,7 +81,8 @@ public sealed record PrintOutputGroupSpec(
     PagePlacementSpec? Placement = null,
     SourceCropSpec? Crop = null,
     BookletSpec? Booklet = null,
-    PosterSpec? Poster = null);
+    PosterSpec? Poster = null,
+    VariableItemsSpec? VariableItems = null);
 
 public sealed record PrintPlan(
     string PlanName,

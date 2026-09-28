@@ -208,6 +208,14 @@ public static class PrintPlanCompiler
             ? $"{group.Name} - set {setNumber}/{group.Sets}"
             : group.Name;
 
+        if (group.VariableItems is not null)
+        {
+            return VariableItemsResolver.Resolve(
+                plan,
+                group,
+                jobName);
+        }
+
         if (group.Poster is not null)
         {
             var poster = PosterTilingResolver.Resolve(

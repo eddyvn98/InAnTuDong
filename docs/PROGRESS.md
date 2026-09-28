@@ -1067,6 +1067,64 @@ Verification:
 - install -> upgrade -> rollback -> uninstall smoke flow: success
 - ZIP/checksum/artifact upload: success
 
-The poster/tiled-printing slice is verified and ready to merge.
+The poster/tiled-printing slice was merged through PR #37. Final PR-head verification: CI #236 and package-windows #180 succeeded.
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 variable-size general composition
+
+Branch: `m7-variable-items`.
+
+The final balanced-corpus M7 primitive slice implements independently sized print items packed together on physical paper.
+
+Implemented:
+
+- high-level `VariableItemsSpec`
+- per-item source/page, width/height, copies, fit and rotation permission
+- width-only or height-only physical size resolved from trusted inspected source aspect
+- no-size mode preserves trusted physical source page size
+- missing unresolvable physical size remains a clarification, never a guess
+- deterministic shelf-based packing inside paper margin/gap
+- independent 90-degree rotation when it reduces packing constraints
+- automatic continuation to additional A4 output pages
+- `CanvasPlacementSpec.Page` for multi-page Canvas execution
+- `UseRotatedFootprint` isolated from Smart Collage arbitrary rotation semantics
+- optional cut marks through the existing Canvas render path
+- complete repeated sets compile as separate collated batches
+- 1000-placement safety cap
+- desktop batch summary for mixed-size intent
+- parser/planner contract tests
+- VAR-001 through VAR-010 corpus-derived regressions
+- all 10 variable-size corpus cases moved from `gap` to `supported`
+
+Corpus after this slice:
+
+- 130 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 0 / 150 deterministic primitive gaps
+
+Coverage on the balanced corpus:
+
+- immediately/conditionally executable: 140 / 150 = 93.3%
+- semantically handled including intentional clarification: 150 / 150 = 100.0%
+
+Verification:
+
+- verified commit: `1d348bcf5ed54498c27556f3293156e105b9edaa`
+- GitHub CI #239: success on Ubuntu + Windows
+- shared suite: 261/261 tests pass
+- variable-size resolver/packer/multi-page Canvas/parser/planner/corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #183: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The variable-size slice is verified and ready to merge.
+
+This completes the planned M7 deterministic primitive coverage. Remaining work after verification should shift from adding broad primitives to field validation, UX refinement, planner quality, and release hardening.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

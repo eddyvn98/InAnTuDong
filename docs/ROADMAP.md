@@ -235,9 +235,25 @@ Updated corpus: 110 supported, 10 capability-dependent, 10 clarification, 20 det
 
 Updated corpus: 120 supported, 10 capability-dependent, 10 clarification, 10 deterministic gaps.
 
-### Next slices
+### Variable-size item slice
 
-- [ ] independent per-item physical sizes on one sheet — selected next from corpus
+- [x] high-level `VariableItemsSpec`
+- [x] independent source/page per item
+- [x] independent physical width/height
+- [x] independent copies and fit
+- [x] one-dimension derivation from trusted source aspect
+- [x] preserve trusted physical source size when dimensions are omitted
+- [x] deterministic mixed-size paper-saving packer
+- [x] per-item 90-degree rotation permission
+- [x] multi-page Canvas execution
+- [x] isolated rotated-footprint flag preserving Smart Collage semantics
+- [x] optional cut marks
+- [x] 1000-placement safety cap
+- [x] desktop batch UI exposes mixed-size intent
+- [x] all 10 variable-size gap cases moved to supported
+- [x] variable-size CI/package verification — CI #239 and package-windows #183 succeeded
+
+Updated corpus: 130 supported, 10 capability-dependent, 10 clarification, 0 deterministic primitive gaps.
 
 Exit: representative real print requests can be expressed as a validated PrintPlan, compiled deterministically into executable jobs, previewed and printed without adding business-management scope.
 

@@ -25,8 +25,7 @@ internal static class LocalWebActionDispatcher
             case "plan":
                 await desktop.PlanAsync(
                     ReadString(payload, "request"),
-                    ReadString(payload, "mode"),
-                    cancellationToken);
+                    ReadString(payload, "mode"));
                 break;
 
             case "selectPrinter":

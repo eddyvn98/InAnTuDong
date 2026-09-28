@@ -206,6 +206,33 @@ public sealed partial class DesktopSession
         var removedPath = _paths[index];
         _paths.RemoveAt(index);
 
+        for (var queueIndex = _requestQueue.Count - 1;
+             queueIndex >= 0;
+             queueIndex--)
+        {
+            var queued = _requestQueue[queueIndex];
+            var remaining = queued.SourcePaths
+                .Where(path => !string.Equals(
+                    path,
+                    removedPath,
+                    StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (remaining.Length == 0)
+            {
+                _requestQueue.RemoveAt(queueIndex);
+            }
+            else if (remaining.Length != queued.SourcePaths.Count)
+            {
+                _requestQueue[queueIndex] = queued with
+                {
+                    SourcePaths = remaining,
+                    Status = "waiting",
+                    Error = null
+                };
+            }
+        }
+
         RebuildPages();
 
         if (_pages.Count == 0)
@@ -267,6 +294,8 @@ public sealed partial class DesktopSession
     {
         _paths.Clear();
         _pages.Clear();
+        _requestQueue.Clear();
+        _nextRequestOrder = 1;
         _selectedPage = 0;
         _selectedOutputPage = 0;
         _outputPageCount = 0;

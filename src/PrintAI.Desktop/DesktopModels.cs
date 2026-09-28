@@ -39,6 +39,7 @@ public sealed record DesktopExcelSmartPrintView(
 
 public sealed record DesktopDuplexView(
     string Mode,
+    string Phase,
     bool Pending,
     int SheetCount,
     string? PrinterName,

@@ -920,10 +920,19 @@ Next implementation target:
 
 **booklet imposition**
 
-Verification status:
+Verification:
 
-- implementation and docs committed on feature branch
-- CI/package verification pending
-- do not merge until Ubuntu + Windows tests and Windows package are green
+- verified commit: `c9fda4eeeef45178f58dc4fa06b15a917e3fbafb`
+- GitHub CI #218: success on Ubuntu + Windows
+- shared suite: 191/191 tests pass
+- crop/placement layout, parser, calculator, renderer and corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #162: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The crop/placement slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

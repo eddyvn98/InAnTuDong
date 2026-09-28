@@ -179,14 +179,14 @@ Verification for the desktop integration slice:
 
 ## Corpus-driven M7 extensions
 
-The balanced real-request corpus now reflects General N-up plus physical scaling:
+The balanced real-request corpus now reflects General N-up, physical scaling, and crop/placement:
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 92 directly supported
+- 100 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 38 expose missing deterministic primitives
+- 30 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
@@ -241,14 +241,53 @@ Examples:
 
 Percent scaling is centered and preserves physical proportions. A requested percentage may extend beyond the target placement; preview then shows the deterministic clipping. `Cover` remains a separate crop/fill intent.
 
-Physical scaling verification: CI #209 passed on Ubuntu + Windows with 167/167 shared tests, and package-windows #153 passed.
+Physical scaling verification: final PR head CI #213 and package-windows #157 passed.
+
+### Page placement and source crop
+
+General page placement is represented separately from source cropping.
+
+`PagePlacementSpec` supports:
+
+- asymmetric left/top/right/bottom margins in millimetres
+- anchors: center, top, bottom, left, right, four corners
+- X/Y physical offsets in millimetres
+- proportional shrink-to-fit when requested margins reduce the available page area
+
+Offset convention:
+
+- positive X moves right
+- negative X moves left
+- positive Y moves down
+- negative Y moves up
+
+Placement currently applies to `ExactSize` jobs and is intentionally not combined with General N-up.
+
+`SourceCropSpec` supports:
+
+- `AutoTrimWhite`: deterministic white-border detection before fit/render
+- `CenterToTargetAspect`: centered crop matching the target placement aspect
+- `EdgesMm`: explicit left/top/right/bottom crop in physical millimetres
+
+Millimetre edge crop requires trusted source physical dimensions. For PDF those dimensions are supplied by SourceInspector and rebound at the planner boundary.
+
+Source crop is applied before Contain/Cover mapping. In this slice it is not combined with physical scaling, General N-up, or Canvas. Page placement and source crop may be combined.
+
+Examples:
+
+- "chừa lề trái 20 mm" -> asymmetric page margins
+- "đưa nội dung lên 5 mm" -> `offsetYMm=-5`
+- "căn sát mép phải" -> right anchor
+- "căn xuống góc dưới bên phải" -> bottom-right anchor
+- "cắt phần trắng xung quanh" -> `AutoTrimWhite`
+- "chỉ lấy phần giữa" -> `CenterToTargetAspect`
+- "cắt 10 mm mép trên" -> `EdgesMm(top=10)`
 
 The next capabilities are now prioritized from the remaining gaps:
 
-1. crop, anchor, offset and asymmetric margins
-2. booklet imposition
-3. poster/tiled printing
-4. variable-size independent items in one sheet
+1. booklet imposition
+2. poster/tiled printing
+3. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

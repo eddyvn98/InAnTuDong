@@ -157,12 +157,17 @@ async function api(path,options={},retryAuth=true){
 
 async function action(name,payload={}){
   try{
-    render(await api("/api/action",{
+    const state=await api("/api/action",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({action:name,payload})
-    }));
-  }catch(e){showError(e)}
+    });
+    render(state);
+    return true;
+  }catch(e){
+    showError(e);
+    return false;
+  }
 }
 
 async function upload(files){
@@ -283,12 +288,13 @@ $("#queueSave").onclick=async()=>{
   const sourceIndexes=[...selectedSourcePaths]
     .map(path=>currentState.files.findIndex(f=>f.path===path))
     .filter(index=>index>=0);
-  await action("upsertQueuedRequest",{
+  const saved=await action("upsertQueuedRequest",{
     id:editingQueueId,
     request:$("#request").value.trim(),
     mode:$("#mode").value,
     sourceIndexes
   });
+  if(!saved)return;
   editingQueueId=null;
   $("#request").value="";
   $("#queueDelete").disabled=true;
@@ -296,7 +302,8 @@ $("#queueSave").onclick=async()=>{
 $("#queueRun").onclick=()=>action("processNextQueuedRequest");
 $("#queueDelete").onclick=async()=>{
   if(!editingQueueId)return;
-  await action("removeQueuedRequest",{id:editingQueueId});
+  const removed=await action("removeQueuedRequest",{id:editingQueueId});
+  if(!removed)return;
   editingQueueId=null;
   $("#request").value="";
   $("#queueDelete").disabled=true;

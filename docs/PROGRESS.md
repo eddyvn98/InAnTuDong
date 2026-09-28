@@ -1166,4 +1166,15 @@ Not yet verified on the real target Windows machine:
 6. Smart Collage image analysis through AGY
 7. loopback-only browser local host replacing the desktop-only shell
 
-Do **not** mark M8 complete until CI is green and the target-machine AGY checks above are exercised.
+Automated verification for commit `8520e9bca87811371deb98421b0c7400621fec52`:
+
+- GitHub CI #246: success on Ubuntu + Windows
+- shared suite: 264/264 tests pass
+- web build: success
+- Windows printer tests/probe: success
+- Windows desktop shell build: success
+- package-windows #190: success
+
+Target-machine AGY login/model/latency checks remain required before M8 can be marked complete.
+
+Do **not** mark M8 complete until the target-machine AGY checks above are exercised.

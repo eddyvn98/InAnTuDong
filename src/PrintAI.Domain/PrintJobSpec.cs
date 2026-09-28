@@ -1,24 +1,17 @@
 namespace PrintAI.Domain;
 
-public sealed record SourceRegionSpec(
-    double X,
-    double Y,
-    double Width,
-    double Height);
-
 public sealed record PosterTileSourceSpec(
     int Row,
     int Column,
     int Rows,
     int Columns,
+    double TargetWidthMm,
+    double TargetHeightMm,
     double CanvasXmm,
     double CanvasYmm,
     double CanvasWidthMm,
     double CanvasHeightMm,
-    double ContentOffsetXmm,
-    double ContentOffsetYmm,
-    double ContentWidthMm,
-    double ContentHeightMm,
+    FitMode Fit = FitMode.Contain,
     bool RegistrationMarks = false,
     bool TileLabel = false);
 
@@ -29,7 +22,6 @@ public sealed record SourceSpec(
     double? OriginalWidthMm = null,
     double? OriginalHeightMm = null,
     bool IsBlank = false,
-    SourceRegionSpec? Region = null,
     PosterTileSourceSpec? PosterTile = null);
 
 public sealed record PaperSpec(

@@ -377,13 +377,18 @@ public sealed partial class DesktopSession
     private void ResetPlan()
     {
         _activeJob = null;
+        ClearPlannerResults();
+        _lastRequest = null;
+        _selectedOutputPage = 0;
+        ClearAutoLayouts();
+    }
+
+    private void ClearPlannerResults()
+    {
         _planResult = null;
         _generalPlanResult = null;
         _compiledPlan = null;
         _selectedPlanBatch = 0;
-        _lastRequest = null;
-        _selectedOutputPage = 0;
-        ClearAutoLayouts();
     }
 
     private bool IsVerifiedPrinter() =>

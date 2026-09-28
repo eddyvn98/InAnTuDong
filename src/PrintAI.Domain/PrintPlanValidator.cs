@@ -347,38 +347,10 @@ public static class PrintPlanValidator
             return;
         }
 
-        foreach (var selection in group.Selections)
-        {
-            if (selection.SourceIndex < 0 ||
-                selection.SourceIndex >= plan.Sources.Count)
-            {
-                continue;
-            }
-
-            var source = plan.Sources[selection.SourceIndex];
-            foreach (var page in ResolvePages(plan, selection))
-            {
-                var physical = source.Pages?
-                    .FirstOrDefault(size =>
-                        size.PageIndex == page - 1);
-
-                if (physical is null)
-                {
-                    errors.Add(new(
-                        "plan.groups.crop.sourceSize",
-                        $"{prefix} millimetre crop requires trusted physical size for {source.Path} page {page}."));
-                    continue;
-                }
-
-                if (edges.LeftMm + edges.RightMm >= physical.WidthMm ||
-                    edges.TopMm + edges.BottomMm >= physical.HeightMm)
-                {
-                    errors.Add(new(
-                        "plan.groups.crop.bounds",
-                        $"{prefix} crop edges leave no content for {source.Path} page {page}."));
-                }
-            }
-        }
+        // Trusted physical page sizes are rebound after the strict planner
+        // parser. Source-size availability and edge-vs-page bounds are
+        // therefore enforced by PrintPlanCompiler, not at this pre-bind
+        // validation stage.
     }
 
     private static void ValidateScaling(

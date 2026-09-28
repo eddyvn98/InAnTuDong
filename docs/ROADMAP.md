@@ -213,7 +213,7 @@ Updated corpus: 100 supported, 10 capability-dependent, 10 clarification, 30 det
 - [x] configurable center gutter
 - [x] complete booklet sets via collated batches
 - [x] all 10 booklet gap cases moved to supported
-- [~] booklet CI/package verification
+- [x] booklet CI/package verification — CI #221 and package-windows #165 succeeded
 
 Updated corpus: 110 supported, 10 capability-dependent, 10 clarification, 20 deterministic gaps.
 

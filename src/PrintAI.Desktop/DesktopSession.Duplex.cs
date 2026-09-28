@@ -89,6 +89,54 @@ public sealed partial class DesktopSession
             "Các mặt trước đã in sẽ không được tự động in lại.";
     }
 
+
+    public void SaveManualDuplexProfile(
+        string backOrder,
+        int longEdgeRotationDegrees,
+        int shortEdgeRotationDegrees,
+        string reinsertInstruction,
+        bool verified)
+    {
+        if (string.IsNullOrWhiteSpace(_selectedPrinter))
+            throw new InvalidOperationException("Chưa chọn máy in.");
+
+        if (!Enum.TryParse<ManualDuplexBackOrder>(
+                backOrder,
+                ignoreCase: true,
+                out var parsedOrder))
+        {
+            throw new ArgumentException("Back order không hợp lệ.");
+        }
+
+        if (longEdgeRotationDegrees is not (0 or 180) ||
+            shortEdgeRotationDegrees is not (0 or 180))
+        {
+            throw new ArgumentException(
+                "Rotation manual duplex chỉ hỗ trợ 0 hoặc 180 độ.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reinsertInstruction))
+        {
+            throw new ArgumentException(
+                "Cần có hướng dẫn nạp lại giấy cho printer profile.");
+        }
+
+        var stored = new StoredManualDuplexProfile(
+            PrinterName: _selectedPrinter,
+            BackOrder: parsedOrder,
+            LongEdgeBackRotationDegrees: longEdgeRotationDegrees,
+            ShortEdgeBackRotationDegrees: shortEdgeRotationDegrees,
+            ReinsertInstruction: reinsertInstruction.Trim(),
+            IsVerified: verified,
+            UpdatedAt: DateTimeOffset.Now);
+
+        _manualDuplexCalibrationStore.Save(stored);
+
+        _status = verified
+            ? "Đã lưu manual-duplex profile và đánh dấu verified theo xác nhận test giấy thật."
+            : "Đã lưu manual-duplex profile ở trạng thái chưa verified.";
+    }
+
     private void PrintDuplexJob(
         DesktopPage page,
         PrintJobSpec job)
@@ -198,8 +246,7 @@ public sealed partial class DesktopSession
         string artifactDirectory)
     {
         var manualProfile =
-            profile.ManualDuplex ??
-            ManualDuplexProfile.UnverifiedDefault;
+            ResolveManualDuplexProfile(profile);
 
         var plan = ManualDuplexPlanner.Create(
             pageCount,
@@ -323,7 +370,10 @@ public sealed partial class DesktopSession
                     string.Equals(
                         _selectedPrinter,
                         pending.PrinterName,
-                        StringComparison.OrdinalIgnoreCase));
+                        StringComparison.OrdinalIgnoreCase),
+                BackOrder: "",
+                LongEdgeBackRotationDegrees: 0,
+                ShortEdgeBackRotationDegrees: 0);
         }
 
         var profile =
@@ -331,16 +381,38 @@ public sealed partial class DesktopSession
                 ? null
                 : PrinterProfileCatalog.Resolve(_selectedPrinter);
 
+        var manualProfile = profile is null
+            ? ManualDuplexProfile.UnverifiedDefault
+            : ResolveManualDuplexProfile(profile);
+
         return new(
             Mode: (job?.Print.Duplex ?? DuplexMode.Off).ToString(),
             Pending: false,
             SheetCount: 0,
             PrinterName: _selectedPrinter,
-            ProfileVerified:
-                profile?.ManualDuplex?.IsVerified ?? false,
-            Instruction:
-                profile?.ManualDuplex?.ReinsertInstruction,
-            CanContinueBack: false);
+            ProfileVerified: manualProfile.IsVerified,
+            Instruction: manualProfile.ReinsertInstruction,
+            CanContinueBack: false,
+            BackOrder: manualProfile.BackOrder.ToString(),
+            LongEdgeBackRotationDegrees:
+                manualProfile.LongEdgeBackRotationDegrees,
+            ShortEdgeBackRotationDegrees:
+                manualProfile.ShortEdgeBackRotationDegrees);
+    }
+
+
+    private ManualDuplexProfile ResolveManualDuplexProfile(
+        PrinterDeviceProfile printerProfile)
+    {
+        if (!string.IsNullOrWhiteSpace(_selectedPrinter) &&
+            _manualDuplexCalibrationStore.Get(_selectedPrinter) is
+                { } stored)
+        {
+            return stored.ToProfile();
+        }
+
+        return printerProfile.ManualDuplex ??
+               ManualDuplexProfile.UnverifiedDefault;
     }
 
     private void ClearPendingManualDuplex(

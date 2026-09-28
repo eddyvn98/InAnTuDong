@@ -18,6 +18,20 @@ public static class PrintPlanValidator
             return new(errors);
         }
 
+        var duplicatePaths = plan.Sources
+            .Where(source => !string.IsNullOrWhiteSpace(source.Path))
+            .GroupBy(source => source.Path, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToArray();
+
+        if (duplicatePaths.Length > 0)
+        {
+            errors.Add(new(
+                "plan.sources.duplicate",
+                "Each approved source path may appear only once in PrintPlan sources."));
+        }
+
         for (var sourceIndex = 0; sourceIndex < plan.Sources.Count; sourceIndex++)
         {
             var source = plan.Sources[sourceIndex];
@@ -123,6 +137,13 @@ public static class PrintPlanValidator
         if (group.Sets < 1)
             errors.Add(new("plan.groups.sets", $"{prefix} sets must be at least 1."));
 
+        if (group.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "plan.groups.canvas",
+                $"{prefix} cannot use Canvas layout in PrintPlan 2.0 foundation; use the dedicated Smart Collage workflow."));
+        }
+
         if (group.Selections is null || group.Selections.Count == 0)
         {
             errors.Add(new("plan.groups.selections", $"{prefix} requires at least one page selection."));
@@ -148,6 +169,39 @@ public static class PrintPlanValidator
                 errors.Add(new(
                     "plan.selection.empty",
                     $"{prefix} resolves to zero source pages."));
+            }
+        }
+
+        if (!errors.Any(error =>
+                error.Code.StartsWith("plan.selection", StringComparison.Ordinal) ||
+                error.Code == "plan.groups.canvas"))
+        {
+            var firstSelection = group.Selections[0];
+            var firstPage = ResolvePages(plan, firstSelection)[0];
+            var representative = new PrintJobSpec(
+                JobName: group.Name,
+                Sources:
+                [
+                    new SourceSpec(
+                        plan.Sources[firstSelection.SourceIndex].Path,
+                        PageIndex: firstPage - 1)
+                ],
+                Paper: group.Paper,
+                Layout: group.Layout,
+                Print: new PrintSettings(
+                    Copies: 1,
+                    ColorMode: group.Print.ColorMode,
+                    Quality: group.Print.Quality,
+                    Duplex: group.Print.Duplex),
+                Policy: plan.Policy,
+                SchemaVersion: "1.0");
+
+            var jobValidation = PrintJobValidator.Validate(representative);
+            foreach (var error in jobValidation.Errors)
+            {
+                errors.Add(new(
+                    $"plan.group.job.{error.Code}",
+                    $"{prefix}: {error.Message}"));
             }
         }
     }

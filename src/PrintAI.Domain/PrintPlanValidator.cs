@@ -436,6 +436,13 @@ public static class PrintPlanValidator
                 $"{prefix} variable-size gap/margin must be finite and non-negative."));
         }
 
+        if (spec.Items.Sum(item => Math.Max(0, item.Copies)) > 1000)
+        {
+            errors.Add(new(
+                "plan.groups.variableItems.limit",
+                $"{prefix} variable-size items support at most 1000 physical placements."));
+        }
+
         for (var index = 0; index < spec.Items.Count; index++)
         {
             var item = spec.Items[index];

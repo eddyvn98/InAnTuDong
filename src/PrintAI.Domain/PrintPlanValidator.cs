@@ -233,6 +233,39 @@ public static class PrintPlanValidator
 
             if (group.VariableItems is not null)
             {
+                var canResolvePreBind =
+                    group.VariableItems.Items.All(item =>
+                    {
+                        if (item.WidthMm is not null &&
+                            item.HeightMm is not null)
+                            return true;
+
+                        if (item.SourceIndex < 0 ||
+                            item.SourceIndex >= plan.Sources.Count)
+                            return false;
+
+                        var source = plan.Sources[item.SourceIndex];
+                        var physicalSize = source.Pages?
+                            .FirstOrDefault(page =>
+                                page.PageIndex == item.Page - 1);
+
+                        var hasAspect =
+                            physicalSize is not null ||
+                            (source.PixelWidth is > 0 &&
+                             source.PixelHeight is > 0);
+
+                        var hasPhysical =
+                            physicalSize is not null;
+
+                        return item.WidthMm is not null ||
+                               item.HeightMm is not null
+                            ? hasAspect
+                            : hasPhysical;
+                    });
+
+                if (!canResolvePreBind)
+                    return;
+
                 try
                 {
                     representative =

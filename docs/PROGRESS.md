@@ -406,11 +406,29 @@ The slice adds a user-exportable JSON support report containing:
 
 Privacy boundary: the report intentionally excludes API keys, AI endpoint, source file paths, job history and document content.
 
+## M6 4x6 auto-layout slice in progress
+
+Branch `feature/auto-layout-4x6` adds a release-compatible workflow extension requested from real use:
+
+- deterministic 4x6-inch paper preset at 101.6 x 152.4 mm
+- 1-6 selected source/page inputs
+- up to four portrait/landscape grid candidates
+- Balanced / MinCrop / Fill preferences
+- cached thumbnail previews for candidate selection
+- selected candidate becomes the normal active PrintJobSpec
+- Windows print submission now requests the job paper size instead of always forcing A4
+- driver paper matching fails clearly when the requested stock is not advertised
+- shared auto-layout geometry tests and Windows 4x6 paper-match test
+- detailed behavior/acceptance criteria in `docs/AUTO_LAYOUT_4X6.md`
+
+Important scope boundary: schema 1.0 still uses uniform item geometry, so this slice does not yet implement irregular collage cells such as one large photo plus two smaller photos.
+
 Exact next M6 work:
 
-1. tagged preview release + release notes
-2. real iPhone HEIC field validation
-3. real-machine scanner/Office/printer validation matrix
+1. verify this slice in CI and on a real 4x6-capable driver
+2. tagged preview release + release notes
+3. real iPhone HEIC field validation
+4. real-machine scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

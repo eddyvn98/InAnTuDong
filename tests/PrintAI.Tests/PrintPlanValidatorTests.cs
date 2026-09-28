@@ -37,6 +37,36 @@ public sealed class PrintPlanValidatorTests
     }
 
     [Fact]
+    public void Validate_RejectsDuplicateSourcesAndCanvasInGeneralPlan()
+    {
+        var plan = new PrintPlan(
+            "Invalid",
+            [
+                new("C:/print/a.png", 1),
+                new("C:/print/a.png", 1)
+            ],
+            [
+                new(
+                    "Canvas",
+                    [new(0)],
+                    new(),
+                    new(
+                        LayoutMode.Canvas,
+                        0,
+                        0,
+                        Canvas: new CanvasLayoutSpec(
+                            [new CanvasPlacementSpec(0, 0, 0, 10, 10)])),
+                    new())
+            ],
+            new());
+
+        var result = PrintPlanValidator.Validate(plan);
+
+        Assert.Contains(result.Errors, error => error.Code == "plan.sources.duplicate");
+        Assert.Contains(result.Errors, error => error.Code == "plan.groups.canvas");
+    }
+
+    [Fact]
     public void Validate_RejectsAmbiguousMixedCollationAcrossGroups()
     {
         var collated = new PrintOutputGroupSpec(

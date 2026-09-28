@@ -113,6 +113,15 @@ public partial class MainWindow : Window
                     _session.ApplyBuiltInWorkflow(
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
+                case "generateAutoLayouts":
+                    _session.GenerateAutoLayouts(
+                        ReadCompositionItems(root),
+                        root.GetProperty("preference").GetString() ?? "Balanced");
+                    break;
+                case "applyAutoLayout":
+                    _session.ApplyAutoLayout(
+                        root.GetProperty("candidateId").GetString() ?? "");
+                    break;
                 case "composeMixedPages":
                     _session.ComposeMixedPages(
                         ReadCompositionItems(root),

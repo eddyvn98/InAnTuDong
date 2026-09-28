@@ -184,10 +184,10 @@ The balanced real-request corpus now reflects General N-up, physical scaling, cr
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 120 directly supported
+- 130 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 10 expose missing deterministic primitives
+- 0 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
@@ -354,11 +354,66 @@ Poster tiles are simplex and currently accept exactly one selected source page. 
 
 Poster/tiled verification: CI #233 passed on Ubuntu + Windows with 241/241 shared tests, and package-windows #177 passed.
 
-The next capability is now:
+### Variable-size independent items
 
-1. variable-size independent items in one sheet
+Variable-size mixed composition is represented by `VariableItemsSpec` on a PrintPlan output group.
 
-These are print features. Business/order-management features remain out of scope.
+Each item independently declares:
+
+- approved source index + one-based source page
+- width and/or height in millimetres
+- copies
+- Contain/Cover fit
+- whether that individual item may rotate 90 degrees
+
+Deterministic code owns physical packing. The model never authors Canvas X/Y coordinates.
+
+Compilation:
+
+```text
+VariableItemsSpec
+    |
+    v
+resolve each item physical size
+    |
+    v
+expand item copies
+    |
+    v
+deterministic shelf packer
+    |
+    v
+multi-page CanvasLayoutSpec
+    |
+    v
+existing Canvas renderer -> preview -> spooler
+```
+
+Size rules:
+
+- width + height given -> use exactly those physical dimensions
+- only width or only height -> derive the missing dimension from trusted inspected source aspect ratio
+- neither dimension -> preserve trusted physical source page size when available
+- otherwise ask for dimensions instead of guessing
+
+Examples:
+
+- 3x4 cm photo + 4x6 cm photo -> independent 30x40 and 40x60 mm placements
+- 4 labels 40x60 + 6 labels 30x30 -> ten placements with two physical size families
+- QR 25 mm -> planner may use 25x25 mm when the request clearly names a square QR size
+- card 90x54 + label 40x60 -> packed together on the same A4 when geometry permits
+- individual rotation may be used to reduce page count
+- if all items do not fit one sheet, the compiled Canvas continues on the next physical page
+
+The packer uses a dedicated `UseRotatedFootprint` execution flag for deterministic 90-degree item rotation. This does not reinterpret existing Smart Collage `RotationDegrees` semantics.
+
+Variable-size jobs are capped at 1000 physical placements per compiled job. Complete `sets=N` remain separate collated batches.
+
+If a natural-language request says only that items must be different sizes but provides neither dimensions nor trustworthy physical source sizes, the planner must ask for the missing sizes. Capability support does not authorize guessing.
+
+Variable-size items are intentionally not combined with N-up, booklet, poster, physical scaling, general crop, or page placement in this slice.
+
+With this slice, all deterministic primitive gap families in the balanced 150-request corpus have an execution path. Business/order-management features remain out of scope.
 
 ## Compatibility rule
 

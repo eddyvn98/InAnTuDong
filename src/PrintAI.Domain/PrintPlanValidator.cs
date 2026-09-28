@@ -228,6 +228,15 @@ public static class PrintPlanValidator
                 $"{string.Join(", ", NUpLayoutResolver.SupportedPagesPerSheet.Order())}."));
         }
 
+        if (nUp.Columns is <= 0 ||
+            (nUp.Columns is int columns &&
+             nUp.PagesPerSheet % columns != 0))
+        {
+            errors.Add(new(
+                "plan.groups.nup.columns",
+                $"{prefix} N-up columns must be a positive divisor of pagesPerSheet."));
+        }
+
         if (nUp.GapMm < 0 || nUp.MarginMm < 0)
         {
             errors.Add(new(

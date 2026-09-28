@@ -11,11 +11,53 @@ public sealed record ChatCompletionTransportOptions(
 
 public sealed class ChatCompletionPlannerClient(
     HttpClient httpClient,
-    ChatCompletionTransportOptions options) : IPlannerModelClient
+    ChatCompletionTransportOptions options) :
+    IPlannerModelClient,
+    IMultimodalModelClient
 {
-    public async Task<string> CompleteAsync(
+    public Task<string> CompleteAsync(
         PlannerModelRequest request,
+        CancellationToken cancellationToken = default) =>
+        SendAsync(
+            [
+                new { role = "system", content = request.SystemInstruction },
+                new { role = "user", content = request.UserPayload }
+            ],
+            cancellationToken);
+
+    public Task<string> CompleteMultimodalAsync(
+        MultimodalModelRequest request,
         CancellationToken cancellationToken = default)
+    {
+        var userContent = new List<object>
+        {
+            new { type = "text", text = request.UserText }
+        };
+
+        foreach (var image in request.Images.OrderBy(image => image.SourceIndex))
+        {
+            userContent.Add(new
+            {
+                type = "image_url",
+                image_url = new
+                {
+                    url = image.DataUrl,
+                    detail = "low"
+                }
+            });
+        }
+
+        return SendAsync(
+            [
+                new { role = "system", content = request.SystemInstruction },
+                new { role = "user", content = userContent.ToArray() }
+            ],
+            cancellationToken);
+    }
+
+    private async Task<string> SendAsync(
+        object[] messages,
+        CancellationToken cancellationToken)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, options.Endpoint);
 
@@ -29,11 +71,7 @@ public sealed class ChatCompletionPlannerClient(
         {
             model = options.Model,
             temperature = 0,
-            messages = new object[]
-            {
-                new { role = "system", content = request.SystemInstruction },
-                new { role = "user", content = request.UserPayload }
-            }
+            messages
         });
 
         using var response = await httpClient.SendAsync(message, cancellationToken);

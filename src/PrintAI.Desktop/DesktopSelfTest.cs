@@ -227,15 +227,26 @@ internal static partial class DesktopSelfTest
             return;
         }
 
+        session.UpsertQueuedRequest(
+            id: null,
+            request: "Yêu cầu thứ hai",
+            mode: "Smart",
+            sourceIndexes: [0]);
+
         session.RemoveQueuedRequest(queueId);
-        if (session.BuildState().RequestQueue.Count != 0)
+        var afterDelete = session.BuildState();
+        if (afterDelete.RequestQueue.Count != 1 ||
+            afterDelete.RequestQueue[0].Order != 1 ||
+            afterDelete.RequestQueue[0].Request != "Yêu cầu thứ hai")
         {
             checks.Add(new(
                 "request-queue-lifecycle",
                 false,
-                "Deleting a queued request left stale queue state."));
+                "Deleting a queued request did not compact queue order."));
             return;
         }
+
+        session.RemoveQueuedRequest(afterDelete.RequestQueue[0].Id);
 
         session.UpsertQueuedRequest(
             id: null,

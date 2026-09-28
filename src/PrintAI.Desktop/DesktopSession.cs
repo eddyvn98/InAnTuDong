@@ -88,6 +88,7 @@ public sealed partial class DesktopSession
                 if (OfficeDocumentConverter.IsSupported(inputPath))
                 {
                     path = ConvertOfficeSource(inputPath);
+                    RegisterOfficeSource(path, inputPath);
                     convertedCount++;
                 }
                 else
@@ -184,6 +185,7 @@ public sealed partial class DesktopSession
         _previewDataUrl = null;
         _printPath = null;
         _status = null;
+        ClearExcelSmartPrintState();
         ResetPlan();
     }
 
@@ -237,6 +239,7 @@ public sealed partial class DesktopSession
             CanPrintAllSources: _pages.Count > 0 &&
                                 !string.IsNullOrWhiteSpace(_selectedPrinter),
             Planner: planner,
+            ExcelSmartPrint: BuildExcelSmartPrintView(),
             Readiness: readiness,
             History: _history.Read().Take(20).ToArray());
     }

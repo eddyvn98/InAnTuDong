@@ -1,4 +1,5 @@
 using PrintAI.Domain;
+using PrintAI.Planning;
 using PrintAI.Rendering;
 using PrintAI.Workflows;
 
@@ -80,15 +81,18 @@ public sealed partial class DesktopSession
             $"{sources.Sum(source => source.Copies)} nội dung. Chọn một phương án để áp dụng.";
     }
 
-    public void GenerateSmartCollages(
-        IReadOnlyList<DesktopCompositionItem> items)
+    public async Task GenerateSmartCollagesAsync(
+        IReadOnlyList<DesktopCompositionItem> items,
+        string? instruction = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(items);
 
         if (items.Count != 3 || items.Any(item => item.Copies != 1))
-            throw new ArgumentException("Smart Collage V2 hiện cần đúng 3 source/page, mỗi source 1 bản.");
+            throw new ArgumentException("Smart Collage hiện cần đúng 3 source/page, mỗi source 1 bản.");
 
         var sources = new List<SourceSpec>(3);
+        var pages = new List<DesktopPage>(3);
         var selectedPageIndexes = new HashSet<int>();
 
         foreach (var item in items)
@@ -100,40 +104,144 @@ public sealed partial class DesktopSession
                 throw new ArgumentException("Mỗi source/page chỉ được xuất hiện một lần.");
 
             var page = _pages[item.PageIndex];
+            pages.Add(page);
             sources.Add(new SourceSpec(
                 page.SourcePath,
                 Copies: 1,
                 PageIndex: page.SourcePageIndex));
         }
 
+        var templates = CollageTemplateLibrary.ThreePhoto4x6Portrait();
         _autoLayoutCandidates.Clear();
         _autoLayoutPreviews.Clear();
+        _selectedAutoLayoutId = null;
 
-        foreach (var template in CollageTemplateLibrary.ThreePhoto4x6Portrait())
+        if (_planner.IsConfigured)
         {
-            var job = CollageTemplateLibrary.CreateJob(template, sources);
+            try
+            {
+                _status = "AI đang xem 3 ảnh và thiết kế Smart Collage…";
+
+                var plan = await _planner.PlanSmartCollageAsync(
+                    pages,
+                    templates.Select(template => template.Id).ToArray(),
+                    instruction,
+                    cancellationToken);
+
+                AddAiCollageCandidates(plan, templates, sources);
+
+                if (_autoLayoutCandidates.Count > 0)
+                {
+                    _status =
+                        $"AI đã tạo {_autoLayoutCandidates.Count} phương án Smart Collage. " +
+                        "Đã phân tích ảnh, chọn template và tự crop/zoom. Chọn một phương án để áp dụng.";
+                    return;
+                }
+            }
+            catch (Exception ex) when (
+                ex is PlannerTransportException or
+                PlanningFormatException or
+                InvalidOperationException)
+            {
+                AddFallbackCollageCandidates(templates, sources);
+                _status =
+                    $"AI vision không dùng được ({ex.Message}). " +
+                    $"Đã dùng {_autoLayoutCandidates.Count} phương án template fallback.";
+                return;
+            }
+        }
+
+        AddFallbackCollageCandidates(templates, sources);
+        _status =
+            "AI vision chưa cấu hình. Đã tạo 4 Smart Collage template fallback; " +
+            "cấu hình model hỗ trợ ảnh để app tự chọn ảnh chính và crop/zoom.";
+    }
+
+    private void AddAiCollageCandidates(
+        SmartCollagePlan plan,
+        IReadOnlyList<CollageTemplate> templates,
+        IReadOnlyList<SourceSpec> sources)
+    {
+        var templateMap = templates.ToDictionary(
+            template => template.Id,
+            StringComparer.Ordinal);
+
+        foreach (var proposal in plan.Candidates.Take(4))
+        {
+            if (!templateMap.TryGetValue(proposal.TemplateId, out var template))
+                continue;
+
+            var assignments = proposal.Frames
+                .Select(frame => new CollageFrameAssignment(
+                    frame.FrameIndex,
+                    frame.SourceIndex,
+                    frame.Scale,
+                    frame.OffsetX,
+                    frame.OffsetY))
+                .ToArray();
+
+            var job = CollageTemplateLibrary.CreateJob(
+                template,
+                sources,
+                assignments);
+
+            var validation = PrintJobValidator.Validate(job);
+            if (!validation.IsValid)
+                continue;
+
             var candidate = new AutoLayoutCandidate(
-                Id: $"collage-{template.Id}",
+                Id: $"ai-{_autoLayoutCandidates.Count}-{template.Id}",
                 Title: template.Title,
-                Description: $"Smart Collage · {string.Join(" · ", template.Tags)}",
+                Description:
+                    $"AI {proposal.Confidence:P0} · {proposal.Reason}",
+                Columns: 0,
+                Rows: 0,
+                Score: proposal.Confidence,
+                Job: job);
+
+            AddRenderedCandidate(candidate);
+        }
+    }
+
+    private void AddFallbackCollageCandidates(
+        IReadOnlyList<CollageTemplate> templates,
+        IReadOnlyList<SourceSpec> sources)
+    {
+        var preferredIds = new[]
+        {
+            "hero-left-two-right",
+            "hero-top-two-bottom",
+            "three-rounded-columns",
+            "center-circle-two-sides"
+        };
+
+        foreach (var id in preferredIds)
+        {
+            var template = templates.First(item => item.Id == id);
+            var job = CollageTemplateLibrary.CreateJob(template, sources);
+
+            AddRenderedCandidate(new AutoLayoutCandidate(
+                Id: $"fallback-{template.Id}",
+                Title: template.Title,
+                Description: $"Template fallback · {string.Join(" · ", template.Tags)}",
                 Columns: 0,
                 Rows: 0,
                 Score: 0,
-                Job: job);
-
-            _autoLayoutCandidates.Add(candidate);
-
-            var preview = SourceJobRenderer.RenderMixedA4(
-                job,
-                outputPageIndex: 0,
-                dpi: 72);
-
-            _autoLayoutPreviews[candidate.Id] =
-                $"data:image/png;base64,{Convert.ToBase64String(preview)}";
+                Job: job));
         }
+    }
 
-        _selectedAutoLayoutId = null;
-        _status = $"Đã tạo {_autoLayoutCandidates.Count} mẫu Smart Collage cho 3 ảnh. Chọn mẫu để áp dụng.";
+    private void AddRenderedCandidate(AutoLayoutCandidate candidate)
+    {
+        _autoLayoutCandidates.Add(candidate);
+
+        var preview = SourceJobRenderer.RenderMixedA4(
+            candidate.Job,
+            outputPageIndex: 0,
+            dpi: 72);
+
+        _autoLayoutPreviews[candidate.Id] =
+            $"data:image/png;base64,{Convert.ToBase64String(preview)}";
     }
 
     public void ApplyAutoLayout(string candidateId)

@@ -101,6 +101,7 @@ These are validation tasks, not missing software architecture.
 - [x] packaged Windows smoke test — published EXE self-test verified in package CI
 - [x] install / upgrade / rollback flow — lifecycle scripts verified by Windows package CI
 - [x] support diagnostics / error export — privacy-safe support report verified
+- [~] deterministic 4x6 auto-layout alternatives — 1-6 items, preview gallery, driver-aware paper submission
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 

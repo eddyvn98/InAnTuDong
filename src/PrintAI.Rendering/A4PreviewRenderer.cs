@@ -64,6 +64,7 @@ public static class A4PreviewRenderer
                 placement,
                 canvasPlacement?.Fit ?? job.Layout.Fit,
                 job.Layout.PhysicalScale,
+                job.Layout.SourceCrop,
                 dpi,
                 canvasPlacement);
 
@@ -86,6 +87,7 @@ public static class A4PreviewRenderer
         Placement placement,
         FitMode fit,
         PhysicalScaleSpec? physicalScale,
+        SourceCropSpec? sourceCrop,
         int dpi,
         CanvasPlacementSpec? canvasPlacement = null)
     {
@@ -127,10 +129,19 @@ public static class A4PreviewRenderer
             ? placement.WidthMm
             : placement.HeightMm;
 
+        var cropRect = sourceCrop is null
+            ? new SKRect(0, 0, source.Width, source.Height)
+            : SourceCropCalculator.Calculate(
+                source,
+                sourceSpec,
+                target.Width,
+                target.Height,
+                sourceCrop);
+
         var geometry = physicalScale is null
             ? ContentFitCalculator.Calculate(
-                source.Width,
-                source.Height,
+                cropRect.Width,
+                cropRect.Height,
                 target.Width,
                 target.Height,
                 fit)
@@ -147,7 +158,7 @@ public static class A4PreviewRenderer
 
         var transform = canvasPlacement?.Transform ?? new ImageTransformSpec();
         var sourceRect = TransformSourceRect(
-            ToSourceRect(source, geometry.Source),
+            ToSourceRect(cropRect, geometry.Source),
             source,
             transform);
         var destinationRect = ToDestinationRect(target, geometry.Destination);
@@ -268,12 +279,16 @@ public static class A4PreviewRenderer
         return new SKRect(left, top, left + width, top + height);
     }
 
-    private static SKRect ToSourceRect(SKBitmap source, NormalizedRect rect) =>
+    private static SKRect ToSourceRect(
+        SKRect sourceRect,
+        NormalizedRect rect) =>
         new(
-            (float)(rect.X * source.Width),
-            (float)(rect.Y * source.Height),
-            (float)((rect.X + rect.Width) * source.Width),
-            (float)((rect.Y + rect.Height) * source.Height));
+            sourceRect.Left + (float)(rect.X * sourceRect.Width),
+            sourceRect.Top + (float)(rect.Y * sourceRect.Height),
+            sourceRect.Left +
+                (float)((rect.X + rect.Width) * sourceRect.Width),
+            sourceRect.Top +
+                (float)((rect.Y + rect.Height) * sourceRect.Height));
 
     private static SKRect ToDestinationRect(SKRect target, NormalizedRect rect) =>
         new(

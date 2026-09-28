@@ -34,6 +34,9 @@ jobs:
       - name: Build web
         run: dotnet build src/PrintAI.Web/PrintAI.Web.csproj -c Release
 
+      - name: Build intent evaluator
+        run: dotnet build tools/PrintAI.IntentEval/PrintAI.IntentEval.csproj -c Release
+
       - name: Restore Windows printer tests
         if: matrix.os == 'windows-latest'
         run: dotnet restore tests/PrintAI.Windows.Tests/PrintAI.Windows.Tests.csproj

@@ -660,3 +660,58 @@ The next concrete M7 task is no longer plumbing. It is coverage validation:
 4. only then move to booklet/poster/variable-size layout
 
 See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## M7 real-request corpus + evaluator verification
+
+Branch `m7-intent-corpus` adds the first explicit coverage measurement layer for General Print Intent.
+
+Implemented:
+
+- `tests/fixtures/general-print-intent-corpus.json`
+- exactly 120 Vietnamese print requests
+- 12 categories with 10 cases each:
+  - basic printing
+  - page selection
+  - sets/collation
+  - multi-source
+  - mixed color
+  - duplex
+  - N-up
+  - scaling
+  - crop/margin/position
+  - paper/orientation
+  - booklet/poster
+  - repeat/variable-size
+- each case records source page counts, intent feature tags and current `supported` vs `planned` coverage
+- corpus integrity test prevents accidental shrinkage or category loss
+- new `tools/PrintAI.IntentEval` CLI
+- evaluator uses the same provider-neutral `GeneralPrintPlanner`, strict parser, source binder and compiler as the desktop app
+- supported cases receive deterministic semantic checks for key features such as page ranges, parity, exclusions, sets/collation, color, duplex, quality, orientation and paper
+- planned cases are reported as TARGET rather than falsely counted as supported
+- evaluator uses synthetic source descriptors; it does not require/upload customer documents
+- CI builds the evaluator on both Ubuntu and Windows
+- usage and coverage rules documented in `docs/M7_INTENT_CORPUS.md`
+
+Verification on commit `2c51e98232e855712bdf3a81f7e502138a6e1bdf`:
+
+- GitHub CI #195: success on Ubuntu + Windows
+- corpus integrity test: success
+- evaluator build: success on Ubuntu + Windows
+- Windows package #139: success
+- packaged desktop/self-test/install lifecycle remain green
+
+Important limitation:
+
+- CI does not call a paid/live model endpoint.
+- A real semantic pass rate requires running `PrintAI.IntentEval` with the intended production endpoint/model.
+- Do not claim a model understands all 120 cases until that live evaluation is actually run.
+
+Next concrete M7 task:
+
+1. run all `supported` corpus cases against the intended production model
+2. group failures into prompt/schema problems vs missing deterministic primitives
+3. fix planner/schema gaps first
+4. implement General N-up as the first known missing primitive after live triage
+
+See `docs/M7_INTENT_CORPUS.md`.

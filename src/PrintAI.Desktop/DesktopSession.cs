@@ -179,6 +179,66 @@ public sealed partial class DesktopSession
         RebuildPreview();
     }
 
+    public void SelectSource(int index)
+    {
+        if (index < 0 || index >= _paths.Count)
+            return;
+
+        var path = _paths[index];
+        var pageIndex = _pages.FindIndex(page =>
+            string.Equals(
+                page.SourcePath,
+                path,
+                StringComparison.OrdinalIgnoreCase));
+
+        if (pageIndex >= 0)
+            SelectPage(pageIndex);
+    }
+
+    public void RemoveSource(int index)
+    {
+        if (index < 0 || index >= _paths.Count)
+            return;
+
+        var currentPath = CurrentPage()?.SourcePath;
+        var removedPath = _paths[index];
+        _paths.RemoveAt(index);
+
+        RebuildPages();
+
+        if (_pages.Count == 0)
+        {
+            _selectedPage = 0;
+        }
+        else if (!string.Equals(
+                     currentPath,
+                     removedPath,
+                     StringComparison.OrdinalIgnoreCase))
+        {
+            var preservedIndex = _pages.FindIndex(page =>
+                string.Equals(
+                    page.SourcePath,
+                    currentPath,
+                    StringComparison.OrdinalIgnoreCase));
+
+            _selectedPage = preservedIndex >= 0
+                ? preservedIndex
+                : Math.Clamp(_selectedPage, 0, _pages.Count - 1);
+        }
+        else
+        {
+            _selectedPage = Math.Clamp(
+                _selectedPage,
+                0,
+                _pages.Count - 1);
+        }
+
+        _selectedOutputPage = 0;
+        ResetPlan();
+        RebuildPreview();
+        _status = $"Đã xóa {Path.GetFileName(removedPath)} khỏi nguồn in.";
+    }
+
     public void SelectOutputPage(int index)
     {
         if (index < 0 || index >= _outputPageCount)

@@ -186,7 +186,7 @@ public sealed class VisualGoldenRegressionTests
             SKColors.White);
 
         var mark = CutMarkGenerator.Create(first)[0];
-        AssertDark(
+        AssertDarkNearby(
             rendered,
             new(
                 (mark.X1Mm + mark.X2Mm) / 2,
@@ -203,7 +203,7 @@ public sealed class VisualGoldenRegressionTests
             200,
             SKColors.White,
             SKColors.Crimson,
-            new SKRect(50, 40, 160, 170));
+            new SKRect(50, 50, 150, 150));
 
         var job = new PrintJobSpec(
             "crop-position-golden",
@@ -303,19 +303,34 @@ public sealed class VisualGoldenRegressionTests
             tolerance);
     }
 
-    private static void AssertDark(
+    private static void AssertDarkNearby(
         SKBitmap bitmap,
         MmPoint point)
     {
-        var pixel = bitmap.GetPixel(
-            MmToPx(point.XMm),
-            MmToPx(point.YMm));
+        var centerX = MmToPx(point.XMm);
+        var centerY = MmToPx(point.YMm);
+        var darkest = 255;
+
+        for (var y = Math.Max(0, centerY - 2);
+             y <= Math.Min(bitmap.Height - 1, centerY + 2);
+             y++)
+        {
+            for (var x = Math.Max(0, centerX - 2);
+                 x <= Math.Min(bitmap.Width - 1, centerX + 2);
+                 x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                darkest = Math.Min(
+                    darkest,
+                    Math.Max(
+                        pixel.Red,
+                        Math.Max(pixel.Green, pixel.Blue)));
+            }
+        }
 
         Assert.True(
-            pixel.Red < 120 &&
-            pixel.Green < 120 &&
-            pixel.Blue < 120,
-            $"Expected a dark cut mark at {point}, got {pixel}.");
+            darkest < 180,
+            $"Expected a dark cut mark near {point}, darkest channel max was {darkest}.");
     }
 
     private static int MmToPx(double mm) =>

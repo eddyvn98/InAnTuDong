@@ -174,3 +174,19 @@ Manual duplex is modeled by physical sheets. PrintAI submits the complete front 
 Back-pass order, rotation and reinsert instructions are explicit per-printer profile data. Verification is persisted only after a real-paper confirmation and is never inferred from the printer model name.
 
 See `docs/MANUAL_DUPLEX.md`.
+
+
+## ADR-027 - PrintPlan 2.0 expands intent without replacing PrintJobSpec 1.0
+Status: accepted
+
+PrintAI remains a print-only product. CRM, pricing, payment, inventory, delivery and unrelated order-management scope are explicitly excluded.
+
+`PrintJobSpec 1.0` remains the stable executable print contract. It is appropriate for uniform jobs where all selected content shares one paper/layout/print rule set.
+
+`PrintPlan 2.0` is added above that boundary for real-world requests that require page ranges, multiple approved sources, ordered output groups, different color/duplex/layout rules, or explicit sets/collation.
+
+The AI may propose a strict `PrintPlan 2.0`, but deterministic code validates source/page references and compiles it into one or more ordinary `PrintJobSpec 1.0` batches. Every compiled job is validated again before layout/preview/execution.
+
+This avoids destabilizing the existing renderer/spooler architecture while allowing print-language coverage to grow without creating a preset for every named print product.
+
+See `docs/GENERAL_PRINT_INTENT.md`.

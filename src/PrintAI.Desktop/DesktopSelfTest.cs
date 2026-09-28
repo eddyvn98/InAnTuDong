@@ -192,7 +192,7 @@ internal static partial class DesktopSelfTest
             mode: "Smart",
             sourceIndexes: [0, 1]);
 
-        var before = session.GetState();
+        var before = session.BuildState();
         if (before.RequestQueue.Count != 1 ||
             before.RequestQueue[0].SourcePaths.Count != 2)
         {
@@ -203,8 +203,8 @@ internal static partial class DesktopSelfTest
             return;
         }
 
-        session.RemoveSourceAt(0);
-        var afterRemove = session.GetState();
+        session.RemoveSource(0);
+        var afterRemove = session.BuildState();
 
         if (afterRemove.RequestQueue.Count != 1 ||
             afterRemove.RequestQueue[0].SourcePaths.Count != 1 ||
@@ -220,8 +220,8 @@ internal static partial class DesktopSelfTest
             return;
         }
 
-        session.ClearSources();
-        var afterClear = session.GetState();
+        session.Clear();
+        var afterClear = session.BuildState();
         var passed =
             afterClear.Files.Count == 0 &&
             afterClear.RequestQueue.Count == 0;

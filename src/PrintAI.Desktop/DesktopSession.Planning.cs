@@ -94,7 +94,8 @@ public sealed partial class DesktopSession
             await PlanForSourcesAsync(
                 item.Request,
                 item.Mode,
-                item.SourcePaths);
+                item.SourcePaths,
+                allowDirectPrint: false);
 
             _requestQueue[index] = item with
             {
@@ -132,7 +133,8 @@ public sealed partial class DesktopSession
     private async Task PlanForSourcesAsync(
         string request,
         string mode,
-        IReadOnlyList<string> sourcePaths)
+        IReadOnlyList<string> sourcePaths,
+        bool allowDirectPrint = true)
     {
         if (sourcePaths.Count == 0)
             throw new InvalidOperationException("Yêu cầu không có file nguồn.");
@@ -196,7 +198,8 @@ public sealed partial class DesktopSession
                 $"{result.Compiled.Batches.Count} batch · " +
                 result.Decision.Reason));
 
-        if (result.Decision.Kind == PolicyDecisionKind.Direct)
+        if (allowDirectPrint &&
+            result.Decision.Kind == PolicyDecisionKind.Direct)
         {
             if (result.Compiled.Batches.Count == 1)
                 PrintJob();

@@ -300,7 +300,26 @@ $("#queueSave").onclick=async()=>{
   $("#request").value="";
   $("#queueDelete").disabled=true;
 };
-$("#queueRun").onclick=()=>action("processNextQueuedRequest");
+$("#queueRun").onclick=async()=>{
+  const next=currentState.requestQueue
+    .filter(q=>q.status==="waiting"||q.status==="error")
+    .sort((a,b)=>a.order-b.order)[0];
+
+  if(!next){
+    showError(new Error("Hàng chờ AI không còn yêu cầu cần xử lý."));
+    return;
+  }
+
+  next.status="processing";
+  $("#queueRun").disabled=true;
+  render(currentState);
+
+  try{
+    await action("processNextQueuedRequest");
+  }finally{
+    $("#queueRun").disabled=false;
+  }
+};
 $("#queueDelete").onclick=async()=>{
   if(!editingQueueId)return;
   const removed=await action("removeQueuedRequest",{id:editingQueueId});

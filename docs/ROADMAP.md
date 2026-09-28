@@ -231,7 +231,7 @@ Updated corpus: 110 supported, 10 capability-dependent, 10 clarification, 20 det
 - [x] tile row/column + sequential labels
 - [x] complete poster sets via collated batches
 - [x] all 10 poster gap cases moved to supported
-- [~] poster/tile CI/package verification
+- [x] poster/tile CI/package verification — CI #233 and package-windows #177 succeeded
 
 Updated corpus: 120 supported, 10 capability-dependent, 10 clarification, 10 deterministic gaps.
 

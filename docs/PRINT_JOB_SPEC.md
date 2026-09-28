@@ -49,6 +49,24 @@ Current schema version: `1.0`.
 }
 ```
 
+## Duplex semantics
+
+`print.duplex` is printer-neutral user intent:
+
+- `off` — one-sided output
+- `longEdge` — two-sided output bound/flipped on the long edge
+- `shortEdge` — two-sided output bound/flipped on the short edge
+
+The value does not require the printer to have automatic duplex hardware. Deterministic execution resolves the intent after printer selection:
+
+- an automatic-duplex printer may execute one multi-page duplex batch through the driver,
+- a simplex printer uses the guided manual-duplex front/reinsert/back workflow,
+- a duplex request must never silently fall through to the one-page simplex submission path.
+
+Manual duplex is an execution strategy for schema 1.0 and does not require a schema change.
+
+See `docs/MANUAL_DUPLEX.md`.
+
 ## Validation invariants
 
 - width/height > 0

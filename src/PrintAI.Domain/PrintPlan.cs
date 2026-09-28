@@ -21,6 +21,7 @@ public sealed record OutputPrintSettings(
 
 public sealed record NUpSpec(
     int PagesPerSheet,
+    int? Columns = null,
     double GapMm = 2,
     double MarginMm = 5,
     bool Border = false,

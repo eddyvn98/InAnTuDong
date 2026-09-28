@@ -283,6 +283,8 @@ Examples:
 - "chỉ lấy phần giữa" -> `CenterToTargetAspect`
 - "cắt 10 mm mép trên" -> `EdgesMm(top=10)`
 
+Crop/placement verification: CI #218 passed on Ubuntu + Windows with 191/191 shared tests, and package-windows #162 passed.
+
 The next capabilities are now prioritized from the remaining gaps:
 
 1. booklet imposition

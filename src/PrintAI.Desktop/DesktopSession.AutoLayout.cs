@@ -132,9 +132,19 @@ public sealed partial class DesktopSession
 
                 if (_autoLayoutCandidates.Count > 0)
                 {
+                    var aiCount = _autoLayoutCandidates.Count;
+                    AddFallbackCollageCandidates(
+                        templates,
+                        sources,
+                        maxTotal: 4);
+
+                    var fallbackCount = _autoLayoutCandidates.Count - aiCount;
                     _status =
-                        $"AI đã tạo {_autoLayoutCandidates.Count} phương án Smart Collage. " +
-                        "Đã phân tích ảnh, chọn template và tự crop/zoom. Chọn một phương án để áp dụng.";
+                        fallbackCount == 0
+                            ? $"AI đã tạo {aiCount} phương án Smart Collage. " +
+                              "Đã phân tích ảnh, chọn template và tự crop/zoom. Chọn một phương án để áp dụng."
+                            : $"AI tạo {aiCount} phương án hợp lệ; app bổ sung {fallbackCount} " +
+                              "template fallback để đủ lựa chọn. Chọn một phương án để áp dụng.";
                     return;
                 }
             }
@@ -206,7 +216,8 @@ public sealed partial class DesktopSession
 
     private void AddFallbackCollageCandidates(
         IReadOnlyList<CollageTemplate> templates,
-        IReadOnlyList<SourceSpec> sources)
+        IReadOnlyList<SourceSpec> sources,
+        int maxTotal = 4)
     {
         var preferredIds = new[]
         {
@@ -218,6 +229,15 @@ public sealed partial class DesktopSession
 
         foreach (var id in preferredIds)
         {
+            if (_autoLayoutCandidates.Count >= maxTotal)
+                break;
+
+            if (_autoLayoutCandidates.Any(candidate =>
+                    candidate.Id.EndsWith(id, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
             var template = templates.First(item => item.Id == id);
             var job = CollageTemplateLibrary.CreateJob(template, sources);
 

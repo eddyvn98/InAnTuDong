@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using PrintAI.Domain;
 using PrintAI.Planning;
 using Xunit;
 
@@ -41,6 +42,30 @@ public sealed class GeneralPrintPlanParserTests
         Assert.Equal(4, nUp.PagesPerSheet);
         Assert.Equal(2, nUp.Columns);
         Assert.True(nUp.Border);
+    }
+
+    [Fact]
+    public void Parse_AcceptsPhysicalScalingIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup = node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["scaling"] = new JsonObject
+        {
+            ["mode"] = "percent",
+            ["percent"] = 80
+        };
+
+        var outcome = GeneralPrintPlanParser.Parse(
+            node.ToJsonString());
+
+        var scaling = outcome.Plan.OutputGroups[0].Scaling;
+
+        Assert.NotNull(scaling);
+        Assert.Equal(
+            PhysicalScaleMode.Percent,
+            scaling!.Mode);
+        Assert.Equal(80, scaling.Percent);
     }
 
     [Fact]

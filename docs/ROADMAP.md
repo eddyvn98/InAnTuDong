@@ -182,14 +182,29 @@ Updated corpus: 86 supported, 10 capability-dependent, 10 clarification, 44 dete
 - [x] renderer applies scaling in physical mm
 - [x] desktop batch UI exposes scaling mode
 - [x] all 6 scaling gap cases moved to supported
-- [x] physical scaling CI/package verification — CI #209 and package-windows #153 succeeded
+- [x] physical scaling CI/package verification — final PR head CI #213 and package-windows #157 succeeded
 
 Updated corpus: 92 supported, 10 capability-dependent, 10 clarification, 38 deterministic gaps.
 
+### Crop / placement slice
+
+- [x] asymmetric page margins
+- [x] exact-size placement shrink-to-fit within asymmetric margins
+- [x] center / edge / corner anchors
+- [x] signed millimetre X/Y offsets
+- [x] deterministic auto-trim-white crop
+- [x] center-to-target-aspect crop
+- [x] physical edge crop in millimetres
+- [x] trusted physical-size validation for millimetre crop
+- [x] desktop batch UI exposes placement/crop
+- [x] all 8 crop/position gap cases moved to supported
+- [~] crop/placement CI/package verification
+
+Updated corpus: 100 supported, 10 capability-dependent, 10 clarification, 30 deterministic gaps.
+
 ### Next slices
 
-- [ ] crop / anchor / offset / asymmetric margins — selected next from corpus
-- [ ] booklet imposition
+- [ ] booklet imposition — selected next from corpus
 - [ ] poster/tiled printing
 - [ ] independent per-item physical sizes on one sheet
 

@@ -6,6 +6,9 @@
 Input
  -> Source Inspector
  -> Planning
+      -> AGY fast model + low effort + strict JSON
+      -> local parse/validation/confidence gate
+      -> optional one-time escalation to AGY deep model
       -> simple uniform request: PrintJobSpec 1.0
       -> complex multi-rule request: PrintPlan 2.0
            -> PrintPlan Validator / Source Binder
@@ -100,3 +103,14 @@ Epson L3310 remains a profile rather than a type baked into the domain.
 `PrintJobSpec 1.0` remains the stable execution boundary. `PrintPlan 2.0` sits above it for requests that need different rules across pages/files, explicit sets/collation, or ordered multi-file output. The compiler decomposes a validated plan into ordinary `PrintJobSpec 1.0` batches, so existing layout/rendering/policy/spooler code remains reusable.
 
 See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## Antigravity planner transport
+
+The Windows target uses the installed `agy.exe` and the user's existing Antigravity login session. PrintAI does not own AI credentials and does not require a separate AI API key.
+
+Fast-first planning is intentionally one call for the common case: the fast model produces the final structured planner JSON directly. Deterministic validation and a confidence threshold decide whether a second, stronger AGY call is needed.
+
+The planner is not an executor. It may not issue print commands, call the spooler, rewrite source paths, or bypass policy/preview gates.
+
+See `docs/ANTIGRAVITY_PLANNER.md`.

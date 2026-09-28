@@ -195,6 +195,39 @@ public sealed partial class DesktopSession
             ? null
             : $"booklet · gutter {booklet.GutterMm:0.##}mm";
 
+    private static string? FormatPoster(
+        PosterSpec? poster)
+    {
+        if (poster is null)
+            return null;
+
+        var target =
+            poster.TargetWidthMm is double width &&
+            poster.TargetHeightMm is double height
+                ? $"{width:0.##}×{height:0.##}mm"
+                : poster.TargetWidthMm is double onlyWidth
+                    ? $"rộng {onlyWidth:0.##}mm"
+                    : poster.TargetHeightMm is double onlyHeight
+                        ? $"cao {onlyHeight:0.##}mm"
+                        : poster.Columns is int columns &&
+                          poster.Rows is int rows
+                            ? $"{columns}×{rows} tờ"
+                            : "auto";
+
+        var extras = new List<string>
+        {
+            $"overlap {poster.OverlapMm:0.##}mm"
+        };
+
+        if (poster.RegistrationMarks)
+            extras.Add("dấu căn");
+
+        if (poster.TileLabels)
+            extras.Add("số tile");
+
+        return $"poster {target} · {string.Join(" · ", extras)}";
+    }
+
     private DesktopPlannerView BuildPlannerView(PrintJobSpec? job)
     {
         var batches = _compiledPlan?.Batches
@@ -223,6 +256,8 @@ public sealed partial class DesktopSession
                         batch.Job.Layout.SourceCrop),
                     Booklet: FormatBooklet(
                         group?.Booklet),
+                    Poster: FormatPoster(
+                        group?.Poster),
                     CanAutoSequence:
                         batch.Job.Print.Duplex == DuplexMode.Off);
             })

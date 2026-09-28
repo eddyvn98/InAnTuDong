@@ -278,10 +278,10 @@ M7 deterministic primitive coverage is complete. Prioritize M8 Antigravity targe
 - [x] preserve deterministic Smart Collage fallback while AGY image handling is unverified
 - [x] document AGY credentials boundary and low-spec target assumptions
 - [x] unit tests for fast accept / low-confidence escalation / transport escalation
-- [ ] verify AGY headless login and model slugs on the target Windows machine
+- [x] verify AGY headless availability on the target Windows machine
 - [ ] benchmark cold single-process latency
 - [ ] add persistent `stream-json` session if measurements justify it
 - [ ] migrate Smart Collage local-image analysis to AGY without reintroducing API keys
-- [ ] expose the existing UI through a loopback-only local host for browser-first operation
+- [~] loopback-only local host — core upload → AGY → preview → print browser flow implemented; advanced desktop controls still migrating
 
 Exit: natural-language planning works on the target Windows machine through the user's existing Antigravity account, without an AI API key or local LLM, with measured latency and deterministic print safety unchanged.

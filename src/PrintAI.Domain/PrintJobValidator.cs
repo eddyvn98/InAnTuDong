@@ -50,12 +50,14 @@ public static class PrintJobValidator
         }
 
         if (job.Sources.Any(source =>
-                source.OriginalWidthMm is <= 0 ||
-                source.OriginalHeightMm is <= 0))
+                (source.OriginalWidthMm is double width &&
+                 (!double.IsFinite(width) || width <= 0)) ||
+                (source.OriginalHeightMm is double height &&
+                 (!double.IsFinite(height) || height <= 0))))
         {
             errors.Add(new(
                 "sources.physicalSize",
-                "Source physical dimensions must be positive when provided."));
+                "Source physical dimensions must be finite and positive when provided."));
         }
 
         if (job.Paper.WidthMm <= 0 || job.Paper.HeightMm <= 0)

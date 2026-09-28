@@ -163,6 +163,7 @@ public static class PrintPlanValidator
         ValidateCrop(plan, group, prefix, errors);
         ValidateBooklet(group, prefix, errors);
         ValidatePoster(plan, group, prefix, errors);
+        ValidateVariableItems(plan, group, prefix, errors);
 
         if (group.NUp is null &&
             group.Layout.Mode == LayoutMode.Canvas)
@@ -208,7 +209,8 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.poster", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.poster", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.variableItems", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];
@@ -228,7 +230,25 @@ public static class PrintPlanValidator
 
             PrintJobSpec representative;
 
-            if (group.Poster is not null)
+            if (group.VariableItems is not null)
+            {
+                try
+                {
+                    representative =
+                        VariableItemsResolver.Resolve(
+                            plan,
+                            group,
+                            group.Name);
+                }
+                catch (ArgumentException ex)
+                {
+                    errors.Add(new(
+                        "plan.groups.variableItems.geometry",
+                        $"{prefix}: {ex.Message}"));
+                    return;
+                }
+            }
+            else if (group.Poster is not null)
             {
                 var canResolvePreBind =
                     (group.Poster.TargetWidthMm is not null &&

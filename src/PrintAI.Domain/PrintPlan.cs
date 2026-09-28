@@ -25,6 +25,10 @@ public sealed record OutputPrintSettings(
     PrintQuality Quality = PrintQuality.Standard,
     DuplexMode Duplex = DuplexMode.Off);
 
+public sealed record BookletSpec(
+    double GutterMm = 4,
+    double MarginMm = 5);
+
 public sealed record NUpSpec(
     int PagesPerSheet,
     int? Columns = null,
@@ -46,7 +50,8 @@ public sealed record PrintOutputGroupSpec(
     NUpSpec? NUp = null,
     PhysicalScaleSpec? Scaling = null,
     PagePlacementSpec? Placement = null,
-    SourceCropSpec? Crop = null);
+    SourceCropSpec? Crop = null,
+    BookletSpec? Booklet = null);
 
 public sealed record PrintPlan(
     string PlanName,

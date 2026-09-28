@@ -220,7 +220,8 @@ public sealed partial class DesktopSession
             job.Paper.WidthMm,
             job.Paper.HeightMm,
             job.Paper.Orientation == PageOrientation.Landscape,
-            profile);
+            profile,
+            colorMode: job.Print.ColorMode);
     }
 
     private void RecordPrint(

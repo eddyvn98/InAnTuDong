@@ -84,6 +84,7 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - include/exclude page numbers are one-based and must stay inside source pageCount.
         - For ordinary document pages on A4, exactSize with a 5 mm margin and 200 x 287 mm content box is a safe default unless the request specifies another physical size.
         - Use grid only when the user explicitly requests repeated/N-up placement.
+        - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 
     public async Task<GeneralPlanningOutcome> PlanAsync(

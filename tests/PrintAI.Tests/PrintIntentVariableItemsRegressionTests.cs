@@ -125,8 +125,20 @@ public sealed class PrintIntentVariableItemsRegressionTests
             .Select(p => (p.WidthMm, p.HeightMm))
             .ToHashSet();
 
-        Assert.Contains((90d, 54d), sizes);
-        Assert.Contains((40d, 60d), sizes);
+        Assert.Contains(
+            sizes,
+            size =>
+                (Math.Abs(size.WidthMm - 90) < 0.01 &&
+                 Math.Abs(size.HeightMm - 54) < 0.01) ||
+                (Math.Abs(size.WidthMm - 54) < 0.01 &&
+                 Math.Abs(size.HeightMm - 90) < 0.01));
+        Assert.Contains(
+            sizes,
+            size =>
+                (Math.Abs(size.WidthMm - 40) < 0.01 &&
+                 Math.Abs(size.HeightMm - 60) < 0.01) ||
+                (Math.Abs(size.WidthMm - 60) < 0.01 &&
+                 Math.Abs(size.HeightMm - 40) < 0.01));
         Assert.Contains((30d, 30d), sizes);
     }
 

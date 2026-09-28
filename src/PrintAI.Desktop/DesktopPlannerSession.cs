@@ -4,6 +4,7 @@ using PrintAI.Domain;
 using PrintAI.Planning;
 using PrintAI.Rendering;
 using PrintAI.SourceInspection;
+using PrintAI.Spreadsheet;
 
 namespace PrintAI.Desktop;
 
@@ -12,6 +13,7 @@ public sealed class DesktopPlannerSession
     private readonly HttpClient _httpClient = new();
     private ChatCompletionPlannerClient? _modelClient;
     private PrintPlanner? _planner;
+    private SpreadsheetPrintPlanner? _spreadsheetPlanner;
 
     public string? Endpoint { get; private set; }
     public string? Model { get; private set; }
@@ -34,6 +36,7 @@ public sealed class DesktopPlannerSession
             _httpClient,
             new ChatCompletionTransportOptions(uri, Model, apiKey));
         _planner = new PrintPlanner(_modelClient);
+        _spreadsheetPlanner = new SpreadsheetPrintPlanner(_modelClient);
     }
 
     public bool ConfigureFromEnvironment()
@@ -55,6 +58,23 @@ public sealed class DesktopPlannerSession
         return true;
     }
 
+
+    public async Task<SpreadsheetPlanningOutcome> PlanSpreadsheetAsync(
+        string request,
+        SpreadsheetWorkbookProfile profile,
+        CancellationToken cancellationToken = default)
+    {
+        if (_spreadsheetPlanner is null)
+        {
+            throw new InvalidOperationException(
+                "AI planner is not configured. Set endpoint and model first.");
+        }
+
+        return await _spreadsheetPlanner.PlanAsync(
+            request,
+            profile,
+            cancellationToken);
+    }
 
     public async Task<SmartCollagePlan> PlanSmartCollageAsync(
         IReadOnlyList<DesktopPage> pages,

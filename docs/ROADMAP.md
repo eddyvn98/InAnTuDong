@@ -106,6 +106,7 @@ These are validation tasks, not missing software architecture.
 - [~] Smart Collage AI — multimodal analysis, template selection, source assignment, bounded crop/scale/offset and top-candidate ranking implemented; live provider field validation and optional local face/saliency hardening remain
 - [ ] Smart Collage manual refinement — select frame, pan/zoom image, move/resize/rotate, undo/redo
 - [ ] tagged release + release notes
+- [~] Excel Smart Print — XLSX structure analysis, guarded AI plan and deterministic workbook optimizer implemented; CI/real-file verification pending
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware
 
 Exit: a versioned Windows package can be verified, diagnosed, installed and exercised on a real target machine with release-blocking failures visible before printing.

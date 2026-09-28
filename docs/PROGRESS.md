@@ -1156,15 +1156,18 @@ Implemented in this branch:
 - unit tests added for fast accept, low-confidence escalation and transport-failure escalation
 - architecture, planner docs, README, roadmap and agent instructions updated
 
-Not yet verified on the real target Windows machine:
+Target Windows verification:
 
-1. AGY CLI discovery from the installed Antigravity setup
-2. cached-login headless execution under the user's Antigravity Pro session
-3. exact available model slugs on that machine
-4. cold/warm end-to-end planner latency
-5. whether persistent `stream-json` materially improves repeated requests
-6. Smart Collage image analysis through AGY
-7. loopback-only browser local host replacing the desktop-only shell
+- user confirmed AGY has been tested successfully on the target Windows machine
+- installed AGY CLI/session is therefore accepted as available for the M8 merge
+- exact model-catalog mapping and latency tuning remain follow-up optimization work
+
+Remaining follow-up:
+
+1. measure cold/warm end-to-end planner latency
+2. verify whether persistent `stream-json` materially improves repeated requests
+3. migrate Smart Collage image analysis through AGY
+4. expose a loopback-only browser local host replacing the desktop-only shell
 
 Automated verification for commit `8520e9bca87811371deb98421b0c7400621fec52`:
 
@@ -1175,6 +1178,4 @@ Automated verification for commit `8520e9bca87811371deb98421b0c7400621fec52`:
 - Windows desktop shell build: success
 - package-windows #190: success
 
-Target-machine AGY login/model/latency checks remain required before M8 can be marked complete.
-
-Do **not** mark M8 complete until the target-machine AGY checks above are exercised.
+Target-machine AGY availability has now been manually confirmed by the user. M8 may merge to `main`; latency tuning, persistent-session work, Smart Collage AGY image handling and the loopback local host remain follow-up work.

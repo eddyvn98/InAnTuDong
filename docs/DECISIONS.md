@@ -352,3 +352,33 @@ The compiled job still uses the existing Canvas renderer, preview, policy and Wi
 Variable-size jobs are capped at 1000 physical placements. Complete repeated sets are emitted as separate collated batches.
 
 This closes the final deterministic primitive gap family in the balanced M7 corpus without expanding PrintAI into non-print business workflows.
+
+
+## ADR-035 - Antigravity CLI is the primary planner transport
+Status: accepted
+
+The target Windows machine already has Google Antigravity installed and authenticated. PrintAI therefore uses the local `agy.exe` headless interface as the primary natural-language planner transport instead of requiring an OpenAI-compatible endpoint and API key.
+
+PrintAI does not own or persist Antigravity credentials. Authentication remains inside the Antigravity/Windows session.
+
+The common-case planner path is fast-first rather than router-first. A fast/low-effort AGY model produces the final structured PrintJobSpec 1.0 or PrintPlan 2.0 proposal directly. Existing strict parsers, source binding and deterministic validators inspect that result. Only invalid, low-confidence or transport-failed fast passes escalate once to a configurable stronger AGY model.
+
+A clarification question is a valid planner result and does not automatically escalate; stronger reasoning must not be used to guess a missing material fact.
+
+The AGY process runs with terminal sandboxing and PrintAI never passes `--dangerously-skip-permissions`. Prompts instruct AGY not to call tools, shell commands, edit files or control printing.
+
+Regardless of model tier, AGY remains a proposal layer. It may not issue arbitrary print commands, address the Windows spooler, invent local source paths, calculate printer/device coordinates, or bypass PrintJobSpec/PrintPlan validation, preview or policy gates.
+
+Model slugs and effort are configuration values because the Antigravity catalog can evolve without changing the print-domain contracts.
+
+See `docs/ANTIGRAVITY_PLANNER.md`.
+
+
+## ADR-036 - Smart Collage keeps deterministic fallback during AGY migration
+Status: accepted
+
+The former Smart Collage AI path used a generic multimodal chat-completions endpoint and uploaded compact image thumbnails.
+
+The product direction no longer accepts a hidden separate AI API-key requirement. Until the installed AGY CLI local-image/file interaction is verified on the target Windows machine, Smart Collage AI analysis is disabled on the AGY planner path and the existing deterministic template library remains available.
+
+This is an intentional capability fallback, not permission to reintroduce the generic API-key transport as a required production dependency.

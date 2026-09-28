@@ -67,36 +67,29 @@ A gap case must name its missing capability.
 
 | Coverage | Cases | Share |
 | --- | ---: | ---: |
-| Supported | 86 | 57.3% |
+| Supported | 92 | 61.3% |
 | Supported with printer capability | 10 | 6.7% |
 | Correct behavior is clarification | 10 | 6.7% |
-| Missing primitive / gap | 44 | 29.3% |
+| Missing primitive / gap | 38 | 25.3% |
 | **Total** | **150** | **100%** |
 
 Two useful interpretations:
 
-- **Immediately/conditionally executable:** 96 / 150 = 64.0%.
-- **Semantically handled correctly, including asking when ambiguous:** 106 / 150 = 70.7%.
+- **Immediately/conditionally executable:** 102 / 150 = 68.0%.
+- **Semantically handled correctly, including asking when ambiguous:** 112 / 150 = 74.7%.
 
 Do not interpret these percentages as real customer traffic share. The corpus gives every category equal weight.
 
 ## Gap families
 
-The 44 current gap cases break down as follows:
+The 38 current gap cases break down as follows:
 
 | Gap family | Cases | Current limitation |
 | --- | ---: | --- |
-| Scaling | 6 | no shrink-only or arbitrary scale-percent primitive |
 | Crop / margin / position | 8 | no asymmetric margin, crop region, anchor or content offset primitive |
 | Booklet imposition | 10 | no booklet page-signature/reordering engine |
 | Poster tiling | 10 | no oversized target canvas split across physical sheets |
 | Variable item sizes | 10 | PrintJobSpec grid remains uniform-size; Canvas is a dedicated collage path |
-
-Scaling gap details:
-
-- shrink-only: 2
-- custom scale percentage: 3
-- maximize within a requested margin without upscaling ambiguity: 1
 
 Crop / position gap details:
 
@@ -130,6 +123,10 @@ Representative supported requests are also converted into deterministic `PrintPl
 - N-up row-major ordering
 - N-up + duplex
 - N-up gap/border behavior
+- shrink-only physical scaling
+- explicit 50/80/125-percent physical scaling
+- per-page physical-size preservation
+- max-fit without trusted physical-size metadata
 
 This is intentionally different from testing an LLM live in CI. The deterministic contract/compiler behavior is protected locally; live-model intent quality can be evaluated separately against the same corpus.
 
@@ -157,23 +154,33 @@ The N-up corpus cases moved from `gap` to `supported`, reducing deterministic ga
 
 Verification for this coverage change: CI #204 passed on Ubuntu + Windows and package-windows #148 passed, including packaged self-test and install lifecycle smoke checks.
 
-### Next: richer scaling
+### Completed: physical scaling
 
-Scaling is the next implementation target because it is the smallest remaining cross-cutting gap family and affects ordinary document/photo printing directly.
+All 6 scaling gap cases now have deterministic execution semantics.
 
-Target behavior:
+Implemented behavior:
 
-1. shrink-only
-2. custom scale percentage
-3. maximize inside requested margins without accidental upscaling
-4. preserve physical placement semantics independently from source-pixel fitting
+- trusted PDF page dimensions flow from SourceInspector through the planner binder
+- planner-supplied physical page sizes cannot override inspected values
+- `ShrinkOnly` never enlarges a smaller source page
+- `Percent` uses the inspected physical source size, not raster pixel dimensions
+- explicit 80%, 125% and 1:2/50% requests are preserved
+- `MaxFit` maximizes content inside the target while preserving all content
+- per-page physical sizes remain independent inside mixed-size PDF jobs
+- percentages that extend beyond the target are centered and deterministically clipped in preview
+- scaling remains separate from Cover/crop intent
 
-After scaling:
+The 6 scaling cases moved from `gap` to `supported`, reducing deterministic gaps from 44 to 38.
 
-1. asymmetric margins / crop / position
-2. booklet imposition
-3. poster/tiled printing
-4. variable-size general composition
+### Next: crop / margin / position
+
+The next implementation target is asymmetric margins, explicit crop regions, content offsets and anchor positioning.
+
+After crop/margin/position:
+
+1. booklet imposition
+2. poster/tiled printing
+3. variable-size general composition
 
 Booklet and poster remain important, but both introduce stronger ordering/physical-sheet semantics than N-up. Variable-size layout is last because it changes the current uniform-grid execution contract most substantially.
 

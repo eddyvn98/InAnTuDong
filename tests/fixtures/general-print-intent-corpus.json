@@ -1,0 +1,1614 @@
+{
+  "schemaVersion": "1.0",
+  "description": "Print-only real-request corpus for M7 General Print Intent. expectedSupport describes current deterministic intent coverage, not guaranteed LLM accuracy.",
+  "cases": [
+    {
+      "id": "basic-001",
+      "category": "basic",
+      "request": "In file này 1 bản A4.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "simplex",
+        "a4"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-002",
+      "category": "basic",
+      "request": "In toàn bộ file này 2 bản.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "sets",
+        "simplex"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-003",
+      "category": "basic",
+      "request": "In file này màu, chất lượng cao.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "color",
+        "quality-high"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-004",
+      "category": "basic",
+      "request": "In file này trắng đen.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "grayscale"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-005",
+      "category": "basic",
+      "request": "In file này một mặt, 3 bản.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "sets",
+        "simplex"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-006",
+      "category": "basic",
+      "request": "In đúng thứ tự các trang trong file.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-007",
+      "category": "basic",
+      "request": "In 1 bản nháp trắng đen.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "grayscale",
+        "quality-draft"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-008",
+      "category": "basic",
+      "request": "In file này A4 ngang.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "a4",
+        "landscape"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-009",
+      "category": "basic",
+      "request": "In file này A4 dọc.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "a4",
+        "portrait"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "basic-010",
+      "category": "basic",
+      "request": "In tất cả trang, xem preview trước khi in.",
+      "sourcePageCounts": [
+        8
+      ],
+      "features": [
+        "all-pages",
+        "preview-required"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-001",
+      "category": "page-selection",
+      "request": "Chỉ in trang 1.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-002",
+      "category": "page-selection",
+      "request": "In từ trang 2 đến trang 10.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-003",
+      "category": "page-selection",
+      "request": "In trang 1, 3, 5 và 7.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range",
+        "multiple-ranges"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-004",
+      "category": "page-selection",
+      "request": "Chỉ in các trang lẻ.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "parity-odd"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-005",
+      "category": "page-selection",
+      "request": "Chỉ in các trang chẵn.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "parity-even"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-006",
+      "category": "page-selection",
+      "request": "In trang 1 đến 10 nhưng bỏ trang 3.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range",
+        "exclude"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-007",
+      "category": "page-selection",
+      "request": "In 5 trang đầu.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-008",
+      "category": "page-selection",
+      "request": "In 5 trang cuối.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-009",
+      "category": "page-selection",
+      "request": "In từ trang 4 đến hết.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "page-selection-010",
+      "category": "page-selection",
+      "request": "In tất cả trừ trang cuối.",
+      "sourcePageCounts": [
+        20
+      ],
+      "features": [
+        "all-pages",
+        "exclude"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-001",
+      "category": "sets-collation",
+      "request": "In file này thành 5 bộ hoàn chỉnh.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-002",
+      "category": "sets-collation",
+      "request": "In 3 bộ, mỗi bộ giữ đúng thứ tự trang.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-003",
+      "category": "sets-collation",
+      "request": "In 4 bản không cần ghép bộ, mỗi trang in 4 tờ liên tiếp.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "uncollated"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-004",
+      "category": "sets-collation",
+      "request": "In 2 bộ màu.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "color"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-005",
+      "category": "sets-collation",
+      "request": "In 10 bộ trắng đen.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "grayscale"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-006",
+      "category": "sets-collation",
+      "request": "In 3 bộ hai mặt lật cạnh dài.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "duplex-long-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-007",
+      "category": "sets-collation",
+      "request": "In 2 bộ hai mặt lật cạnh ngắn.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "duplex-short-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-008",
+      "category": "sets-collation",
+      "request": "In 6 bộ, preview trước.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "preview-required"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-009",
+      "category": "sets-collation",
+      "request": "In 3 bộ chỉ gồm trang 2-8.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "page-range"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "sets-collation-010",
+      "category": "sets-collation",
+      "request": "In 5 bộ, chỉ lấy trang lẻ.",
+      "sourcePageCounts": [
+        12
+      ],
+      "features": [
+        "sets",
+        "collate",
+        "parity-odd"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-001",
+      "category": "multi-source",
+      "request": "In hết file A rồi đến file B.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-002",
+      "category": "multi-source",
+      "request": "Ghép file A rồi file B thành một bộ, in 3 bộ.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "source-order",
+        "sets",
+        "collate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-003",
+      "category": "multi-source",
+      "request": "In trang 1-3 file A rồi trang 2-4 file B.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "page-range",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-004",
+      "category": "multi-source",
+      "request": "In file B trước rồi mới tới file A.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-005",
+      "category": "multi-source",
+      "request": "In trang 1 file A, trang 1 file B, rồi trang 2 file A.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "multiple-ranges",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-006",
+      "category": "multi-source",
+      "request": "File A in màu, file B in trắng đen.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "mixed-color",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-007",
+      "category": "multi-source",
+      "request": "File A in một mặt, file B in hai mặt cạnh dài.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "mixed-duplex",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-008",
+      "category": "multi-source",
+      "request": "In 2 bộ gồm A trang 1-6 rồi B trang 1-4.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "sets",
+        "collate",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-009",
+      "category": "multi-source",
+      "request": "Chỉ in trang lẻ của file A và trang chẵn của file B.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "parity-odd",
+        "parity-even"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "multi-source-010",
+      "category": "multi-source",
+      "request": "In toàn bộ hai file nhưng bỏ trang 2 của file A.",
+      "sourcePageCounts": [
+        6,
+        4
+      ],
+      "features": [
+        "multi-source",
+        "exclude",
+        "source-order"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-001",
+      "category": "mixed-color",
+      "request": "Trang 1 in màu, các trang còn lại trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-002",
+      "category": "mixed-color",
+      "request": "Trang 1-2 màu, trang 3-30 trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "page-range",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-003",
+      "category": "mixed-color",
+      "request": "Chỉ trang 5 và 10 in màu, còn lại trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "multiple-ranges",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-004",
+      "category": "mixed-color",
+      "request": "Trang bìa màu, phần ruột trắng đen, in 3 bộ.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "sets",
+        "collate",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-005",
+      "category": "mixed-color",
+      "request": "Trang 1 màu một mặt, trang 2-30 trắng đen hai mặt.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "mixed-duplex",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-006",
+      "category": "mixed-color",
+      "request": "Trang 1-5 trắng đen, trang 6-8 màu, còn lại trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "multiple-output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-007",
+      "category": "mixed-color",
+      "request": "In các trang lẻ màu, trang chẵn trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "parity-odd",
+        "parity-even",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-008",
+      "category": "mixed-color",
+      "request": "Trang cuối in màu, các trang trước trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "page-range",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-009",
+      "category": "mixed-color",
+      "request": "Trang 1 và trang cuối màu, phần giữa trắng đen.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "multiple-ranges",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "mixed-color-010",
+      "category": "mixed-color",
+      "request": "In 2 bộ: bìa màu chất lượng cao, ruột trắng đen tiêu chuẩn.",
+      "sourcePageCounts": [
+        30
+      ],
+      "features": [
+        "mixed-color",
+        "mixed-quality",
+        "sets",
+        "collate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-001",
+      "category": "duplex",
+      "request": "In hai mặt lật cạnh dài.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "duplex-long-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-002",
+      "category": "duplex",
+      "request": "In hai mặt lật cạnh ngắn.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "duplex-short-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-003",
+      "category": "duplex",
+      "request": "In một mặt.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "simplex"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-004",
+      "category": "duplex",
+      "request": "Trang 1 một mặt, trang 2-24 hai mặt cạnh dài.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "mixed-duplex",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-005",
+      "category": "duplex",
+      "request": "Trang 1-2 một mặt, phần còn lại hai mặt.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "mixed-duplex",
+        "page-range",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-006",
+      "category": "duplex",
+      "request": "In 3 bộ hai mặt kiểu sách.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "duplex-long-edge",
+        "sets",
+        "collate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-007",
+      "category": "duplex",
+      "request": "In ngang hai mặt lật cạnh ngắn.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "landscape",
+        "duplex-short-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-008",
+      "category": "duplex",
+      "request": "Chỉ trang 1-10 in hai mặt.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "page-range",
+        "duplex-long-edge"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-009",
+      "category": "duplex",
+      "request": "File A một mặt, file B hai mặt.",
+      "sourcePageCounts": [
+        5,
+        7
+      ],
+      "features": [
+        "multi-source",
+        "mixed-duplex",
+        "output-groups"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "duplex-010",
+      "category": "duplex",
+      "request": "In trắng đen hai mặt, 4 bộ.",
+      "sourcePageCounts": [
+        24
+      ],
+      "features": [
+        "grayscale",
+        "duplex-long-edge",
+        "sets",
+        "collate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "n-up-001",
+      "category": "n-up",
+      "request": "In 2 trang PDF trên một tờ A4.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "2-up"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-002",
+      "category": "n-up",
+      "request": "In 4 trang trên một tờ A4.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "4-up"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-003",
+      "category": "n-up",
+      "request": "In 6 trang trên một tờ.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "6-up"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-004",
+      "category": "n-up",
+      "request": "In 9 trang trên một tờ.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "9-up"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-005",
+      "category": "n-up",
+      "request": "In 16 trang trên một tờ.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "16-up"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-006",
+      "category": "n-up",
+      "request": "Xếp các trang nhỏ lại để tiết kiệm giấy nhất.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "paper-saving"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-007",
+      "category": "n-up",
+      "request": "Mỗi trang PDF thu nhỏ thành một ô, 4 ô trên A4.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "4-up",
+        "scaling"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-008",
+      "category": "n-up",
+      "request": "In 2 trang mỗi mặt, hai mặt giấy.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "2-up",
+        "duplex-long-edge"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-009",
+      "category": "n-up",
+      "request": "In 4 trang trên một tờ ngang.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "4-up",
+        "landscape"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "n-up-010",
+      "category": "n-up",
+      "request": "In 8 trang đầu thành 2 tờ, mỗi tờ 4 trang.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "n-up",
+        "4-up",
+        "page-range"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-001",
+      "category": "scaling",
+      "request": "In đúng 100%, không phóng to.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "actual-size"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-002",
+      "category": "scaling",
+      "request": "Thu nhỏ vừa trang A4 nhưng không phóng to nội dung nhỏ.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "shrink-only"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-003",
+      "category": "scaling",
+      "request": "Phóng vừa khít A4, giữ nguyên tỷ lệ.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "fit"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-004",
+      "category": "scaling",
+      "request": "Phóng đầy A4, chấp nhận cắt mép.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "fill",
+        "cover"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-005",
+      "category": "scaling",
+      "request": "In ở tỷ lệ 80%.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "custom-scale"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-006",
+      "category": "scaling",
+      "request": "In ở tỷ lệ 125%.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "custom-scale"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-007",
+      "category": "scaling",
+      "request": "Giữ kích thước vật lý đúng như file.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "actual-size"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-008",
+      "category": "scaling",
+      "request": "Fit theo chiều rộng trang.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "fit-width"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-009",
+      "category": "scaling",
+      "request": "Fit theo chiều cao trang.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "fit-height"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "scaling-010",
+      "category": "scaling",
+      "request": "Không scale nếu nội dung đã nhỏ hơn vùng in.",
+      "sourcePageCounts": [
+        5
+      ],
+      "features": [
+        "shrink-only"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-001",
+      "category": "crop-position",
+      "request": "Cắt bỏ viền trắng quanh ảnh rồi in.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "auto-crop"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-002",
+      "category": "crop-position",
+      "request": "Chỉ lấy phần giữa ảnh để in.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "crop"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-003",
+      "category": "crop-position",
+      "request": "Canh ảnh lên trên một chút.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "offset-y"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-004",
+      "category": "crop-position",
+      "request": "Dịch ảnh sang trái 5 mm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "offset-x"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-005",
+      "category": "crop-position",
+      "request": "Chừa lề trái 20 mm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "asymmetric-margin"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-006",
+      "category": "crop-position",
+      "request": "Chừa lề trên 15 mm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "asymmetric-margin"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-007",
+      "category": "crop-position",
+      "request": "Canh hình giữa trang.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "anchor-center"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-008",
+      "category": "crop-position",
+      "request": "Canh hình sát góc trên bên trái.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "anchor-top-left"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-009",
+      "category": "crop-position",
+      "request": "Crop ảnh theo tỷ lệ 4x6 rồi in.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "crop",
+        "aspect-ratio"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "crop-position-010",
+      "category": "crop-position",
+      "request": "Chừa mép trắng 5 mm xung quanh ảnh.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "margin",
+        "border"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "paper-orientation-001",
+      "category": "paper-orientation",
+      "request": "In A4 dọc.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "a4",
+        "portrait"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-002",
+      "category": "paper-orientation",
+      "request": "In A4 ngang.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "a4",
+        "landscape"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-003",
+      "category": "paper-orientation",
+      "request": "Trang ngang thì xoay giấy ngang.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "orientation",
+        "auto-rotate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-004",
+      "category": "paper-orientation",
+      "request": "Trang 1 dọc, trang 2 ngang.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "mixed-orientation",
+        "output-groups"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "paper-orientation-005",
+      "category": "paper-orientation",
+      "request": "Ảnh này in trên giấy 10x15 cm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "paper-4x6-inch",
+        "photo-paper"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-006",
+      "category": "paper-orientation",
+      "request": "In trên giấy 4x6 inch ngang.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "paper-4x6-inch",
+        "landscape"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-007",
+      "category": "paper-orientation",
+      "request": "In file A4 đúng khổ A4.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "a4",
+        "actual-paper-size"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-008",
+      "category": "paper-orientation",
+      "request": "Nếu trang ngang thì tự xoay 90 độ cho vừa.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "auto-rotate"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "paper-orientation-009",
+      "category": "paper-orientation",
+      "request": "Một số trang A4 dọc, một số trang A4 ngang, giữ đúng hướng.",
+      "sourcePageCounts": [
+        10
+      ],
+      "features": [
+        "mixed-orientation",
+        "output-groups"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "paper-orientation-010",
+      "category": "paper-orientation",
+      "request": "In ảnh dọc trên giấy 4x6 inch dọc.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "paper-4x6-inch",
+        "portrait"
+      ],
+      "expectedSupport": "supported"
+    },
+    {
+      "id": "booklet-poster-001",
+      "category": "booklet-poster",
+      "request": "In booklet để gấp đôi thành quyển.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "booklet",
+        "imposition"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-002",
+      "category": "booklet-poster",
+      "request": "In booklet 16 trang, lật cạnh ngắn.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "booklet",
+        "imposition",
+        "duplex-short-edge"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-003",
+      "category": "booklet-poster",
+      "request": "Sắp trang kiểu sách để sau khi gấp đúng thứ tự.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "booklet",
+        "imposition"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-004",
+      "category": "booklet-poster",
+      "request": "In tài liệu A5 dạng booklet trên A4.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "booklet",
+        "a5-on-a4"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-005",
+      "category": "booklet-poster",
+      "request": "In poster 60x90 cm bằng nhiều tờ A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "poster",
+        "tiling"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-006",
+      "category": "booklet-poster",
+      "request": "Chia ảnh này thành 4 tờ A4 để ghép lại.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "poster",
+        "tiling",
+        "2x2"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-007",
+      "category": "booklet-poster",
+      "request": "In poster nhiều tờ, chồng mép 5 mm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "poster",
+        "tiling",
+        "overlap"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-008",
+      "category": "booklet-poster",
+      "request": "Chia bản đồ thành 3x3 tờ A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "poster",
+        "tiling",
+        "3x3"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-009",
+      "category": "booklet-poster",
+      "request": "In ảnh lớn 50x70 cm bằng A4 và có dấu canh ghép.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "poster",
+        "tiling",
+        "alignment-marks"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "booklet-poster-010",
+      "category": "booklet-poster",
+      "request": "In booklet 2 bộ.",
+      "sourcePageCounts": [
+        16
+      ],
+      "features": [
+        "booklet",
+        "imposition",
+        "sets"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-001",
+      "category": "repeat-variable",
+      "request": "Logo này rộng 3 cm, lặp kín cả A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "repeat",
+        "exact-size",
+        "paper-saving"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-002",
+      "category": "repeat-variable",
+      "request": "In 24 tem giống nhau kích thước 4x6 cm.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "repeat",
+        "exact-size",
+        "copies"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-003",
+      "category": "repeat-variable",
+      "request": "In ảnh này 3x4 cm, 8 tấm trên A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "repeat",
+        "exact-size",
+        "copies"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-004",
+      "category": "repeat-variable",
+      "request": "In ảnh A 3x4 cm và ảnh B 4x6 cm trên cùng A4.",
+      "sourcePageCounts": [
+        1,
+        1
+      ],
+      "features": [
+        "variable-item-size",
+        "multi-source"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-005",
+      "category": "repeat-variable",
+      "request": "Logo 2x2 cm, QR 3x3 cm và ảnh 4x6 cm trên cùng trang.",
+      "sourcePageCounts": [
+        1,
+        1,
+        1
+      ],
+      "features": [
+        "variable-item-size",
+        "multi-source"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-006",
+      "category": "repeat-variable",
+      "request": "Mỗi hình có kích thước riêng, xếp tiết kiệm giấy.",
+      "sourcePageCounts": [
+        1,
+        1,
+        1
+      ],
+      "features": [
+        "variable-item-size",
+        "packing"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-007",
+      "category": "repeat-variable",
+      "request": "In 10 QR 3x3 cm và 5 logo 2x2 cm trên cùng A4.",
+      "sourcePageCounts": [
+        1,
+        1
+      ],
+      "features": [
+        "variable-item-size",
+        "copies",
+        "packing"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-008",
+      "category": "repeat-variable",
+      "request": "Lặp ảnh 5x5 cm nhiều nhất có thể trên A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "repeat",
+        "exact-size",
+        "paper-saving"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-009",
+      "category": "repeat-variable",
+      "request": "In 12 ảnh Polaroid giống nhau trên A4.",
+      "sourcePageCounts": [
+        1
+      ],
+      "features": [
+        "repeat",
+        "photo-layout"
+      ],
+      "expectedSupport": "planned"
+    },
+    {
+      "id": "repeat-variable-010",
+      "category": "repeat-variable",
+      "request": "Ba ảnh này mỗi ảnh một kích thước khác nhau và có đường cắt.",
+      "sourcePageCounts": [
+        1,
+        1,
+        1
+      ],
+      "features": [
+        "variable-item-size",
+        "cut-marks",
+        "multi-source"
+      ],
+      "expectedSupport": "planned"
+    }
+  ]
+}

@@ -46,6 +46,42 @@ public sealed class PrintPlanCompilerTests
     }
 
     [Fact]
+    public void Compile_MultiGroupCollatedSetsInterleaveGroupsPerCompleteSet()
+    {
+        var plan = new PrintPlan(
+            "Three complete documents",
+            [new("C:/print/doc.pdf", PageCount: 3)],
+            [
+                Group(
+                    "Cover",
+                    sequence: 0,
+                    selections: [new(0, [new(1, 1)])],
+                    color: ColorMode.Color,
+                    sets: 3,
+                    collate: true),
+                Group(
+                    "Body",
+                    sequence: 1,
+                    selections: [new(0, [new(2, 3)])],
+                    color: ColorMode.Grayscale,
+                    duplex: DuplexMode.LongEdge,
+                    sets: 3,
+                    collate: true)
+            ],
+            new());
+
+        var compiled = PrintPlanCompiler.Compile(plan);
+
+        Assert.Equal(6, compiled.Batches.Count);
+        Assert.Equal(
+            ["Cover - set 1/3", "Body - set 1/3",
+             "Cover - set 2/3", "Body - set 2/3",
+             "Cover - set 3/3", "Body - set 3/3"],
+            compiled.Batches.Select(batch => batch.Job.JobName).ToArray());
+        Assert.Equal([1, 1, 2, 2, 3, 3], compiled.Batches.Select(batch => batch.SetNumber).ToArray());
+    }
+
+    [Fact]
     public void Compile_CollatedSetsBecomeCompleteRepeatedBatches()
     {
         var plan = new PrintPlan(

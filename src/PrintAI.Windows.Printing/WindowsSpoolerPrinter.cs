@@ -18,8 +18,8 @@ public static class WindowsSpoolerPrinter
             paperWidthMm: 210,
             paperHeightMm: 297,
             landscape: false,
-            profile,
-            copies);
+            profile: profile,
+            copies: copies);
 
     public static PrintSubmissionResult SubmitPng(
         string printerName,

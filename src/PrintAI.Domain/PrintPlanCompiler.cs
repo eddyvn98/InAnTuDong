@@ -20,14 +20,16 @@ public static class PrintPlanCompiler
 
         var batchSequence = 0;
 
-        foreach (var item in orderedGroups)
+        if (orderedGroups.Length > 1 &&
+            orderedGroups.All(item => item.Group.Collate))
         {
-            var expandedSources = ExpandSources(plan, item.Group);
+            var setCount = orderedGroups[0].Group.Sets;
 
-            if (item.Group.Collate)
+            for (var setNumber = 1; setNumber <= setCount; setNumber++)
             {
-                for (var setNumber = 1; setNumber <= item.Group.Sets; setNumber++)
+                foreach (var item in orderedGroups)
                 {
+                    var expandedSources = ExpandSources(plan, item.Group);
                     var job = CreateJob(
                         plan,
                         item.Group,
@@ -39,17 +41,40 @@ public static class PrintPlanCompiler
                     batches.Add(new(batchSequence++, item.Index, setNumber, job));
                 }
             }
-            else
+        }
+        else
+        {
+            foreach (var item in orderedGroups)
             {
-                var job = CreateJob(
-                    plan,
-                    item.Group,
-                    expandedSources,
-                    copiesPerSource: item.Group.Sets,
-                    setNumber: 0);
+                var expandedSources = ExpandSources(plan, item.Group);
 
-                ValidateCompiledJob(job);
-                batches.Add(new(batchSequence++, item.Index, 0, job));
+                if (item.Group.Collate)
+                {
+                    for (var setNumber = 1; setNumber <= item.Group.Sets; setNumber++)
+                    {
+                        var job = CreateJob(
+                            plan,
+                            item.Group,
+                            expandedSources,
+                            copiesPerSource: 1,
+                            setNumber);
+
+                        ValidateCompiledJob(job);
+                        batches.Add(new(batchSequence++, item.Index, setNumber, job));
+                    }
+                }
+                else
+                {
+                    var job = CreateJob(
+                        plan,
+                        item.Group,
+                        expandedSources,
+                        copiesPerSource: item.Group.Sets,
+                        setNumber: 0);
+
+                    ValidateCompiledJob(job);
+                    batches.Add(new(batchSequence++, item.Index, 0, job));
+                }
             }
         }
 

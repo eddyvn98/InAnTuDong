@@ -68,7 +68,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 "scaling": null,
                 "placement": null,
                 "crop": null,
-                "booklet": null
+                "booklet": null,
+                "poster": null
               }
             ],
             "policy": { "preview": "required" },
@@ -157,6 +158,35 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - sets=N + collate=true means N complete booklet copies.
         - Do not combine booklet with nUp, physical scaling, page placement, general source crop, or Canvas in this slice.
         - Booklet output is already imposed 2-up; never also set nUp.
+        - Poster/tiled printing is represented with outputGroup.poster.
+        - poster target dimensions are millimetres. Convert cm/m to mm exactly:
+          60x90 cm -> targetWidthMm=600, targetHeightMm=900.
+          1 metre wide -> targetWidthMm=1000.
+        - A2 poster target size is 420 x 594 mm.
+        - Standard poster defaults:
+          {
+            "targetWidthMm": null,
+            "targetHeightMm": null,
+            "columns": null,
+            "rows": null,
+            "overlapMm": 5,
+            "marginMm": 5,
+            "registrationMarks": false,
+            "tileLabels": false,
+            "autoOrientation": true,
+            "fit": "contain"
+          }
+        - For an explicit grid such as "3x3 tờ A4", set columns=3 and rows=3. If no physical poster size was requested, leave targetWidthMm/targetHeightMm null; deterministic code derives the assembled size from the tile grid.
+        - For "chồng mép 5 mm" or "overlap 10 mm", set overlapMm exactly.
+        - For "dấu căn ghép", set registrationMarks=true.
+        - For "số thứ tự từng tờ", set tileLabels=true.
+        - For "ít tờ A4 nhất", leave columns/rows null and autoOrientation=true; deterministic code chooses portrait/landscape and the minimum tile count for the target.
+        - If only one target dimension is given, deterministic code derives the other dimension from trusted source aspect metadata.
+        - If no target dimension/grid is given, poster may use trusted physical PDF page size. If neither physical size nor enough target/grid information exists, ask a concise size question instead of guessing.
+        - Poster selections currently resolve to exactly one source page.
+        - Poster tiles are always one-sided; set print.duplex="off".
+        - Do not combine poster with nUp, booklet, physical scaling, page placement, general crop, or Canvas in this slice.
+        - Poster source mapping is deterministic; the model never calculates per-tile crop coordinates.
         - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 

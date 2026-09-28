@@ -45,7 +45,7 @@ public sealed class CanvasMultiPageTests
                 [
                     new CanvasPlacementSpec(
                         0, 5, 5, 60, 40,
-                        RotationDegrees: 90)
+                        UseRotatedFootprint: true)
                 ])),
             new PrintSettings(),
             new PolicySpec());

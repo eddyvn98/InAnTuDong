@@ -198,14 +198,28 @@ Updated corpus: 92 supported, 10 capability-dependent, 10 clarification, 38 dete
 - [x] trusted physical-size validation for millimetre crop
 - [x] desktop batch UI exposes placement/crop
 - [x] all 8 crop/position gap cases moved to supported
-- [x] crop/placement CI/package verification — CI #218 and package-windows #162 succeeded
+- [x] crop/placement CI/package verification — CI #219 and package-windows #163 succeeded
 
 Updated corpus: 100 supported, 10 capability-dependent, 10 clarification, 30 deterministic gaps.
 
+### Booklet imposition slice
+
+- [x] high-level `BookletSpec`
+- [x] standard A4 landscape -> folded A5 geometry
+- [x] deterministic multiple-of-four blank padding
+- [x] deterministic physical side reordering
+- [x] virtual blank source rendering
+- [x] short-edge duplex execution
+- [x] configurable center gutter
+- [x] complete booklet sets via collated batches
+- [x] all 10 booklet gap cases moved to supported
+- [~] booklet CI/package verification
+
+Updated corpus: 110 supported, 10 capability-dependent, 10 clarification, 20 deterministic gaps.
+
 ### Next slices
 
-- [ ] booklet imposition — selected next from corpus
-- [ ] poster/tiled printing
+- [ ] poster/tiled printing — selected next from corpus
 - [ ] independent per-item physical sizes on one sheet
 
 Exit: representative real print requests can be expressed as a validated PrintPlan, compiled deterministically into executable jobs, previewed and printed without adding business-management scope.

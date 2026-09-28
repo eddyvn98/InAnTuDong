@@ -87,6 +87,23 @@ Track real-machine results separately from automated tests:
 - DOCX/XLSX/PPTX through installed LibreOffice
 - any additional printer model before marking its profile physically verified
 
+### 8. Duplex intent correctness
+
+The current schema already accepts duplex intent, so silently ignoring that intent is a release-blocking correctness defect.
+
+Before the preview release:
+
+- `duplex=off` continues through the existing simplex path,
+- `duplex=longEdge|shortEdge` must not silently print one-sided,
+- printers without automatic duplex must use the guided manual-duplex workflow,
+- manual duplex must pair physical sheets deterministically,
+- front and back passes must be multi-page batches rather than unrelated one-page print jobs,
+- the app must pause for explicit paper reinsertion,
+- a pending back pass must survive app restart,
+- printer-specific back order/rotation must come from a verified manual-duplex profile before the app claims verified behavior.
+
+Implementation and acceptance details are in `docs/MANUAL_DUPLEX.md`.
+
 ## M6 exit criteria
 
 M6 can close when:
@@ -99,3 +116,4 @@ M6 can close when:
 6. install/upgrade/rollback instructions are documented and exercised.
 7. support diagnostics can be exported without exposing source content or credentials.
 8. real-world validation results are recorded without overstating unverified hardware.
+9. duplex intent cannot be silently downgraded to simplex; the manual-duplex path is implemented and tested for simplex printers.

@@ -20,6 +20,65 @@ public sealed class GeneralPrintPlanSourceBinderTests
     }
 
     [Fact]
+    public void BindToAllowedSources_InjectsTrustedPhysicalPageSizes()
+    {
+        var plan = Plan("C:/print/doc.pdf", pageCount: 2);
+
+        var bound = GeneralPrintPlanSourceBinder.BindToAllowedSources(
+            plan,
+            [
+                new PlanningSource(
+                    "C:/print/doc.pdf",
+                    "Pdf",
+                    PageCount: 2,
+                    Pages:
+                    [
+                        new SourcePageSizeSpec(0, 210, 297),
+                        new SourcePageSizeSpec(1, 148, 210)
+                    ])
+            ]);
+
+        Assert.NotNull(bound.Sources[0].Pages);
+        Assert.Equal(2, bound.Sources[0].Pages!.Count);
+        Assert.Equal(210, bound.Sources[0].Pages[0].WidthMm);
+        Assert.Equal(148, bound.Sources[0].Pages[1].WidthMm);
+    }
+
+    [Fact]
+    public void BindToAllowedSources_RejectsPlannerRewrittenPhysicalPageSizes()
+    {
+        var plan = Plan("C:/print/doc.pdf", pageCount: 1) with
+        {
+            Sources =
+            [
+                new PlanSourceSpec(
+                    "C:/print/doc.pdf",
+                    1,
+                    [new SourcePageSizeSpec(0, 999, 999)])
+            ]
+        };
+
+        var error = Assert.Throws<PlanningFormatException>(() =>
+            GeneralPrintPlanSourceBinder.BindToAllowedSources(
+                plan,
+                [
+                    new PlanningSource(
+                        "C:/print/doc.pdf",
+                        "Pdf",
+                        PageCount: 1,
+                        Pages:
+                        [
+                            new SourcePageSizeSpec(0, 210, 297)
+                        ])
+                ]));
+
+        Assert.Contains(
+            "physical page sizes",
+            error.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BindToAllowedSources_RejectsChangedPageCount()
     {
         var plan = Plan("C:/print/doc.pdf", pageCount: 99);

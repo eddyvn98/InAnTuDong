@@ -1,3 +1,4 @@
+using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Windows.Threading;
@@ -190,5 +191,19 @@ public sealed class LocalWebSession : IDisposable
             _desktop,
             request,
             cancellationToken);
+
+    private static string UniqueDestination(
+        string directory,
+        string fileName)
+    {
+        var path = Path.Combine(directory, fileName);
+        if (!File.Exists(path))
+            return path;
+
+        return Path.Combine(
+            directory,
+            $"{Path.GetFileNameWithoutExtension(fileName)}-" +
+            $"{Guid.NewGuid():N}{Path.GetExtension(fileName)}");
+    }
 
 }

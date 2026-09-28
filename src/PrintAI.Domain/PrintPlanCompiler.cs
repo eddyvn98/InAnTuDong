@@ -92,10 +92,16 @@ public static class PrintPlanCompiler
             var planSource = plan.Sources[selection.SourceIndex];
             foreach (var page in PrintPlanValidator.ResolvePages(plan, selection))
             {
+                var pageIndex = page - 1;
+                var physical = planSource.Pages?
+                    .FirstOrDefault(size => size.PageIndex == pageIndex);
+
                 sources.Add(new(
                     Path: planSource.Path,
                     Copies: 1,
-                    PageIndex: page - 1));
+                    PageIndex: pageIndex,
+                    OriginalWidthMm: physical?.WidthMm,
+                    OriginalHeightMm: physical?.HeightMm));
             }
         }
 
@@ -117,8 +123,13 @@ public static class PrintPlanCompiler
             ? $"{group.Name} - set {setNumber}/{group.Sets}"
             : group.Name;
 
-        var (paper, layout) =
+        var (paper, resolvedLayout) =
             NUpLayoutResolver.Resolve(group);
+
+        var layout = resolvedLayout with
+        {
+            PhysicalScale = group.Scaling
+        };
 
         return new(
             JobName: jobName,

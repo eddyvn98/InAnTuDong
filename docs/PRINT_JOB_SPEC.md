@@ -97,6 +97,17 @@ The model does not author per-tile crop coordinates. Renderer code derives the e
 
 Poster tiles are simplex. Complete repeated posters are represented as separate compiled batches rather than per-tile source copies.
 
+## Multi-page Canvas placements
+
+Canvas placements may include:
+
+- `page` — zero-based physical output page, default 0
+- `useRotatedFootprint` — deterministic 90-degree footprint rotation for packed items, default false
+
+General variable-size composition is authored at PrintPlan 2.0 as `VariableItemsSpec`. The compiler—not the planner—creates Canvas X/Y coordinates and output page indexes.
+
+`useRotatedFootprint` is intentionally separate from `rotationDegrees`. Existing Smart Collage arbitrary rotation continues to use `rotationDegrees`; mixed-size packing uses the explicit footprint flag so its physical bounds remain deterministic.
+
 ## Duplex semantics
 
 `print.duplex` is printer-neutral user intent:
@@ -128,5 +139,7 @@ See `docs/MANUAL_DUPLEX.md`.
 - virtual blank sources must not reference a path/page
 - PosterTile sources require valid poster-space metadata
 - PosterTile layout is simplex and one physical output page per tile
+- Canvas placement page indexes are non-negative
+- compiler-owned variable-size Canvas placements must remain inside their physical paper page
 
 `schemaVersion` is mandatory for AI planner output. The current runtime accepts only `1.0`; unsupported versions are rejected before layout or printing.

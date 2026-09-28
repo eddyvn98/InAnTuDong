@@ -145,6 +145,42 @@ public sealed class GeneralPrintPlanParserTests
     }
 
     [Fact]
+    public void Parse_AcceptsPosterIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup =
+            node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["poster"] = new JsonObject
+        {
+            ["targetWidthMm"] = 600,
+            ["targetHeightMm"] = 900,
+            ["columns"] = null,
+            ["rows"] = null,
+            ["overlapMm"] = 10,
+            ["marginMm"] = 5,
+            ["registrationMarks"] = true,
+            ["tileLabels"] = true,
+            ["autoOrientation"] = true,
+            ["fit"] = "contain"
+        };
+
+        firstGroup["print"]!["duplex"] = "off";
+
+        var outcome = GeneralPrintPlanParser.Parse(
+            node.ToJsonString());
+
+        var poster = outcome.Plan.OutputGroups[0].Poster;
+
+        Assert.NotNull(poster);
+        Assert.Equal(600, poster!.TargetWidthMm);
+        Assert.Equal(900, poster.TargetHeightMm);
+        Assert.Equal(10, poster.OverlapMm);
+        Assert.True(poster.RegistrationMarks);
+        Assert.True(poster.TileLabels);
+    }
+
+    [Fact]
     public void Parse_RejectsUnknownFields()
     {
         var node = JsonNode.Parse(ValidJson())!.AsObject();

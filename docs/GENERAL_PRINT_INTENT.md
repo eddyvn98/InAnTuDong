@@ -315,6 +315,8 @@ Booklet sets require `collate=true`. `sets=N` produces N complete booklet batche
 
 Booklet is intentionally not combined with General N-up, physical scaling, general crop, page placement, or Canvas in this slice.
 
+Booklet verification: CI #221 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #165 passed.
+
 The next capabilities are now prioritized from the remaining gaps:
 
 1. poster/tiled printing

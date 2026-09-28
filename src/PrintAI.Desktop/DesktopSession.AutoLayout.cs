@@ -153,7 +153,8 @@ public sealed partial class DesktopSession
                 ex is PlannerTransportException or
                 PlanningFormatException or
                 HttpRequestException or
-                InvalidOperationException)
+                InvalidOperationException or
+                NotSupportedException)
             {
                 AddFallbackCollageCandidates(templates, sources);
                 _status =
@@ -165,8 +166,8 @@ public sealed partial class DesktopSession
 
         AddFallbackCollageCandidates(templates, sources);
         _status =
-            "AI vision chưa cấu hình. Đã tạo 4 Smart Collage template fallback; " +
-            "cấu hình model hỗ trợ ảnh để app tự chọn ảnh chính và crop/zoom.";
+            "Smart Collage vision chưa chuyển sang AGY CLI. " +
+            "Đã tạo 4 template fallback local để tiếp tục sử dụng không cần API key.";
     }
 
     private void AddAiCollageCandidates(

@@ -168,7 +168,9 @@ public static class PrintPlanCompiler
 
         var layout = resolvedLayout with
         {
-            PhysicalScale = group.Scaling
+            PhysicalScale = group.Scaling,
+            PagePlacement = group.Placement,
+            SourceCrop = group.Crop
         };
 
         return new(

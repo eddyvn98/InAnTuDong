@@ -50,6 +50,8 @@ public static class PrintPlanValidator
         for (var groupIndex = 0; groupIndex < plan.OutputGroups.Count; groupIndex++)
             ValidateGroup(plan, groupIndex, errors);
 
+        ValidateCrossGroupSetSemantics(plan, errors);
+
         return new(errors);
     }
 
@@ -147,6 +149,41 @@ public static class PrintPlanValidator
                     "plan.selection.empty",
                     $"{prefix} resolves to zero source pages."));
             }
+        }
+    }
+
+    private static void ValidateCrossGroupSetSemantics(
+        PrintPlan plan,
+        List<ValidationError> errors)
+    {
+        if (plan.OutputGroups.Count <= 1)
+            return;
+
+        var collatedGroups = plan.OutputGroups
+            .Where(group => group.Collate)
+            .ToArray();
+
+        if (collatedGroups.Length == 0)
+            return;
+
+        if (collatedGroups.Length != plan.OutputGroups.Count)
+        {
+            errors.Add(new(
+                "plan.groups.collation",
+                "Multi-group plans cannot mix collated and non-collated groups because complete-set ordering would be ambiguous."));
+            return;
+        }
+
+        var setCounts = collatedGroups
+            .Select(group => group.Sets)
+            .Distinct()
+            .ToArray();
+
+        if (setCounts.Length != 1)
+        {
+            errors.Add(new(
+                "plan.groups.sets",
+                "All collated groups in one plan must use the same sets value so complete sets can be interleaved correctly."));
         }
     }
 

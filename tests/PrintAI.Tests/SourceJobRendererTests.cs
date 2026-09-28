@@ -239,4 +239,71 @@ public sealed class SourceJobRendererTests
         }
     }
 
+    [Fact]
+    public void SourceThumbnail_HonorsExifOrientation()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(),
+            $"{Guid.NewGuid():N}.jpg");
+
+        try
+        {
+            using var bitmap = new SKBitmap(40, 20);
+            bitmap.Erase(SKColors.CadetBlue);
+            using var image = SKImage.FromBitmap(bitmap);
+            using var data = image.Encode(SKEncodedImageFormat.Jpeg, 100);
+            Assert.NotNull(data);
+
+            var encoded = data.ToArray();
+            var exif = CreateExifOrientationSegment(6);
+            var jpeg = new byte[encoded.Length + exif.Length];
+            Buffer.BlockCopy(encoded, 0, jpeg, 0, 2);
+            Buffer.BlockCopy(exif, 0, jpeg, 2, exif.Length);
+            Buffer.BlockCopy(
+                encoded,
+                2,
+                jpeg,
+                2 + exif.Length,
+                encoded.Length - 2);
+            File.WriteAllBytes(path, jpeg);
+
+            var png = SourceJobRenderer.RenderSourceThumbnailPng(
+                path,
+                sourcePageIndex: 0,
+                maxDimension: 256);
+
+            using var decoded = SKBitmap.Decode(png);
+            Assert.NotNull(decoded);
+            Assert.Equal(20, decoded.Width);
+            Assert.Equal(40, decoded.Height);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static byte[] CreateExifOrientationSegment(ushort orientation)
+    {
+        var payload = new byte[]
+        {
+            0x45,0x78,0x69,0x66,0x00,0x00,
+            0x49,0x49,0x2A,0x00,0x08,0x00,0x00,0x00,
+            0x01,0x00,
+            0x12,0x01,0x03,0x00,0x01,0x00,0x00,0x00,
+            (byte)orientation,0x00,0x00,0x00,
+            0x00,0x00,0x00,0x00
+        };
+
+        var length = payload.Length + 2;
+        var segment = new byte[payload.Length + 4];
+        segment[0] = 0xFF;
+        segment[1] = 0xE1;
+        segment[2] = (byte)(length >> 8);
+        segment[3] = (byte)length;
+        Buffer.BlockCopy(payload, 0, segment, 4, payload.Length);
+        return segment;
+    }
+
+
 }

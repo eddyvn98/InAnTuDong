@@ -406,11 +406,37 @@ The slice adds a user-exportable JSON support report containing:
 
 Privacy boundary: the report intentionally excludes API keys, AI endpoint, source file paths, job history and document content.
 
+## M6 manual-duplex correctness work
+
+A release-blocking gap was identified on 2026-09-28:
+
+- `PrintJobSpec` already accepts `DuplexMode.Off/LongEdge/ShortEdge`,
+- printer capability probing already exposes `CanDuplex`,
+- the current Windows spooler path does not consume duplex intent,
+- `PrintJob()` currently submits output pages as separate one-page print jobs,
+- therefore a duplex request can currently reach printing without actually producing two-sided output.
+
+Decision: simplex printers will use guided manual duplex rather than silently degrading to one-sided output.
+
+Implementation specification: `docs/MANUAL_DUPLEX.md`.
+
+Implementation order:
+
+1. deterministic physical-sheet/manual-duplex planner + tests
+2. multi-page Windows spooler batch API
+3. desktop duplex controls + front/reinsert/back state machine
+4. persisted pending back-pass resume/retry
+5. per-printer manual-duplex calibration/profile
+6. real-paper verification on the target simplex printer
+7. only then tagged preview release + release notes
+
 Exact next M6 work:
 
-1. tagged preview release + release notes
-2. real iPhone HEIC field validation
-3. real-machine scanner/Office/printer validation matrix
+1. implement Slice A from `docs/MANUAL_DUPLEX.md` — physical-sheet planner and regression tests
+2. implement Slice B — multi-page Windows submission
+3. continue through desktop state/calibration before tagged release
+4. real iPhone HEIC field validation
+5. real-machine scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

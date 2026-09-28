@@ -67,26 +67,24 @@ A gap case must name its missing capability.
 
 | Coverage | Cases | Share |
 | --- | ---: | ---: |
-| Supported | 120 | 80.0% |
+| Supported | 130 | 86.7% |
 | Supported with printer capability | 10 | 6.7% |
 | Correct behavior is clarification | 10 | 6.7% |
-| Missing primitive / gap | 10 | 6.7% |
+| Missing primitive / gap | 0 | 0.0% |
 | **Total** | **150** | **100%** |
 
 Two useful interpretations:
 
-- **Immediately/conditionally executable:** 130 / 150 = 86.7%.
-- **Semantically handled correctly, including asking when ambiguous:** 140 / 150 = 93.3%.
+- **Immediately/conditionally executable:** 140 / 150 = 93.3%.
+- **Semantically handled correctly, including asking when ambiguous:** 150 / 150 = 100.0%.
 
 Do not interpret these percentages as real customer traffic share. The corpus gives every category equal weight.
 
 ## Gap families
 
-The 10 current gap cases break down as follows:
+There are currently no remaining deterministic primitive gap families in this balanced corpus.
 
-| Gap family | Cases | Current limitation |
-| --- | ---: | --- |
-| Variable item sizes | 10 | PrintJobSpec grid remains uniform-size; Canvas is a dedicated collage path |
+The 10 clarification cases remain intentional: they represent requests where dimensions, quantity, page selection, or another materially output-changing value is genuinely missing. Closing deterministic primitives must not turn those cases into guesses.
 
 ## Regression protection
 
@@ -246,11 +244,28 @@ The 10 poster cases moved from `gap` to `supported`, reducing deterministic gaps
 
 Verification for this coverage change: CI #233 passed on Ubuntu + Windows with 241/241 shared tests, and package-windows #177 passed including packaged self-test and install lifecycle smoke checks.
 
-### Next: variable-size general composition
+### Completed: variable-size general composition
 
-The final balanced-corpus gap family is independent per-item physical sizes on one sheet.
+All 10 variable-size corpus cases now have deterministic execution semantics.
 
-Booklet and poster remain important, but both introduce stronger ordering/physical-sheet semantics than N-up. Variable-size layout is last because it changes the current uniform-grid execution contract most substantially.
+Implemented behavior:
+
+- independent width/height per source item
+- independent copies per item
+- one-dimension size derivation from trusted source aspect
+- preservation of trusted source physical size when no explicit dimensions are requested
+- independent Contain/Cover fit
+- per-item 90-degree rotation permission
+- deterministic paper-saving packing
+- automatic continuation to additional A4 pages
+- optional cut marks through the existing Canvas render path
+- complete multi-set compilation
+- explicit 1000-placement safety cap
+- parser/planner contract and corpus-derived regressions
+
+The 10 variable-size cases moved from `gap` to `supported`, reducing deterministic primitive gaps from 10 to 0.
+
+Requests that omit required sizes and lack trusted physical source metadata still correctly require clarification; the new primitive never guesses physical dimensions.
 
 ## Corpus maintenance rules
 

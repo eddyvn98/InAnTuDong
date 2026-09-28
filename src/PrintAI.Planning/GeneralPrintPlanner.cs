@@ -64,7 +64,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
                 "sets": 1,
                 "collate": true,
                 "sequence": 0,
-                "nUp": null
+                "nUp": null,
+                "scaling": null
               }
             ],
             "policy": { "preview": "required" },
@@ -106,6 +107,20 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         - Duplex is independent from N-up: keep print.duplex exactly as requested.
         - Do not approximate unsupported pagesPerSheet values. Ask a concise clarification question.
         - Use ordinary grid layout only for repeated physical items such as labels/photos, not document pages-per-sheet.
+        - Physical page scaling is represented with outputGroup.scaling and requires layout.fit="contain".
+        - For "thu nhỏ nếu lớn hơn nhưng không phóng lớn", use:
+          { "mode": "shrinkOnly", "percent": 100 }.
+        - For explicit percentages, use:
+          { "mode": "percent", "percent": N }.
+          Examples: 80% -> 80; 125% -> 125; ratio 1:2 -> 50.
+        - For "phóng tối đa nhưng vẫn giữ toàn bộ nội dung trong lề", use:
+          { "mode": "maxFit", "percent": 100 }.
+        - shrinkOnly and percent require trusted physical page sizes in the input source metadata.
+          If the selected source does not provide physical page sizes, ask a concise clarification instead of guessing.
+        - Percent scaling is centered and preserves source aspect/physical proportions.
+          If a requested percent can exceed the printable target, keep the requested percent and add a warning that preview may show clipping.
+        - Do not combine outputGroup.scaling with nUp in this slice.
+        - Cover/fill/crop remains layout.fit="cover" with scaling=null.
         - Do not use canvas layout in PrintPlan 2.0; Smart Collage owns canvas layouts.
         """;
 

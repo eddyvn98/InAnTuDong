@@ -84,7 +84,7 @@
     <label>Endpoint chat-completions compatible</label>
     <input id="endpoint" placeholder="https://.../chat/completions">
     <div class="row">
-      <div><label>Model</label><input id="model" placeholder="model-name"></div>
+      <div><label>Model</label><input id="model" placeholder="model-name"><div class="meta">Smart Collage cần model hỗ trợ vision/image input.</div></div>
       <div><label>API key (không lưu)</label><input id="apiKey" type="password" placeholder="optional"></div>
     </div>
     <button id="saveAi" style="margin-top:8px">Lưu AI cho phiên này</button>
@@ -108,7 +108,7 @@
       <div class="strip" id="pageStrip"></div>
     </div>
     <div>
-      <h2>Output A4</h2>
+      <h2>Output page</h2>
       <div class="strip" id="outputStrip"></div>
     </div>
     <div class="previewWrap" id="previewWrap">
@@ -119,7 +119,7 @@
   <section class="panel right">
     <h2>Thiết lập job</h2>
     <div class="settings">
-      <div><label>Mode</label><select id="jobMode"><option>Grid</option><option>ExactSize</option></select></div>
+      <div><label>Mode</label><select id="jobMode"><option>Grid</option><option>ExactSize</option><option>Canvas</option></select></div>
       <div><label>Fit</label><select id="fit"><option>Contain</option><option>Cover</option></select></div>
       <div><label>Rộng mm</label><input id="width" type="number" step="0.1"></div>
       <div><label>Cao mm</label><input id="height" type="number" step="0.1"></div>
@@ -540,8 +540,20 @@ function render(s){
     set('#jobMode',j.Mode);set('#fit',j.Fit);set('#width',j.ItemWidthMm);set('#height',j.ItemHeightMm);
     set('#gap',j.GapMm);set('#margin',j.MarginMm);set('#copies',j.Copies);
     const copies=document.querySelector('#copies');
-    copies.disabled=!!j.CopiesArePerSource;
-    copies.title=j.CopiesArePerSource?'Job nhiều source: chỉnh số bản trong composition UI.':'';
+    const isCanvas=j.Mode==='Canvas';
+    copies.disabled=!!j.CopiesArePerSource||isCanvas;
+    copies.title=isCanvas
+      ?'Smart Collage Canvas: chỉnh frame sẽ được hỗ trợ ở editor riêng.'
+      :(j.CopiesArePerSource?'Job nhiều source: chỉnh số bản trong composition UI.':'');
+    document.querySelector('#applySettings').disabled=isCanvas;
+    document.querySelector('#jobMode').disabled=isCanvas;
+    document.querySelector('#width').disabled=isCanvas;
+    document.querySelector('#height').disabled=isCanvas;
+    document.querySelector('#gap').disabled=isCanvas;
+    document.querySelector('#margin').disabled=isCanvas;
+    document.querySelector('#rotate').disabled=isCanvas;
+    document.querySelector('#cutMarks').disabled=isCanvas;
+    document.querySelector('#fit').disabled=isCanvas;
     document.querySelector('#rotate').checked=j.AllowRotate;
     document.querySelector('#cutMarks').checked=j.CutMarks;
   }

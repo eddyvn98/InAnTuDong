@@ -596,12 +596,19 @@ Compatibility decision:
 - complex multi-rule requests use `PrintPlan 2.0`
 - the stable layout, renderer, preview, policy, duplex and Windows spooler layers remain downstream of `PrintJobSpec 1.0`
 
-Current verification status:
+Verification:
 
-- implementation and tests are committed on the feature branch
-- GitHub CI verification is pending; do not mark the M7 foundation verified until CI is green
+- verified commit: `3d70819dc479828ef1d37d21a584c29b6224d1f0`
+- GitHub CI run #174: success on Ubuntu + Windows
+- package-windows run #118: success
+- packaged desktop publish: success
+- packaged self-test: success
+- install / upgrade / rollback / uninstall smoke flow: success
+- Windows package ZIP + SHA-256 generation/upload: success
 
-Next concrete task after CI:
+M7 foundation is verified. The next work is product integration rather than more foundation schema work.
+
+Next concrete task:
 
 1. integrate GeneralPrintPlanner into the desktop request path for requests that require multiple output groups
 2. add a deterministic multi-batch preview/execution coordinator

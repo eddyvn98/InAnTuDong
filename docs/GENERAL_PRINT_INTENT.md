@@ -178,9 +178,13 @@ Verification for the desktop integration slice:
 
 ## Planned M7 extensions
 
+The coverage corpus now contains 120 Vietnamese requests across 12 categories. CI validates its structure, and `tools/PrintAI.IntentEval` can run the same GeneralPrintPlanner/parser/binder/compiler stack against a configured live model.
+
+See `docs/M7_INTENT_CORPUS.md`.
+
 The next capabilities are:
 
-1. build the first 100-200 real-request print-intent regression corpus
+1. run the supported corpus against the intended production model/provider and triage semantic/format failure clusters
 2. general N-up/page-per-sheet intent
 3. richer scaling: actual size, fit, fill, shrink-only and custom percent
 4. crop, anchor, offset and asymmetric margins

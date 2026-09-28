@@ -39,7 +39,7 @@ textarea{min-height:92px;resize:vertical}.box{padding:10px;border-radius:10px;ba
 <main>
 <section class="panel">
   <h2>Nguồn in</h2>
-  <input id="files" type="file" multiple accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+  <input id="files" type="file" multiple disabled accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
   <div class="drop" id="drop">Kéo thả file vào đây hoặc bấm chọn file.</div>
   <button class="danger" id="clear">Xóa nguồn</button>
   <div id="fileList"></div>
@@ -128,12 +128,23 @@ async function readJson(response){
 async function bootstrap(){
   const data=await readJson(await fetch("/api/bootstrap",{cache:"no-store"}));
   sessionToken=data.sessionToken;
+  $("#files").disabled=false;
   render(data.state);
+  return data;
 }
 
-async function api(path,options={}){
+async function api(path,options={},retryAuth=true){
   options.headers={...(options.headers||{}),"X-PrintAI-Session":sessionToken};
-  return readJson(await fetch(path,options));
+  const response=await fetch(path,options);
+
+  if(response.status===401&&retryAuth){
+    sessionToken="";
+    await bootstrap();
+    options.headers={...(options.headers||{}),"X-PrintAI-Session":sessionToken};
+    return readJson(await fetch(path,options));
+  }
+
+  return readJson(response);
 }
 
 async function action(name,payload={}){

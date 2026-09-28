@@ -113,6 +113,10 @@ public partial class MainWindow : Window
                     _session.ApplyBuiltInWorkflow(
                         root.GetProperty("workflowId").GetString() ?? "");
                     break;
+                case "generateSmartCollages":
+                    _session.GenerateSmartCollages(
+                        ReadCompositionItems(root));
+                    break;
                 case "generateAutoLayouts":
                     _session.GenerateAutoLayouts(
                         ReadCompositionItems(root),

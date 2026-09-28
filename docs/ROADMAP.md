@@ -103,7 +103,7 @@ These are validation tasks, not missing software architecture.
 - [x] support diagnostics / error export — privacy-safe support report verified
 - [~] deterministic 4x6 auto-layout alternatives — 1-6 items, preview gallery, driver-aware paper submission
 - [~] Smart Collage V2 — canvas placements, masks, z-order, transforms and initial three-photo template library
-- [ ] Smart Collage AI — vision analysis, template selection, subject-aware crop/scale/offset, bounded mutations and ranking
+- [~] Smart Collage AI — multimodal analysis, template selection, source assignment, bounded crop/scale/offset and top-candidate ranking implemented; local face/saliency detector remains future hardening
 - [ ] Smart Collage manual refinement — select frame, pan/zoom image, move/resize/rotate, undo/redo
 - [ ] tagged release + release notes
 - [ ] field validation matrix for real HEIC, Office, scanner and printer hardware

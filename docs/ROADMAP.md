@@ -182,7 +182,7 @@ Updated corpus: 86 supported, 10 capability-dependent, 10 clarification, 44 dete
 - [x] renderer applies scaling in physical mm
 - [x] desktop batch UI exposes scaling mode
 - [x] all 6 scaling gap cases moved to supported
-- [~] physical scaling CI/package verification
+- [x] physical scaling CI/package verification — CI #209 and package-windows #153 succeeded
 
 Updated corpus: 92 supported, 10 capability-dependent, 10 clarification, 38 deterministic gaps.
 

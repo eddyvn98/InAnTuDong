@@ -794,3 +794,64 @@ Verification:
 The General N-up slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 physical scaling implementation
+
+Branch: `m7-physical-scaling`.
+
+The next corpus-driven M7 slice implements physical scaling independently from fit/crop behavior.
+
+Implemented:
+
+- trusted per-page PDF physical dimensions flow from `SourceInspector`
+- `PlanningSource` and `PlanSourceSpec` can carry inspected page sizes
+- `GeneralPrintPlanSourceBinder` injects approved sizes and rejects planner rewrites
+- executable `SourceSpec` carries original physical width/height
+- new `PhysicalScaleSpec` and modes:
+  - `MaxFit`
+  - `ShrinkOnly`
+  - `Percent`
+- `PhysicalScaleCalculator` produces deterministic destination geometry
+- `ShrinkOnly` caps enlargement at 100%
+- `Percent` uses real source mm and supports values such as 50%, 80% and 125%
+- mixed-size PDF pages retain independent source dimensions in one job
+- renderer applies physical scaling per source page
+- desktop PrintPlan batch strip exposes physical scaling mode/value
+- planner contract maps natural-language percentage/ratio/shrink-only/max-fit requests
+- percent/shrink-only require trusted physical size metadata
+- physical scaling + N-up is rejected in this slice
+- physical scaling + Cover is rejected because Cover remains crop/fill intent
+- calculator, compiler, binder, parser, renderer and corpus-derived regression tests added
+- all 6 scaling gap cases changed from `gap` to `supported`
+
+Corpus after this slice:
+
+- 92 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 38 / 150 deterministic gaps remain
+
+Coverage on the balanced corpus:
+
+- immediately/conditionally executable: 102 / 150 = 68.0%
+- semantically handled including clarification: 112 / 150 = 74.7%
+
+Remaining gap families:
+
+- crop / asymmetric margin / position: 8
+- booklet imposition: 10
+- poster/tiled printing: 10
+- variable-size items: 10
+
+Next implementation target:
+
+**crop / anchor / offset / asymmetric margins**
+
+Verification status:
+
+- implementation and docs are committed on the feature branch
+- CI/package verification pending
+- do not merge until Ubuntu + Windows tests and Windows package are green
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

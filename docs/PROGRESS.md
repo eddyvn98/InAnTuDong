@@ -999,6 +999,65 @@ Verification:
 - install -> upgrade -> rollback -> uninstall smoke flow: success
 - ZIP/checksum/artifact upload: success
 
-The booklet slice is verified and ready to merge.
+The booklet slice was merged through PR #36. Final PR-head verification: CI #225 and package-windows #169 succeeded.
+
+See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.
+
+
+## M7 poster / tiled printing
+
+Branch: `m7-poster-tiling`.
+
+The next corpus-driven M7 slice implements oversized poster output split across multiple physical sheets.
+
+Implemented:
+
+- new high-level `PosterSpec`
+- new executable `LayoutMode.PosterTile`
+- target poster width/height in millimetres
+- exact cm/m conversion handled at planner intent level
+- A2 = 420 x 594 mm target contract
+- one missing target dimension derived from trusted source aspect
+- trusted raster pixel aspect rebound at source binder
+- trusted PDF physical page size fallback for already-oversized pages
+- fixed poster rows/columns
+- automatic portrait/landscape orientation minimizing physical sheet count
+- overlap in millimetres
+- exact poster-canvas rectangle for every tile
+- partial final rows/columns keep their real physical dimensions
+- poster-level Contain and Cover source mapping
+- registration marks on shared tile edges
+- row/column + sequential tile labels
+- poster jobs are simplex and use the existing preview/spooler path
+- complete poster sets compile as separate collated batches
+- poster cannot combine with N-up, booklet, physical scaling, placement, crop, or Canvas in this slice
+- binder, resolver, layout, renderer, parser, planner and corpus-derived regression tests added
+- POSTER-001 through POSTER-010 moved from `gap` to `supported`
+
+Corpus after this slice:
+
+- 120 / 150 directly supported
+- 10 / 150 capability-dependent
+- 10 / 150 correctly require clarification
+- 10 / 150 deterministic gaps remain
+
+Coverage on the balanced corpus:
+
+- immediately/conditionally executable: 130 / 150 = 86.7%
+- semantically handled including clarification: 140 / 150 = 93.3%
+
+Remaining gap family:
+
+- variable-size independent items: 10
+
+Next implementation target:
+
+**independent per-item physical sizes on one sheet**
+
+Verification status:
+
+- implementation and docs committed on feature branch
+- CI/package verification pending
+- do not merge until Ubuntu + Windows tests and Windows package are green
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

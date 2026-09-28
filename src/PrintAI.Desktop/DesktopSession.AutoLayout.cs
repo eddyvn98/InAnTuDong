@@ -275,7 +275,7 @@ public sealed partial class DesktopSession
         _activeJob = candidate.Job;
         _selectedAutoLayoutId = candidate.Id;
         _selectedWorkflowId = AutoLayoutWorkflow.Id;
-        _planResult = null;
+        ClearPlannerResults();
         _lastRequest = $"workflow:auto-layout:{candidate.Id}";
         _selectedOutputPage = 0;
 

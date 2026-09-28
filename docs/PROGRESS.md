@@ -406,9 +406,9 @@ The slice adds a user-exportable JSON support report containing:
 
 Privacy boundary: the report intentionally excludes API keys, AI endpoint, source file paths, job history and document content.
 
-## M6 4x6 auto-layout slice in progress
+## M6 4x6 auto-layout + Smart Collage verification
 
-Branch `feature/auto-layout-4x6` adds a release-compatible workflow extension requested from real use:
+PR #26 is merged into `main` at `74639d982215c37a2cd9a060376bf84889355835` and adds a release-compatible workflow extension requested from real use:
 
 - deterministic 4x6-inch paper preset at 101.6 x 152.4 mm
 - 1-6 selected source/page inputs
@@ -421,7 +421,7 @@ Branch `feature/auto-layout-4x6` adds a release-compatible workflow extension re
 - shared auto-layout geometry tests and Windows 4x6 paper-match test
 - detailed behavior/acceptance criteria in `docs/AUTO_LAYOUT_4X6.md`
 
-Smart Collage V2 foundation is now being implemented on the same branch:
+Smart Collage V2 foundation is merged:
 
 - optional canvas scene graph without breaking existing grid/exact-size jobs
 - independent per-frame geometry
@@ -434,7 +434,7 @@ Smart Collage V2 foundation is now being implemented on the same branch:
 - scene-graph/template tests
 - architecture and staged AI plan in `docs/SMART_COLLAGE_V2.md`
 
-Smart Collage AI selection is now connected on the same branch:
+Smart Collage AI selection is merged:
 
 - reuses the configured OpenAI-compatible chat endpoint/model/API key
 - renders compact 768px source thumbnails for multimodal input
@@ -448,14 +448,33 @@ Smart Collage AI selection is now connected on the same branch:
 
 Current limitation: face/saliency detection is model-estimated rather than backed by a local CV detector. User preview remains mandatory.
 
+Verification for PR #26:
+
+- CI run #151: Ubuntu + Windows success
+- shared Smart Collage/auto-layout tests: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- Windows package run #95: success
+- self-contained publish: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall lifecycle: success
+- ZIP/checksum/artifact upload: success
+
+Remaining field validation is intentionally separate from software verification:
+
+- print a real 4x6 job on a driver/device that advertises 101.6 x 152.4 mm and measure the result
+- run AI Smart Collage against a real configured vision-capable provider with representative photos
+- face/saliency awareness is currently model-estimated; local CV hardening remains optional
+
 Next Smart Collage work: manual canvas refinement and optional local face/saliency hardening.
 
 Exact next M6 work:
 
-1. verify this slice in CI and on a real 4x6-capable driver
-2. tagged preview release + release notes
-3. real iPhone HEIC field validation
-4. real-machine scanner/Office/printer validation matrix
+1. real 4x6 paper/driver field validation
+2. live multimodal Smart Collage field validation
+3. manual Smart Collage refinement/editor
+4. tagged preview release + release notes
+5. real iPhone HEIC and scanner/Office/printer validation matrix
 
 ## Important execution boundary
 

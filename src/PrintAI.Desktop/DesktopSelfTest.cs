@@ -21,7 +21,7 @@ internal sealed record DesktopSelfTestReport(
     string Runtime,
     IReadOnlyList<DesktopSelfTestCheck> Checks);
 
-internal static class DesktopSelfTest
+internal static partial class DesktopSelfTest
 {
     public static int Run(string? outputPath)
     {
@@ -36,6 +36,7 @@ internal static class DesktopSelfTest
         {
             CheckUiAssets(checks);
             CheckRasterPipeline(checks, tempDirectory);
+            CheckSpreadsheetPipeline(checks, tempDirectory);
             CheckPrinterProbe(checks);
             CheckOfficeDiscovery(checks);
         }

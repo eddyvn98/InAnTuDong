@@ -227,7 +227,14 @@ public static class SourceJobRenderer
             codec.EncodedOrigin,
             decoded.Width,
             decoded.Height);
-        canvas.DrawBitmap(decoded, 0, 0);
+        var sampling = new SKSamplingOptions(
+            SKFilterMode.Nearest,
+            SKMipmapMode.None);
+        canvas.DrawBitmap(
+            decoded,
+            new SKRect(0, 0, decoded.Width, decoded.Height),
+            new SKRect(0, 0, decoded.Width, decoded.Height),
+            sampling);
         canvas.Flush();
         return output;
     }

@@ -138,7 +138,6 @@ public sealed partial class DesktopSession
                 break;
         }
 
-        ReindexRequestQueue();
         RebuildPages();
         _selectedPage = Math.Clamp(
             _selectedPage,
@@ -234,6 +233,7 @@ public sealed partial class DesktopSession
             }
         }
 
+        ReindexRequestQueue();
         RebuildPages();
 
         if (_pages.Count == 0)

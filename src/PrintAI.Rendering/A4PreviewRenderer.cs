@@ -144,7 +144,9 @@ public static class A4PreviewRenderer
 
         var target = new SKRect(left, top, left + width, top + height);
 
-        if (canvasPlacement is not null && Math.Abs(canvasPlacement.RotationDegrees) > 0.01)
+        if (canvasPlacement is not null &&
+            !placement.Rotated &&
+            Math.Abs(canvasPlacement.RotationDegrees) > 0.01)
         {
             var centerX = target.MidX;
             var centerY = target.MidY;

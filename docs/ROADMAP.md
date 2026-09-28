@@ -153,12 +153,27 @@ The existing M0-M6 execution work remains valid. M7 adds a high-level `PrintPlan
 - [x] request-derived deterministic compiler regression fixtures
 - [x] corpus slice CI verification — CI #199 and package-windows #143 succeeded
 
-Baseline: 76 supported, 10 capability-dependent, 10 clarification, 54 deterministic gaps. See `docs/PRINT_INTENT_CORPUS.md`.
+Baseline after corpus creation: 76 supported, 10 capability-dependent, 10 clarification, 54 deterministic gaps. See `docs/PRINT_INTENT_CORPUS.md`.
+
+### General N-up slice
+
+- [x] explicit `NUpSpec.pagesPerSheet` semantic contract
+- [x] deterministic 2 / 4 / 6 / 8 / 9 / 16-up grids
+- [x] auto paper orientation + explicit orientation override
+- [x] optional explicit column count for presentation-style N-up
+- [x] row-major page ordering
+- [x] N-up gap / margin
+- [x] item border rendering
+- [x] N-up + duplex composition
+- [x] all 10 N-up corpus cases moved from gap to supported
+- [~] General N-up CI/package verification
+
+Updated corpus: 86 supported, 10 capability-dependent, 10 clarification, 44 deterministic gaps.
 
 ### Next slices
 
-- [ ] general N-up / pages-per-sheet intent — selected next from corpus
-- [ ] shrink-only / custom-percent scaling
+- [ ] shrink-only / custom-percent scaling — selected next from corpus
+
 - [ ] crop / anchor / offset / asymmetric margins
 - [ ] booklet imposition
 - [ ] poster/tiled printing

@@ -352,6 +352,8 @@ Examples:
 
 Poster tiles are simplex and currently accept exactly one selected source page. Poster is not combined with N-up, booklet, physical scaling, page placement, general crop, or Canvas in this slice.
 
+Poster/tiled verification: CI #233 passed on Ubuntu + Windows with 241/241 shared tests, and package-windows #177 passed.
+
 The next capability is now:
 
 1. variable-size independent items in one sheet

@@ -9,6 +9,7 @@ public sealed record DesktopJobEdits(
     double GapMm,
     double MarginMm,
     int Copies,
+    DuplexMode Duplex,
     bool AllowRotate,
     bool CutMarks,
     FitMode Fit);
@@ -30,6 +31,10 @@ public static class DesktopJobEditor
         var updated = current with
         {
             Sources = sources,
+            Print = current.Print with
+            {
+                Duplex = edits.Duplex
+            },
             Layout = current.Layout with
             {
                 Mode = edits.Mode,

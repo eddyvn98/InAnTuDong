@@ -19,6 +19,71 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         Paper in the current execution layer cannot exceed A4 (210 x 297 mm).
         If the request is materially ambiguous, ask a concise question instead of guessing.
         Enum strings use camelCase.
+
+        Required JSON shape:
+        {
+          "plan": {
+            "planName": "string",
+            "sources": [
+              { "path": "exact approved path", "pageCount": 1 }
+            ],
+            "outputGroups": [
+              {
+                "name": "string",
+                "selections": [
+                  {
+                    "sourceIndex": 0,
+                    "include": [
+                      { "startPage": 1, "endPage": 1 }
+                    ],
+                    "exclude": [],
+                    "parity": "all"
+                  }
+                ],
+                "paper": {
+                  "widthMm": 210,
+                  "heightMm": 297,
+                  "orientation": "portrait"
+                },
+                "layout": {
+                  "mode": "exactSize",
+                  "itemWidthMm": 200,
+                  "itemHeightMm": 287,
+                  "gapMm": 0,
+                  "marginMm": 5,
+                  "allowRotate": false,
+                  "cutMarks": false,
+                  "fit": "contain",
+                  "canvas": null
+                },
+                "print": {
+                  "colorMode": "color",
+                  "quality": "standard",
+                  "duplex": "off"
+                },
+                "sets": 1,
+                "collate": true,
+                "sequence": 0
+              }
+            ],
+            "policy": { "preview": "required" },
+            "schemaVersion": "2.0"
+          },
+          "confidence": 0.95,
+          "questions": [],
+          "warnings": []
+        }
+
+        Rules for outputGroups:
+        - Use one group when all selected pages share the same print settings.
+        - Split groups when page ranges need different color, duplex, paper or layout.
+        - For a complete multi-group document repeated N times, every group must use sets=N and collate=true.
+          The deterministic compiler will interleave groups per complete set.
+        - Do not mix collate=true and collate=false in one multi-group plan.
+        - sequence values must be unique and start at 0 in intended execution order.
+        - include/exclude page numbers are one-based and must stay inside source pageCount.
+        - For ordinary document pages on A4, exactSize with a 5 mm margin and 200 x 287 mm content box is a safe default unless the request specifies another physical size.
+        - Use grid only when the user explicitly requests repeated/N-up placement.
         """;
 
     public async Task<GeneralPlanningOutcome> PlanAsync(

@@ -166,24 +166,33 @@ public static class A4PreviewRenderer
             case FrameShape.Circle:
             {
                 var radius = Math.Min(target.Width, target.Height) / 2;
-                canvas.ClipPath(CreateOvalPath(new SKRect(
-                    target.MidX - radius,
-                    target.MidY - radius,
-                    target.MidX + radius,
-                    target.MidY + radius)));
+                using var circle = new SKRoundRect(
+                    new SKRect(
+                        target.MidX - radius,
+                        target.MidY - radius,
+                        target.MidX + radius,
+                        target.MidY + radius),
+                    radius,
+                    radius);
+                canvas.ClipRoundRect(circle);
                 break;
             }
             case FrameShape.Ellipse:
-                canvas.ClipPath(CreateOvalPath(target));
+            {
+                using var ellipse = new SKRoundRect(
+                    target,
+                    target.Width / 2,
+                    target.Height / 2);
+                canvas.ClipRoundRect(ellipse);
                 break;
+            }
             case FrameShape.RoundedRectangle:
             {
                 var radius = Math.Min(
                     MmToPxF(shape.CornerRadiusMm, dpi),
                     Math.Min(target.Width, target.Height) / 2);
-                using var path = new SKPath();
-                path.AddRoundRect(target, radius, radius);
-                canvas.ClipPath(path);
+                using var rounded = new SKRoundRect(target, radius, radius);
+                canvas.ClipRoundRect(rounded);
                 break;
             }
             default:
@@ -192,12 +201,6 @@ public static class A4PreviewRenderer
         }
     }
 
-    private static SKPath CreateOvalPath(SKRect rect)
-    {
-        var path = new SKPath();
-        path.AddOval(rect);
-        return path;
-    }
 
     private static SKRect TransformSourceRect(
         SKRect sourceRect,

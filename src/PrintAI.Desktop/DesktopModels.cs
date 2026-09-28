@@ -17,6 +17,8 @@ public sealed record DesktopState(
     string? SelectedRecipeId,
     IReadOnlyList<DesktopWorkflowPreset> BuiltInWorkflows,
     string? SelectedWorkflowId,
+    IReadOnlyList<DesktopAutoLayoutCandidate> AutoLayouts,
+    string? SelectedAutoLayoutId,
     string? PreviewDataUrl,
     string? Status,
     bool CanPrint,
@@ -75,6 +77,16 @@ public sealed record DesktopJobView(
             job.Layout.Fit.ToString(),
             job.Sources.Count > 1);
 }
+
+public sealed record DesktopAutoLayoutCandidate(
+    string Id,
+    string Title,
+    string Description,
+    string Paper,
+    string Orientation,
+    string Fit,
+    double Score,
+    string PreviewDataUrl);
 
 public sealed record DesktopCompositionItem(
     int PageIndex,

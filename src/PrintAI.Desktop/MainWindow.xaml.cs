@@ -172,6 +172,12 @@ public partial class MainWindow : Window
                 case "printAllSources":
                     _session.PrintAllSources();
                     break;
+                case "continueManualDuplex":
+                    _session.ContinueManualDuplex();
+                    break;
+                case "cancelManualDuplex":
+                    _session.CancelManualDuplex();
+                    break;
                 case "clearHistory":
                     _session.ClearHistory();
                     break;
@@ -262,6 +268,14 @@ public partial class MainWindow : Window
             throw new ArgumentException("Invalid fit mode.");
         }
 
+        if (!Enum.TryParse<DuplexMode>(
+                root.GetProperty("duplex").GetString(),
+                ignoreCase: true,
+                out var duplex))
+        {
+            throw new ArgumentException("Invalid duplex mode.");
+        }
+
         return new(
             Mode: mode,
             ItemWidthMm: root.GetProperty("itemWidthMm").GetDouble(),
@@ -269,6 +283,7 @@ public partial class MainWindow : Window
             GapMm: root.GetProperty("gapMm").GetDouble(),
             MarginMm: root.GetProperty("marginMm").GetDouble(),
             Copies: root.GetProperty("copies").GetInt32(),
+            Duplex: duplex,
             AllowRotate: root.GetProperty("allowRotate").GetBoolean(),
             CutMarks: root.GetProperty("cutMarks").GetBoolean(),
             Fit: fit);

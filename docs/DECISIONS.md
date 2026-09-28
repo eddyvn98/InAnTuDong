@@ -190,3 +190,17 @@ The AI may propose a strict `PrintPlan 2.0`, but deterministic code validates so
 This avoids destabilizing the existing renderer/spooler architecture while allowing print-language coverage to grow without creating a preset for every named print product.
 
 See `docs/GENERAL_PRINT_INTENT.md`.
+
+
+## ADR-028 - Multi-batch execution is automatic only when paper handling is safe
+Status: accepted
+
+A compiled PrintPlan may contain multiple executable PrintJobSpec batches.
+
+The desktop UI exposes every batch explicitly and allows preview/printing one batch at a time. When all batches are simplex, PrintAI may submit the complete plan sequentially in deterministic batch order.
+
+If any batch requests duplex, PrintAI does not auto-advance the whole multi-batch plan. The user executes batches explicitly so an automatic/manual duplex pass, paper reinsert step or pending back pass cannot accidentally flow into the next logical batch.
+
+Complete collated sets spanning multiple output groups are interleaved by set: all groups for set 1, then all groups for set 2, and so on.
+
+Color mode is part of executable intent, not UI metadata. Windows submission must honor PrintJobSpec.Print.ColorMode, and a persisted manual-duplex back pass must preserve the same color mode.

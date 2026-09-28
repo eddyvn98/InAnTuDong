@@ -563,3 +563,48 @@ source -> inspection -> planner/spec -> allowlist -> validation -> deterministic
 ## Session rule
 
 Never continue from chat memory alone. Read this file, `AGENTS.md`, `ROADMAP.md`, `DECISIONS.md`, `LIBRARIES.md` and relevant specs first. Update this file before ending a work session.
+
+
+## M7 General Print Intent foundation
+
+Direction updated on 2026-09-28 after reviewing real-world print-request coverage.
+
+Scope is explicitly **print-only**. PrintAI will not add CRM/customer management, quotation/pricing, payment, inventory, delivery, or general order-management features.
+
+Branch: `m7-general-print-intent`.
+
+Implemented in this foundation slice:
+
+- new `PrintPlan 2.0` high-level print-intent model
+- inspected source path + page-count contract
+- one-based user-facing page ranges with include/exclude rules
+- odd/even/all page parity
+- ordered output groups so different page ranges can carry different print settings
+- explicit `sets` and `collate` semantics
+- deterministic `PrintPlanCompiler` producing one or more existing `PrintJobSpec 1.0` jobs
+- mixed color and mixed duplex represented as separate executable batches
+- strict `GeneralPrintPlanParser`
+- provider-neutral `GeneralPrintPlanner`
+- `GeneralPrintPlanSourceBinder` rejecting invented paths or changed inspected page counts
+- tests added for page filtering, mixed color/duplex compilation, collated complete sets, non-collated copies, strict parsing and source binding
+- new `docs/GENERAL_PRINT_INTENT.md`
+- architecture/product/ADR/roadmap/agent guidance updated for the new boundary
+
+Compatibility decision:
+
+- simple uniform jobs may continue to use `PrintJobSpec 1.0` directly
+- complex multi-rule requests use `PrintPlan 2.0`
+- the stable layout, renderer, preview, policy, duplex and Windows spooler layers remain downstream of `PrintJobSpec 1.0`
+
+Current verification status:
+
+- implementation and tests are committed on the feature branch
+- GitHub CI verification is pending; do not mark the M7 foundation verified until CI is green
+
+Next concrete task after CI:
+
+1. integrate GeneralPrintPlanner into the desktop request path for requests that require multiple output groups
+2. add a deterministic multi-batch preview/execution coordinator
+3. build the first real-request corpus before adding booklet/poster/variable-size extensions
+
+See `docs/GENERAL_PRINT_INTENT.md`.

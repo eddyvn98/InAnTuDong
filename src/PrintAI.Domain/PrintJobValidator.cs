@@ -82,11 +82,143 @@ public static class PrintJobValidator
         }
 
         ValidatePhysicalScale(job, errors);
+        ValidatePagePlacement(job, errors);
+        ValidateSourceCrop(job, errors);
 
         if (job.Print.Copies < 1)
             errors.Add(new("print.copies", "Print copies must be at least 1."));
 
         return new(errors);
+    }
+
+    private static void ValidatePagePlacement(
+        PrintJobSpec job,
+        List<ValidationError> errors)
+    {
+        var placement = job.Layout.PagePlacement;
+        if (placement is null)
+            return;
+
+        if (job.Layout.Mode != LayoutMode.ExactSize)
+        {
+            errors.Add(new(
+                "layout.pagePlacement.mode",
+                "Page placement is currently supported only for ExactSize layouts."));
+        }
+
+        var margins = placement.Margins;
+        var values = new[]
+        {
+            margins.LeftMm,
+            margins.TopMm,
+            margins.RightMm,
+            margins.BottomMm
+        };
+
+        if (values.Any(value =>
+                !double.IsFinite(value) || value < 0))
+        {
+            errors.Add(new(
+                "layout.pagePlacement.margins",
+                "Page margins must be finite and non-negative."));
+        }
+
+        if (!double.IsFinite(placement.OffsetXMm) ||
+            !double.IsFinite(placement.OffsetYMm))
+        {
+            errors.Add(new(
+                "layout.pagePlacement.offset",
+                "Page placement offsets must be finite."));
+        }
+
+        var paperWidth =
+            job.Paper.Orientation == PageOrientation.Portrait
+                ? job.Paper.WidthMm
+                : job.Paper.HeightMm;
+        var paperHeight =
+            job.Paper.Orientation == PageOrientation.Portrait
+                ? job.Paper.HeightMm
+                : job.Paper.WidthMm;
+
+        if (margins.LeftMm + margins.RightMm >= paperWidth ||
+            margins.TopMm + margins.BottomMm >= paperHeight)
+        {
+            errors.Add(new(
+                "layout.pagePlacement.area",
+                "Page margins must leave a positive printable placement area."));
+        }
+    }
+
+    private static void ValidateSourceCrop(
+        PrintJobSpec job,
+        List<ValidationError> errors)
+    {
+        var crop = job.Layout.SourceCrop;
+        if (crop is null)
+            return;
+
+        if (job.Layout.Mode == LayoutMode.Canvas)
+        {
+            errors.Add(new(
+                "layout.sourceCrop.canvas",
+                "General source crop is not supported on Canvas layouts."));
+        }
+
+        if (job.Layout.PhysicalScale is not null)
+        {
+            errors.Add(new(
+                "layout.sourceCrop.scaling",
+                "General source crop cannot be combined with physical scaling in the current slice."));
+        }
+
+        if (crop.Mode != SourceCropMode.EdgesMm)
+            return;
+
+        var edges = crop.EdgesMm;
+        if (edges is null)
+        {
+            errors.Add(new(
+                "layout.sourceCrop.edges",
+                "EdgesMm crop requires explicit edge values."));
+            return;
+        }
+
+        var edgeValues = new[]
+        {
+            edges.LeftMm,
+            edges.TopMm,
+            edges.RightMm,
+            edges.BottomMm
+        };
+
+        if (edgeValues.Any(value =>
+                !double.IsFinite(value) || value < 0))
+        {
+            errors.Add(new(
+                "layout.sourceCrop.edges",
+                "Crop edge values must be finite and non-negative."));
+            return;
+        }
+
+        foreach (var source in job.Sources)
+        {
+            if (source.OriginalWidthMm is not double width ||
+                source.OriginalHeightMm is not double height)
+            {
+                errors.Add(new(
+                    "layout.sourceCrop.sourceSize",
+                    "Millimetre edge crop requires trusted source physical dimensions."));
+                continue;
+            }
+
+            if (edges.LeftMm + edges.RightMm >= width ||
+                edges.TopMm + edges.BottomMm >= height)
+            {
+                errors.Add(new(
+                    "layout.sourceCrop.bounds",
+                    "Crop edges must leave a positive source area."));
+            }
+        }
     }
 
     private static void ValidatePhysicalScale(

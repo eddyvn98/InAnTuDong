@@ -2,16 +2,19 @@
 
 ## Product
 
-Print AI is a Windows-first assistant that accepts local files/folders plus a natural-language print request and converts them into accurate, reviewable print jobs without requiring the user to operate the printer manufacturer's app.
+Print AI is a Windows-first, print-only assistant that accepts local files/folders plus a natural-language print request and converts them into accurate, reviewable print jobs without requiring the user to operate the printer manufacturer's app.
+
+The product does not expand into CRM, quotation/pricing, payment, inventory, delivery, or general print-shop order management. Its responsibility ends at understanding, preparing, validating, previewing and executing printing.
 
 ## Primary interaction
 
 1. User provides one or many file paths, a folder, drag/drop files, or scanner input.
 2. User describes the outcome in natural language.
-3. AI converts intent to a structured `PrintJobSpec`.
-4. Deterministic code validates sizes/capabilities and calculates layout.
-5. The system previews uncertain/risky jobs.
-6. A Windows agent submits the job through the installed driver/spooler.
+3. AI converts simple uniform intent to `PrintJobSpec 1.0`, or complex page/source-specific intent to `PrintPlan 2.0`.
+4. A validated `PrintPlan 2.0` is deterministically compiled into one or more `PrintJobSpec 1.0` batches.
+5. Deterministic code validates sizes/capabilities and calculates layout.
+6. The system previews uncertain/risky jobs.
+7. A Windows agent submits the job through the installed driver/spooler.
 
 Examples:
 
@@ -115,3 +118,10 @@ scanner -> acquire -> crop/deskew -> optional enhancement/OCR -> image/PDF -> Pr
 JPG/PNG/PDF + natural-language request can produce a validated A4 preview and a correct physical print on Epson L3310 without navigating Epson's UI.
 
 Exact-size output must eventually be verified with a real ruler/calibration page.
+
+
+## General print intent
+
+The planner must eventually cover real print-language combinations without requiring a workflow preset for every product name. Required intent dimensions include page/range selection, ordered multi-file composition, copies vs complete sets/collation, mixed color rules, mixed simplex/duplex rules, N-up/repeat, scaling, crop/position, booklet imposition, tiled/poster printing, and variable-size items.
+
+The first `PrintPlan 2.0` slice implements page selection, output groups, ordering, sets/collation, mixed color/duplex decomposition and compilation to existing jobs. See `docs/GENERAL_PRINT_INTENT.md`.

@@ -25,6 +25,7 @@ public sealed class AntigravityProcessRunner : IAntigravityCommandRunner
         Add(start, "--output-format", "json");
         Add(start, "--json-schema", invocation.JsonSchema);
         Add(start, "--print-timeout", invocation.PrintTimeout);
+        start.ArgumentList.Add("--sandbox");
 
         using var process = new Process { StartInfo = start };
 

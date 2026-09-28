@@ -1054,10 +1054,19 @@ Next implementation target:
 
 **independent per-item physical sizes on one sheet**
 
-Verification status:
+Verification:
 
-- implementation and docs committed on feature branch
-- CI/package verification pending
-- do not merge until Ubuntu + Windows tests and Windows package are green
+- verified commit: `aeaa6d259b45d921735ca841080183a89c214182`
+- GitHub CI #233: success on Ubuntu + Windows
+- shared suite: 241/241 tests pass
+- poster resolver/layout/renderer/binder/parser/planner/corpus regressions: success
+- Windows printer tests/probe: success
+- Windows desktop build: success
+- package-windows #177: success
+- packaged self-test: success
+- install -> upgrade -> rollback -> uninstall smoke flow: success
+- ZIP/checksum/artifact upload: success
+
+The poster/tiled-printing slice is verified and ready to merge.
 
 See `docs/GENERAL_PRINT_INTENT.md` and `docs/PRINT_INTENT_CORPUS.md`.

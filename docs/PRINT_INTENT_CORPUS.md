@@ -67,37 +67,28 @@ A gap case must name its missing capability.
 
 | Coverage | Cases | Share |
 | --- | ---: | ---: |
-| Supported | 92 | 61.3% |
+| Supported | 100 | 66.7% |
 | Supported with printer capability | 10 | 6.7% |
 | Correct behavior is clarification | 10 | 6.7% |
-| Missing primitive / gap | 38 | 25.3% |
+| Missing primitive / gap | 30 | 20.0% |
 | **Total** | **150** | **100%** |
 
 Two useful interpretations:
 
-- **Immediately/conditionally executable:** 102 / 150 = 68.0%.
-- **Semantically handled correctly, including asking when ambiguous:** 112 / 150 = 74.7%.
+- **Immediately/conditionally executable:** 110 / 150 = 73.3%.
+- **Semantically handled correctly, including asking when ambiguous:** 120 / 150 = 80.0%.
 
 Do not interpret these percentages as real customer traffic share. The corpus gives every category equal weight.
 
 ## Gap families
 
-The 38 current gap cases break down as follows:
+The 30 current gap cases break down as follows:
 
 | Gap family | Cases | Current limitation |
 | --- | ---: | --- |
-| Crop / margin / position | 8 | no asymmetric margin, crop region, anchor or content offset primitive |
 | Booklet imposition | 10 | no booklet page-signature/reordering engine |
 | Poster tiling | 10 | no oversized target canvas split across physical sheets |
 | Variable item sizes | 10 | PrintJobSpec grid remains uniform-size; Canvas is a dedicated collage path |
-
-Crop / position gap details:
-
-- auto crop for print: 1
-- asymmetric margins: 2
-- content offset: 1
-- anchor positioning: 2
-- explicit crop region: 2
 
 ## Regression protection
 
@@ -127,6 +118,11 @@ Representative supported requests are also converted into deterministic `PrintPl
 - explicit 50/80/125-percent physical scaling
 - per-page physical-size preservation
 - max-fit without trusted physical-size metadata
+- asymmetric page margins
+- page anchors and physical offsets
+- auto-trim white crop
+- center-to-target-aspect crop
+- physical edge crop in millimetres
 
 This is intentionally different from testing an LLM live in CI. The deterministic contract/compiler behavior is protected locally; live-model intent quality can be evaluated separately against the same corpus.
 
@@ -174,15 +170,33 @@ The 6 scaling cases moved from `gap` to `supported`, reducing deterministic gaps
 
 Verification for this coverage change: CI #209 passed on Ubuntu + Windows with 167/167 shared tests, and package-windows #153 passed including packaged self-test and install lifecycle smoke checks.
 
-### Next: crop / margin / position
+### Completed: crop / margin / position
 
-The next implementation target is asymmetric margins, explicit crop regions, content offsets and anchor positioning.
+All 8 remaining crop/position cases now have deterministic execution semantics.
 
-After crop/margin/position:
+Implemented behavior:
 
-1. booklet imposition
-2. poster/tiled printing
-3. variable-size general composition
+- asymmetric page margins
+- proportional placement shrink-to-fit inside reduced page area
+- center/edge/corner anchors
+- signed X/Y millimetre offsets
+- deterministic white-border auto-trim
+- centered target-aspect crop
+- physical edge crop in millimetres
+- trusted PDF physical size requirement for millimetre crop
+- page placement + crop composition
+- desktop batch summary for placement/crop intent
+
+The 8 crop/position cases moved from `gap` to `supported`, reducing deterministic gaps from 38 to 30.
+
+### Next: booklet imposition
+
+Booklet is selected next because the N-up/grid foundation already exists and booklet primarily adds deterministic page padding/reordering and sheet-side semantics.
+
+After booklet:
+
+1. poster/tiled printing
+2. variable-size general composition
 
 Booklet and poster remain important, but both introduce stronger ordering/physical-sheet semantics than N-up. Variable-size layout is last because it changes the current uniform-grid execution contract most substantially.
 

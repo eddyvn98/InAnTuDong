@@ -20,6 +20,7 @@ public sealed partial class DesktopSession
     private readonly PendingManualDuplexStore _manualDuplexStore;
     private readonly ManualDuplexCalibrationStore _manualDuplexCalibrationStore;
     private readonly DesktopPlannerSession _planner = new();
+    private readonly List<DesktopQueuedRequest> _requestQueue = [];
 
     private PendingManualDuplexJob? _pendingManualDuplex;
 
@@ -36,6 +37,7 @@ public sealed partial class DesktopSession
     private CompiledPrintPlan? _compiledPlan;
     private int _selectedPlanBatch;
     private string? _lastRequest;
+    private int _nextRequestOrder = 1;
 
     public DesktopSession()
     {
@@ -302,6 +304,17 @@ public sealed partial class DesktopSession
 
         return new(
             Files: _paths.Select(DesktopSourceCatalog.InspectSafe).ToArray(),
+            RequestQueue: _requestQueue
+                .OrderBy(item => item.Order)
+                .Select(item => new DesktopQueuedRequestView(
+                    item.Id,
+                    item.Order,
+                    item.Request,
+                    item.Mode,
+                    item.Status,
+                    item.SourcePaths,
+                    item.Error))
+                .ToArray(),
             Pages: _pages,
             SelectedPage: _selectedPage,
             OutputPageCount: _outputPageCount,
@@ -476,3 +489,13 @@ public sealed partial class DesktopSession
             new PrintSettings(),
             new PolicySpec(PreviewPolicy.Required));
 }
+
+
+internal sealed record DesktopQueuedRequest(
+    string Id,
+    int Order,
+    string Request,
+    string Mode,
+    IReadOnlyList<string> SourcePaths,
+    string Status,
+    string? Error = null);

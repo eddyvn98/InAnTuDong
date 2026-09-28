@@ -18,6 +18,7 @@ public sealed partial class DesktopSession
     private readonly string _workDir;
     private readonly JobHistoryStore _history;
     private readonly PendingManualDuplexStore _manualDuplexStore;
+    private readonly ManualDuplexCalibrationStore _manualDuplexCalibrationStore;
     private readonly DesktopPlannerSession _planner = new();
 
     private PendingManualDuplexJob? _pendingManualDuplex;
@@ -44,6 +45,8 @@ public sealed partial class DesktopSession
         _history = new JobHistoryStore(Path.Combine(root, "history.json"));
         _manualDuplexStore = new PendingManualDuplexStore(
             Path.Combine(root, "pending-manual-duplex.json"));
+        _manualDuplexCalibrationStore = new ManualDuplexCalibrationStore(
+            Path.Combine(root, "manual-duplex-profiles.json"));
         _pendingManualDuplex = _manualDuplexStore.Load();
 
         _planner.ConfigureFromEnvironment();

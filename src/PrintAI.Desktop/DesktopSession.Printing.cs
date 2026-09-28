@@ -64,76 +64,54 @@ public sealed partial class DesktopSession
             return;
         }
 
-        var pageCount = SourceJobRenderer.GetOutputPageCount(job);
-        var submitted = 0;
+        PrintSimplexJob(job, "print-job");
+    }
 
-        for (var outputPage = 0;
-             outputPage < pageCount;
-             outputPage++)
+    public void PrintPlan()
+    {
+        if (_pendingManualDuplex is not null)
         {
-            try
+            _status =
+                "Có manual-duplex job đang chờ mặt sau. Hoàn tất hoặc hủy job đó trước khi in plan.";
+            return;
+        }
+
+        if (_compiledPlan is null || _compiledPlan.Batches.Count == 0)
+        {
+            _status = "Không có PrintPlan nhiều batch để in.";
+            return;
+        }
+
+        if (_compiledPlan.Batches.Any(batch =>
+                batch.Job.Print.Duplex != DuplexMode.Off))
+        {
+            _status =
+                "PrintPlan có batch duplex. Để tránh sai thứ tự/xấp giấy, hãy chọn và in từng batch theo danh sách.";
+            return;
+        }
+
+        for (var index = 0; index < _compiledPlan.Batches.Count; index++)
+        {
+            var batch = _compiledPlan.Batches[index];
+            _selectedPlanBatch = index;
+            _activeJob = batch.Job;
+
+            if (!PrintSimplexJob(batch.Job, "print-plan-batch"))
             {
-                var png = RequiresMixedRenderer(job)
-                    ? SourceJobRenderer.RenderMixedA4(
-                        job,
-                        outputPage,
-                        dpi: 300)
-                    : SourceJobRenderer.RenderA4(
-                        job,
-                        page.SourcePath,
-                        page.SourcePageIndex,
-                        outputPage,
-                        dpi: 300);
-
-                var path = Path.Combine(
-                    _workDir,
-                    $"job-{outputPage:D4}.png");
-
-                File.WriteAllBytes(path, png);
-
-                var result = Submit(path, job);
-                if (result.State == PrintSubmissionState.Failed)
-                {
-                    _status =
-                        $"Dừng ở output {outputPage + 1}/{pageCount}: " +
-                        result.Error;
-
-                    RecordPrint("print-job", result, job);
-                    return;
-                }
-
-                submitted++;
-            }
-            catch (Exception ex)
-            {
+                ActivatePlanBatch(index, rebuildPreview: true);
                 _status =
-                    $"Dừng ở output {outputPage + 1}/{pageCount}: " +
-                    ex.Message;
-
-                _history.Append(new(
-                    DateTimeOffset.Now,
-                    "print-job",
-                    "Failed",
-                    _lastRequest,
-                    _selectedPrinter,
-                    job.JobName,
-                    ex.Message));
-
+                    $"PrintPlan dừng ở batch {index + 1}/{_compiledPlan.Batches.Count}: " +
+                    _status;
                 return;
             }
         }
 
-        _status =
-            $"Đã gửi {submitted}/{pageCount} output page tới spooler.";
+        ActivatePlanBatch(
+            _compiledPlan.Batches.Count - 1,
+            rebuildPreview: true);
 
-        _history.Append(new(
-            DateTimeOffset.Now,
-            "print-job",
-            "Submitted",
-            _lastRequest,
-            _selectedPrinter,
-            job.JobName,
-            _status));
+        _status =
+            $"Đã gửi toàn bộ {_compiledPlan.Batches.Count} batch simplex của PrintPlan tới spooler.";
     }
 
     public void PrintAllSources()
@@ -187,6 +165,89 @@ public sealed partial class DesktopSession
 
         _status =
             $"Đã gửi {submitted}/{_pages.Count} source page tới spooler.";
+    }
+
+    private bool PrintSimplexJob(
+        PrintJobSpec job,
+        string historyAction)
+    {
+        if (job.Print.Duplex != DuplexMode.Off)
+            throw new ArgumentException("PrintSimplexJob only accepts one-sided jobs.", nameof(job));
+
+        var pageCount = SourceJobRenderer.GetOutputPageCount(job);
+        var submitted = 0;
+        var renderId = Guid.NewGuid().ToString("N");
+
+        for (var outputPage = 0;
+             outputPage < pageCount;
+             outputPage++)
+        {
+            try
+            {
+                var primarySource = job.Sources[0];
+                var png = RequiresMixedRenderer(job)
+                    ? SourceJobRenderer.RenderMixedA4(
+                        job,
+                        outputPage,
+                        dpi: 300)
+                    : SourceJobRenderer.RenderA4(
+                        job,
+                        primarySource.Path,
+                        primarySource.PageIndex,
+                        outputPage,
+                        dpi: 300);
+
+                var path = Path.Combine(
+                    _workDir,
+                    $"{historyAction}-{renderId}-{outputPage:D4}.png");
+
+                File.WriteAllBytes(path, png);
+
+                var result = Submit(path, job);
+                if (result.State == PrintSubmissionState.Failed)
+                {
+                    _status =
+                        $"Dừng ở output {outputPage + 1}/{pageCount}: " +
+                        result.Error;
+
+                    RecordPrint(historyAction, result, job);
+                    return false;
+                }
+
+                submitted++;
+            }
+            catch (Exception ex)
+            {
+                _status =
+                    $"Dừng ở output {outputPage + 1}/{pageCount}: " +
+                    ex.Message;
+
+                _history.Append(new(
+                    DateTimeOffset.Now,
+                    historyAction,
+                    "Failed",
+                    _lastRequest,
+                    _selectedPrinter,
+                    job.JobName,
+                    ex.Message));
+
+                return false;
+            }
+        }
+
+        _status =
+            $"Đã gửi {submitted}/{pageCount} output page tới spooler.";
+
+        _history.Append(new(
+            DateTimeOffset.Now,
+            historyAction,
+            "Submitted",
+            _lastRequest,
+            _selectedPrinter,
+            job.JobName,
+            _status));
+
+        return true;
     }
 
     private PrintSubmissionResult Submit(

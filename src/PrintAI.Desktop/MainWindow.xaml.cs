@@ -88,12 +88,10 @@ public partial class MainWindow : Window
                 case "selectPlanBatch":
                     _session.SelectPlanBatch(root.GetProperty("index").GetInt32());
                     break;
-                case "configurePlanner":
-                    _session.ConfigurePlanner(
-                        root.GetProperty("endpoint").GetString() ?? "",
-                        root.GetProperty("model").GetString() ?? "",
-                        root.TryGetProperty("apiKey", out var key)
-                            ? key.GetString()
+                case "configureAntigravity":
+                    _session.ConfigureAntigravity(
+                        root.TryGetProperty("cliPath", out var cliPath)
+                            ? cliPath.GetString()
                             : null);
                     break;
                 case "plan":

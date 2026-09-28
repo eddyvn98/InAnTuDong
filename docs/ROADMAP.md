@@ -261,4 +261,27 @@ See `docs/GENERAL_PRINT_INTENT.md`.
 
 ## Priority
 
-Prioritize M7 General Print Intent coverage before declaring the product broadly usable for real customer print requests. Keep M6 release-hardening evidence intact, but do not expand into non-print business workflows.
+M7 deterministic primitive coverage is complete. Prioritize M8 Antigravity target-machine verification, latency measurement, local-host UX and release hardening. Do not expand into non-print business workflows.
+
+
+## M8 - Antigravity local planner
+
+**Current milestone after M7 deterministic coverage.**
+
+- [x] replace primary API-key planner transport with local `agy.exe`
+- [x] auto-discover AGY from explicit path / `PRINTAI_AGY_PATH` / PATH
+- [x] fast-first structured planning with low effort
+- [x] deterministic parser/validator/confidence gate
+- [x] one-time escalation to configurable deep AGY model
+- [x] transport-failure escalation
+- [x] remove endpoint/API-key fields from desktop planner UI
+- [x] preserve deterministic Smart Collage fallback while AGY image handling is unverified
+- [x] document AGY credentials boundary and low-spec target assumptions
+- [x] unit tests for fast accept / low-confidence escalation / transport escalation
+- [ ] verify AGY headless login and model slugs on the target Windows machine
+- [ ] benchmark cold single-process latency
+- [ ] add persistent `stream-json` session if measurements justify it
+- [ ] migrate Smart Collage local-image analysis to AGY without reintroducing API keys
+- [ ] expose the existing UI through a loopback-only local host for browser-first operation
+
+Exit: natural-language planning works on the target Windows machine through the user's existing Antigravity account, without an AI API key or local LLM, with measured latency and deterministic print safety unchanged.

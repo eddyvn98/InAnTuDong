@@ -5,15 +5,15 @@ namespace PrintAI.Desktop;
 
 public sealed partial class DesktopSession
 {
-    public void ConfigurePlanner(
-        string endpoint,
-        string model,
-        string? apiKey)
+    public bool ConfigureAntigravity(string? cliPath = null)
     {
-        _planner.Configure(endpoint, model, apiKey);
-        _status =
-            $"AI đã cấu hình: {model}. API key chỉ giữ trong phiên chạy hiện tại.";
+        var configured = _planner.ConfigureAntigravity(cliPath);
+        _status = configured
+            ? $"Antigravity sẵn sàng: {_planner.Model}."
+            : "Không tìm thấy AGY CLI. Cài/đăng nhập Antigravity hoặc đặt PRINTAI_AGY_PATH.";
+        return configured;
     }
+
 
     public async Task PlanAsync(string request, string mode)
     {
@@ -55,8 +55,12 @@ public sealed partial class DesktopSession
             result.Compiled.Batches.Any(batch =>
                 batch.Job.Print.Duplex != DuplexMode.Off);
 
+        var tier = string.IsNullOrWhiteSpace(_planner.PlannerTier)
+            ? ""
+            : $" · AGY {_planner.PlannerTier}";
+
         _status =
-            $"AI PrintPlan: {result.Decision.Kind} · confidence " +
+            $"AI PrintPlan{tier}: {result.Decision.Kind} · confidence " +
             $"{result.Outcome.Confidence:P0} · " +
             $"{result.Compiled.Batches.Count} batch. " +
             result.Decision.Reason +

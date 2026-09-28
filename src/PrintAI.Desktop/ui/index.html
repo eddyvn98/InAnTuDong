@@ -88,14 +88,16 @@
     <label class="check"><input id="autoDeskew" type="checkbox" checked> Auto deskew</label>
     <button class="primary" id="scan" style="margin-top:8px;width:100%">Scan một trang</button>
 
-    <h3>AI planner</h3>
-    <label>Endpoint chat-completions compatible</label>
-    <input id="endpoint" placeholder="https://.../chat/completions">
-    <div class="row">
-      <div><label>Model</label><input id="model" placeholder="model-name"><div class="meta">Smart Collage cần model hỗ trợ vision/image input.</div></div>
-      <div><label>API key (không lưu)</label><input id="apiKey" type="password" placeholder="optional"></div>
+    <h3>Antigravity planner</h3>
+    <div class="box" id="antigravityState">
+      <b>Đang kiểm tra AGY...</b>
+      <div class="meta">PrintAI dùng phiên đăng nhập Antigravity trên máy này. Không cần AI API key.</div>
     </div>
-    <button id="saveAi" style="margin-top:8px">Lưu AI cho phiên này</button>
+    <label>AGY CLI path (chỉ cần khi app không tự tìm thấy)</label>
+    <div class="row">
+      <input id="agyPath" placeholder="agy.exe hoặc C:\\...\\agy.exe">
+      <button id="retryAgy">Kiểm tra AGY</button>
+    </div>
 
     <label>Yêu cầu</label>
     <textarea id="request" placeholder="Ví dụ: In ảnh này 4x6 cm, xếp nhiều nhất trên A4, có đường cắt."></textarea>
@@ -176,7 +178,7 @@
         <label>Yêu cầu AI cho collage</label>
         <input id="smartCollageInstruction" placeholder="Ví dụ: ưu tiên khuôn mặt, ảnh 1 làm nổi bật">
         <button id="generateSmartCollages" style="width:100%;margin-top:6px">✨ AI Smart Collage (đúng 3 ảnh)</button>
-        <div class="meta">AI Smart Collage gửi thumbnail tối đa 768px của 3 ảnh tới endpoint AI đã cấu hình. Grid/template fallback chạy local và không gửi ảnh.</div>
+        <div class="meta">Smart Collage vision chưa chuyển sang AGY CLI; hiện dùng template fallback local để không gửi ảnh qua API riêng.</div>
         <div class="autoLayoutGrid" id="autoLayoutCandidates"></div>
       </div>
 
@@ -392,10 +394,8 @@ document.querySelector('#applyRecipe').onclick=()=>post('applyRecipe',{
 document.querySelector('#deleteRecipe').onclick=()=>post('deleteRecipe',{
   recipeId:document.querySelector('#recipe').value
 });
-document.querySelector('#saveAi').onclick=()=>post('configurePlanner',{
-  endpoint:document.querySelector('#endpoint').value.trim(),
-  model:document.querySelector('#model').value.trim(),
-  apiKey:document.querySelector('#apiKey').value
+document.querySelector('#retryAgy').onclick=()=>post('configureAntigravity',{
+  cliPath:document.querySelector('#agyPath').value.trim()
 });
 document.querySelector('#plan').onclick=()=>post('plan',{
   request:document.querySelector('#request').value.trim(),
@@ -609,12 +609,17 @@ function render(s){
     '<option value="'+esc(p.Name)+'" '+(p.Name===s.SelectedPrinter?'selected':'')+'>'+esc(p.Name)+(p.IsDefault?' · default':'')+'</option>'
   ).join(''):'<option value="">Không có printer</option>';
 
-  if(s.Planner.Endpoint&&!document.querySelector('#endpoint').value)set('#endpoint',s.Planner.Endpoint);
-  if(s.Planner.Model&&!document.querySelector('#model').value)set('#model',s.Planner.Model);
+  if(s.Planner.Endpoint&&!document.querySelector('#agyPath').value)set('#agyPath',s.Planner.Endpoint);
   if(s.Planner.Request)set('#request',s.Planner.Request);
 
+  const agyState=document.querySelector('#antigravityState');
+  agyState.className=s.Planner.Configured?'box':'box warn';
+  agyState.innerHTML=s.Planner.Configured
+    ?'<b>✓ Antigravity Ready</b><div class="meta">'+esc(s.Planner.Model||'AGY')+' · '+esc(s.Planner.Endpoint||'agy.exe')+'</div>'
+    :'<b>AGY chưa sẵn sàng</b><div class="meta">Đăng nhập Antigravity và bảo đảm agy.exe có trong PATH, hoặc nhập đường dẫn CLI rồi kiểm tra lại.</div>';
+
   const info=[];
-  if(!s.Planner.Configured)info.push('<div class="box warn">AI chưa cấu hình. Manual preview/print vẫn hoạt động.</div>');
+  if(!s.Planner.Configured)info.push('<div class="box warn">Natural-language planning tạm tắt. Manual preview/print vẫn hoạt động.</div>');
   if(s.Planner.Decision){
     const confidence=s.Planner.Confidence!=null?' · '+Math.round(s.Planner.Confidence*100)+'%':'';
     const planSummary=s.Planner.IsGeneralPlan

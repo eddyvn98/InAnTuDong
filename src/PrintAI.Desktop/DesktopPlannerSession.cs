@@ -1,5 +1,4 @@
 using System.IO;
-using System.Net.Http;
 using PrintAI.Domain;
 using PrintAI.Planning;
 using PrintAI.Rendering;
@@ -10,55 +9,37 @@ namespace PrintAI.Desktop;
 
 public sealed class DesktopPlannerSession
 {
-    private readonly HttpClient _httpClient = new();
-    private ChatCompletionPlannerClient? _modelClient;
+    private AntigravityPlannerClient? _antigravityClient;
     private PrintPlanner? _planner;
     private GeneralPrintPlanner? _generalPlanner;
     private SpreadsheetPrintPlanner? _spreadsheetPlanner;
 
     public string? Endpoint { get; private set; }
     public string? Model { get; private set; }
+    public string? PlannerTier => _antigravityClient?.LastExecution?.Tier;
     public bool IsConfigured => _planner is not null;
 
-    public void Configure(string endpoint, string model, string? apiKey)
+    public bool ConfigureAntigravity(string? cliPath = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(endpoint);
-        ArgumentException.ThrowIfNullOrWhiteSpace(model);
-
-        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttps && uri.Scheme != Uri.UriSchemeHttp))
-        {
-            throw new ArgumentException("AI endpoint must be an absolute HTTP/HTTPS URL.");
-        }
-
-        Endpoint = uri.ToString();
-        Model = model.Trim();
-        _modelClient = new ChatCompletionPlannerClient(
-            _httpClient,
-            new ChatCompletionTransportOptions(uri, Model, apiKey));
-        _planner = new PrintPlanner(_modelClient);
-        _generalPlanner = new GeneralPrintPlanner(_modelClient);
-        _spreadsheetPlanner = new SpreadsheetPrintPlanner(_modelClient);
-    }
-
-    public bool ConfigureFromEnvironment()
-    {
-        var endpoint = Environment.GetEnvironmentVariable("PRINTAI_AI_ENDPOINT");
-        var model = Environment.GetEnvironmentVariable("PRINTAI_AI_MODEL");
-
-        if (string.IsNullOrWhiteSpace(endpoint) ||
-            string.IsNullOrWhiteSpace(model))
-        {
+        var resolved = AntigravityLocator.Resolve(cliPath);
+        if (resolved is null)
             return false;
-        }
 
-        Configure(
-            endpoint,
-            model,
-            Environment.GetEnvironmentVariable("PRINTAI_AI_API_KEY"));
+        var options = AntigravityPlannerOptions.FromEnvironment(resolved);
+        var client = new AntigravityPlannerClient(options);
 
+        Endpoint = resolved;
+        Model = $"{options.FastModel} -> {options.DeepModel}";
+        _antigravityClient = client;
+        _planner = new PrintPlanner(client);
+        _generalPlanner = new GeneralPrintPlanner(client);
+        _spreadsheetPlanner = new SpreadsheetPrintPlanner(client);
         return true;
     }
+
+    public bool ConfigureFromEnvironment() =>
+        ConfigureAntigravity();
+
 
 
     public async Task<SpreadsheetPlanningOutcome> PlanSpreadsheetAsync(
@@ -69,7 +50,7 @@ public sealed class DesktopPlannerSession
         if (_spreadsheetPlanner is null)
         {
             throw new InvalidOperationException(
-                "AI planner is not configured. Set endpoint and model first.");
+                "Antigravity planner is not ready. Install/login to AGY or set PRINTAI_AGY_PATH.");
         }
 
         return await _spreadsheetPlanner.PlanAsync(
@@ -78,45 +59,17 @@ public sealed class DesktopPlannerSession
             cancellationToken);
     }
 
-    public async Task<SmartCollagePlan> PlanSmartCollageAsync(
+    public Task<SmartCollagePlan> PlanSmartCollageAsync(
         IReadOnlyList<DesktopPage> pages,
         IReadOnlyList<string> allowedTemplateIds,
         string? userInstruction = null,
         CancellationToken cancellationToken = default)
     {
-        if (_modelClient is null)
-        {
-            throw new InvalidOperationException(
-                "AI planner is not configured. Set endpoint and a vision-capable model first.");
-        }
-
-        if (pages.Count != 3)
-            throw new ArgumentException("Smart Collage vision currently requires exactly three pages.");
-
-        var images = new List<MultimodalImage>(3);
-
-        for (var sourceIndex = 0; sourceIndex < pages.Count; sourceIndex++)
-        {
-            var page = pages[sourceIndex];
-            var metadata = SourceInspector.Inspect(page.SourcePath);
-            var png = SourceJobRenderer.RenderSourceThumbnailPng(
-                page.SourcePath,
-                page.SourcePageIndex,
-                maxDimension: 768);
-
-            images.Add(new MultimodalImage(
-                SourceIndex: sourceIndex,
-                DataUrl: $"data:image/png;base64,{Convert.ToBase64String(png)}",
-                PixelWidth: metadata.PixelWidth,
-                PixelHeight: metadata.PixelHeight));
-        }
-
-        return await new SmartCollagePlanner(_modelClient).PlanAsync(
-            images,
-            allowedTemplateIds,
-            userInstruction,
-            cancellationToken);
+        throw new NotSupportedException(
+            "Smart Collage vision is not yet migrated to the Antigravity CLI. " +
+            "Use deterministic collage templates until the AGY local-image path is verified.");
     }
+
 
     public async Task<DesktopGeneralPlanResult> PlanGeneralAsync(
         string request,
@@ -128,7 +81,7 @@ public sealed class DesktopPlannerSession
         if (_generalPlanner is null)
         {
             throw new InvalidOperationException(
-                "AI planner is not configured. Set endpoint and model first.");
+                "Antigravity planner is not ready. Install/login to AGY or set PRINTAI_AGY_PATH.");
         }
 
         if (sourcePaths.Count == 0)
@@ -189,7 +142,7 @@ public sealed class DesktopPlannerSession
         if (_planner is null)
         {
             throw new InvalidOperationException(
-                "AI planner is not configured. Set endpoint and model first.");
+                "Antigravity planner is not ready. Install/login to AGY or set PRINTAI_AGY_PATH.");
         }
 
         var metadata = SourceInspector.Inspect(page.SourcePath);

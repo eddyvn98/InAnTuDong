@@ -198,7 +198,7 @@ Updated corpus: 92 supported, 10 capability-dependent, 10 clarification, 38 dete
 - [x] trusted physical-size validation for millimetre crop
 - [x] desktop batch UI exposes placement/crop
 - [x] all 8 crop/position gap cases moved to supported
-- [~] crop/placement CI/package verification
+- [x] crop/placement CI/package verification — CI #218 and package-windows #162 succeeded
 
 Updated corpus: 100 supported, 10 capability-dependent, 10 clarification, 30 deterministic gaps.
 

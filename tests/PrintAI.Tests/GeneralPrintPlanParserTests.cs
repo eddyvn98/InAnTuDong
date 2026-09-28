@@ -18,6 +18,32 @@ public sealed class GeneralPrintPlanParserTests
     }
 
     [Fact]
+    public void Parse_AcceptsNUpIntent()
+    {
+        var node = JsonNode.Parse(ValidJson())!.AsObject();
+        var firstGroup = node["plan"]!["outputGroups"]![0]!.AsObject();
+
+        firstGroup["nUp"] = new JsonObject
+        {
+            ["pagesPerSheet"] = 4,
+            ["columns"] = 2,
+            ["gapMm"] = 2,
+            ["marginMm"] = 5,
+            ["border"] = true,
+            ["fit"] = "contain",
+            ["autoOrientation"] = false
+        };
+
+        var outcome = GeneralPrintPlanParser.Parse(node.ToJsonString());
+        var nUp = outcome.Plan.OutputGroups[0].NUp;
+
+        Assert.NotNull(nUp);
+        Assert.Equal(4, nUp.PagesPerSheet);
+        Assert.Equal(2, nUp.Columns);
+        Assert.True(nUp.Border);
+    }
+
+    [Fact]
     public void Parse_RejectsUnknownFields()
     {
         var node = JsonNode.Parse(ValidJson())!.AsObject();

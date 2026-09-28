@@ -92,6 +92,7 @@ public sealed record DesktopPrintBatchView(
     string? Placement,
     string? Crop,
     string? Booklet,
+    string? Poster,
     bool CanAutoSequence);
 
 public sealed record DesktopJobView(

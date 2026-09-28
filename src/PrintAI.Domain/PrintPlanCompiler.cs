@@ -208,6 +208,27 @@ public static class PrintPlanCompiler
             ? $"{group.Name} - set {setNumber}/{group.Sets}"
             : group.Name;
 
+        if (group.Poster is not null)
+        {
+            var poster = PosterTilingResolver.Resolve(
+                plan,
+                group,
+                logicalSources);
+
+            return new(
+                JobName: jobName,
+                Sources: poster.Sources,
+                Paper: poster.Paper,
+                Layout: poster.Layout,
+                Print: new(
+                    Copies: 1,
+                    ColorMode: group.Print.ColorMode,
+                    Quality: group.Print.Quality,
+                    Duplex: DuplexMode.Off),
+                Policy: plan.Policy,
+                SchemaVersion: "1.0");
+        }
+
         if (group.Booklet is not null)
         {
             var booklet = BookletImpositionResolver.Resolve(

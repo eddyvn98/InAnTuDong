@@ -54,10 +54,26 @@ public static class GeneralPrintPlanSourceBinder
                     $"Planner changed physical page sizes for source {source.Path}.");
             }
 
+            if (source.PixelWidth is int proposedWidth &&
+                proposedWidth != approved.PixelWidth)
+            {
+                throw new PlanningFormatException(
+                    $"Planner changed pixel width for source {source.Path}.");
+            }
+
+            if (source.PixelHeight is int proposedHeight &&
+                proposedHeight != approved.PixelHeight)
+            {
+                throw new PlanningFormatException(
+                    $"Planner changed pixel height for source {source.Path}.");
+            }
+
             boundSources[index] = source with
             {
                 Path = fullPath,
-                Pages = approvedPages
+                Pages = approvedPages,
+                PixelWidth = approved.PixelWidth,
+                PixelHeight = approved.PixelHeight
             };
         }
 

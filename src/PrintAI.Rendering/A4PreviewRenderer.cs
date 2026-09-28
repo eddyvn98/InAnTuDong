@@ -57,22 +57,55 @@ public static class A4PreviewRenderer
                     ? job.Layout.Canvas.Placements[placement.Index]
                     : null;
 
-            DrawPlacement(
-                canvas,
-                sources[placement.SourceIndex],
-                job.Sources[placement.SourceIndex],
-                placement,
-                canvasPlacement?.Fit ?? job.Layout.Fit,
-                job.Layout.PhysicalScale,
-                job.Layout.SourceCrop,
-                dpi,
-                canvasPlacement);
+            var sourceSpec =
+                job.Sources[placement.SourceIndex];
 
-            if (job.Layout.ItemBorder)
-                DrawItemBorder(canvas, placement, dpi);
+            if (sourceSpec.PosterTile is not null)
+            {
+                PosterTileRenderer.Draw(
+                    canvas,
+                    sources[placement.SourceIndex],
+                    sourceSpec,
+                    placement,
+                    dpi);
 
-            if (job.Layout.CutMarks)
-                DrawCutMarks(canvas, placement, dpi);
+                if (sourceSpec.PosterTile.RegistrationMarks)
+                {
+                    PosterTileGuidesRenderer.DrawRegistrationMarks(
+                        canvas,
+                        placement,
+                        sourceSpec.PosterTile,
+                        dpi);
+                }
+
+                if (sourceSpec.PosterTile.TileLabel)
+                {
+                    PosterTileGuidesRenderer.DrawTileLabel(
+                        canvas,
+                        sourceSpec.PosterTile,
+                        job.Layout.MarginMm,
+                        dpi);
+                }
+            }
+            else
+            {
+                DrawPlacement(
+                    canvas,
+                    sources[placement.SourceIndex],
+                    sourceSpec,
+                    placement,
+                    canvasPlacement?.Fit ?? job.Layout.Fit,
+                    job.Layout.PhysicalScale,
+                    job.Layout.SourceCrop,
+                    dpi,
+                    canvasPlacement);
+
+                if (job.Layout.ItemBorder)
+                    DrawItemBorder(canvas, placement, dpi);
+
+                if (job.Layout.CutMarks)
+                    DrawCutMarks(canvas, placement, dpi);
+            }
         }
 
         using var image = surface.Snapshot();

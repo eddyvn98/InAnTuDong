@@ -80,8 +80,9 @@ Each source stores:
 - approved file path
 - inspected page count
 - trusted per-page physical size in millimetres when the source format exposes it
+- trusted raster pixel width/height when available, for source aspect calculations such as one-dimension poster targets
 
-For PDF, physical page size comes from deterministic source inspection. The model may not invent or change path, page count, or physical page size. The source binder replaces planner-side metadata with the inspected values before compilation.
+For PDF, physical page size comes from deterministic source inspection. Raster pixel dimensions and PDF physical dimensions are rebound from inspected values after planning. The model may not invent or change path, page count, physical page size, or source aspect metadata.
 
 ### Page selection
 
@@ -179,14 +180,14 @@ Verification for the desktop integration slice:
 
 ## Corpus-driven M7 extensions
 
-The balanced real-request corpus now reflects General N-up, physical scaling, and crop/placement:
+The balanced real-request corpus now reflects General N-up, physical scaling, crop/placement, booklet, and poster tiling:
 
 - 150 Vietnamese print requests
 - 15 categories, 10 cases each
-- 110 directly supported
+- 120 directly supported
 - 10 supported subject to printer/driver capability
 - 10 correctly require clarification
-- 20 expose missing deterministic primitives
+- 10 expose missing deterministic primitives
 
 See `docs/PRINT_INTENT_CORPUS.md`.
 
@@ -315,12 +316,47 @@ Booklet sets require `collate=true`. `sets=N` produces N complete booklet batche
 
 Booklet is intentionally not combined with General N-up, physical scaling, general crop, page placement, or Canvas in this slice.
 
-Booklet verification: CI #221 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #165 passed.
+Booklet verification: final PR-head CI #225 passed on Ubuntu + Windows with 212/212 shared tests, and package-windows #169 passed.
 
-The next capabilities are now prioritized from the remaining gaps:
+### Poster / tiled printing
 
-1. poster/tiled printing
-2. variable-size independent items in one sheet
+Poster printing is represented by a high-level `PosterSpec` and compiles to executable `LayoutMode.PosterTile` pages.
+
+Supported intent includes:
+
+- explicit assembled poster width/height in millimetres
+- one missing dimension derived from trusted source aspect ratio
+- fixed rows/columns such as 3 x 3 A4 sheets
+- overlap in millimetres
+- automatic portrait/landscape choice that minimizes physical sheet count
+- deterministic final partial tile dimensions
+- registration marks on shared tile edges
+- row/column + sequential tile labels
+- Contain or Cover mapping across the complete poster canvas
+- source physical page size as a target fallback when a PDF already describes an oversized page
+
+Tiling operates on a poster-space canvas. The model specifies only high-level target/grid/overlap intent; it never calculates per-tile source crop coordinates.
+
+For each tile, deterministic code records its rectangle in the assembled poster canvas. At render time, the actual decoded source aspect plus poster-level Contain/Cover semantics determine the exact source region and destination rectangle. This prevents the last partial tile from being stretched and ensures overlap repeats the same source content on adjacent sheets.
+
+Examples:
+
+- 60 x 90 cm -> 600 x 900 mm poster target
+- A2 -> 420 x 594 mm target
+- "3x3 tờ A4" -> fixed 3-column x 3-row grid
+- "chồng mép 5 mm" -> overlap 5 mm
+- "dấu căn ghép" -> registration marks
+- "số thứ tự từng tờ" -> tile labels
+- "rộng 1 mét" -> width 1000 mm; height comes from trusted source aspect
+- "ít tờ A4 nhất" -> automatic orientation + minimum tile count for the known target
+
+Poster tiles are simplex and currently accept exactly one selected source page. Poster is not combined with N-up, booklet, physical scaling, page placement, general crop, or Canvas in this slice.
+
+Poster/tiled verification: CI #233 passed on Ubuntu + Windows with 241/241 shared tests, and package-windows #177 passed.
+
+The next capability is now:
+
+1. variable-size independent items in one sheet
 
 These are print features. Business/order-management features remain out of scope.
 

@@ -10,6 +10,7 @@ public static class LayoutEngine
             LayoutMode.Grid => GridLayoutEngine.Layout(job),
             LayoutMode.ExactSize => ExactSizeLayoutEngine.Layout(job),
             LayoutMode.Canvas => CanvasLayoutEngine.Layout(job),
+            LayoutMode.PosterTile => PosterTileLayoutEngine.Layout(job),
             _ => throw new ArgumentOutOfRangeException(nameof(job.Layout.Mode))
         };
 }

@@ -1,12 +1,29 @@
 namespace PrintAI.Domain;
 
+public sealed record PosterTileSourceSpec(
+    int Row,
+    int Column,
+    int Rows,
+    int Columns,
+    double TargetWidthMm,
+    double TargetHeightMm,
+    double CanvasXmm,
+    double CanvasYmm,
+    double CanvasWidthMm,
+    double CanvasHeightMm,
+    double OverlapMm = 0,
+    FitMode Fit = FitMode.Contain,
+    bool RegistrationMarks = false,
+    bool TileLabel = false);
+
 public sealed record SourceSpec(
     string Path,
     int Copies = 1,
     int PageIndex = 0,
     double? OriginalWidthMm = null,
     double? OriginalHeightMm = null,
-    bool IsBlank = false);
+    bool IsBlank = false,
+    PosterTileSourceSpec? PosterTile = null);
 
 public sealed record PaperSpec(
     double WidthMm = 210,
@@ -98,7 +115,7 @@ public sealed record PrintJobSpec(
     string SchemaVersion = "1.0");
 
 public enum PageOrientation { Portrait, Landscape }
-public enum LayoutMode { Grid, ExactSize, Canvas }
+public enum LayoutMode { Grid, ExactSize, Canvas, PosterTile }
 public enum FitMode { Contain, Cover }
 public enum PhysicalScaleMode { MaxFit, ShrinkOnly, Percent }
 public enum PageAnchor

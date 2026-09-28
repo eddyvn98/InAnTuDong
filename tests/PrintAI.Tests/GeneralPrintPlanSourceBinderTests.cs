@@ -82,6 +82,59 @@ public sealed class GeneralPrintPlanSourceBinderTests
     }
 
     [Fact]
+    public void BindToAllowedSources_InjectsTrustedPixelAspect()
+    {
+        var plan = Plan("C:/print/image.png", pageCount: 1);
+
+        var bound = GeneralPrintPlanSourceBinder.BindToAllowedSources(
+            plan,
+            [
+                new PlanningSource(
+                    "C:/print/image.png",
+                    "Raster",
+                    PixelWidth: 4000,
+                    PixelHeight: 2000,
+                    PageCount: 1)
+            ]);
+
+        Assert.Equal(4000, bound.Sources[0].PixelWidth);
+        Assert.Equal(2000, bound.Sources[0].PixelHeight);
+    }
+
+    [Fact]
+    public void BindToAllowedSources_RejectsPlannerRewrittenPixelAspect()
+    {
+        var plan = Plan("C:/print/image.png", pageCount: 1) with
+        {
+            Sources =
+            [
+                new PlanSourceSpec(
+                    "C:/print/image.png",
+                    1,
+                    PixelWidth: 999,
+                    PixelHeight: 999)
+            ]
+        };
+
+        var error = Assert.Throws<PlanningFormatException>(() =>
+            GeneralPrintPlanSourceBinder.BindToAllowedSources(
+                plan,
+                [
+                    new PlanningSource(
+                        "C:/print/image.png",
+                        "Raster",
+                        PixelWidth: 4000,
+                        PixelHeight: 2000,
+                        PageCount: 1)
+                ]));
+
+        Assert.Contains(
+            "pixel width",
+            error.Message,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void BindToAllowedSources_RejectsChangedPageCount()
     {
         var plan = Plan("C:/print/doc.pdf", pageCount: 99);

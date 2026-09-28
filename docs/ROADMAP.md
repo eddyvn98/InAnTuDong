@@ -213,14 +213,31 @@ Updated corpus: 100 supported, 10 capability-dependent, 10 clarification, 30 det
 - [x] configurable center gutter
 - [x] complete booklet sets via collated batches
 - [x] all 10 booklet gap cases moved to supported
-- [x] booklet CI/package verification — CI #221 and package-windows #165 succeeded
+- [x] booklet CI/package verification — final PR-head CI #225 and package-windows #169 succeeded
 
 Updated corpus: 110 supported, 10 capability-dependent, 10 clarification, 20 deterministic gaps.
 
+### Poster / tiled printing slice
+
+- [x] high-level `PosterSpec`
+- [x] target width/height in physical millimetres
+- [x] missing dimension from trusted source aspect
+- [x] fixed rows/columns grid
+- [x] automatic minimum-sheet orientation
+- [x] physical overlap
+- [x] partial final tile with exact physical dimensions
+- [x] poster-level Contain/Cover source mapping
+- [x] registration marks on shared edges
+- [x] tile row/column + sequential labels
+- [x] complete poster sets via collated batches
+- [x] all 10 poster gap cases moved to supported
+- [x] poster/tile CI/package verification — CI #233 and package-windows #177 succeeded
+
+Updated corpus: 120 supported, 10 capability-dependent, 10 clarification, 10 deterministic gaps.
+
 ### Next slices
 
-- [ ] poster/tiled printing — selected next from corpus
-- [ ] independent per-item physical sizes on one sheet
+- [ ] independent per-item physical sizes on one sheet — selected next from corpus
 
 Exit: representative real print requests can be expressed as a validated PrintPlan, compiled deterministically into executable jobs, previewed and printed without adding business-management scope.
 

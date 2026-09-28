@@ -96,7 +96,7 @@ Required before tagged preview release:
 - per-printer reinsert order/rotation is explicit profile data
 - verified manual-duplex status requires real-paper confirmation
 
-Software implementation is tracked in PR #29 and `docs/MANUAL_DUPLEX.md`.
+Software implementation was merged in PR #29. CI and the Windows package workflow are green; physical printer calibration remains required. See `docs/MANUAL_DUPLEX.md`.
 
 ### 8. Field validation matrix
 

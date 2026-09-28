@@ -145,6 +145,7 @@ public static class PrintPlanValidator
         ValidateScaling(group, prefix, errors);
         ValidatePlacement(group, prefix, errors);
         ValidateCrop(plan, group, prefix, errors);
+        ValidateBooklet(group, prefix, errors);
 
         if (group.NUp is null &&
             group.Layout.Mode == LayoutMode.Canvas)
@@ -188,7 +189,8 @@ public static class PrintPlanValidator
                 error.Code.StartsWith("plan.groups.nup", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.scaling", StringComparison.Ordinal) ||
                 error.Code.StartsWith("plan.groups.placement", StringComparison.Ordinal) ||
-                error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal)))
+                error.Code.StartsWith("plan.groups.crop", StringComparison.Ordinal) ||
+                error.Code.StartsWith("plan.groups.booklet", StringComparison.Ordinal)))
         {
             var firstSelection = group.Selections[0];
             var firstPage = ResolvePages(plan, firstSelection)[0];

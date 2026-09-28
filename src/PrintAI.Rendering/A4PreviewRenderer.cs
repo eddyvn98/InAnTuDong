@@ -36,7 +36,14 @@ public static class A4PreviewRenderer
         var canvas = surface.Canvas;
         canvas.Clear(SKColors.White);
 
-        foreach (var placement in layout.Placements.Where(p => p.Page == page))
+        var pagePlacements = layout.Placements.Where(p => p.Page == page);
+        if (job.Layout.Mode == LayoutMode.Canvas && job.Layout.Canvas is not null)
+        {
+            pagePlacements = pagePlacements.OrderBy(p =>
+                job.Layout.Canvas.Placements[p.Index].ZIndex);
+        }
+
+        foreach (var placement in pagePlacements)
         {
             if (placement.SourceIndex < 0 ||
                 placement.SourceIndex >= sources.Count)
@@ -45,12 +52,18 @@ public static class A4PreviewRenderer
                     $"Placement references unavailable source index {placement.SourceIndex}.");
             }
 
+            var canvasPlacement =
+                job.Layout.Mode == LayoutMode.Canvas && job.Layout.Canvas is not null
+                    ? job.Layout.Canvas.Placements[placement.Index]
+                    : null;
+
             DrawPlacement(
                 canvas,
                 sources[placement.SourceIndex],
                 placement,
-                job.Layout.Fit,
-                dpi);
+                canvasPlacement?.Fit ?? job.Layout.Fit,
+                dpi,
+                canvasPlacement);
 
             if (job.Layout.CutMarks)
                 DrawCutMarks(canvas, placement, dpi);
@@ -66,7 +79,8 @@ public static class A4PreviewRenderer
         SKBitmap source,
         Placement placement,
         FitMode fit,
-        int dpi)
+        int dpi,
+        CanvasPlacementSpec? canvasPlacement = null)
     {
         var left = MmToPxF(placement.XMm, dpi);
         var top = MmToPxF(placement.YMm, dpi);
@@ -87,6 +101,18 @@ public static class A4PreviewRenderer
         }
 
         var target = new SKRect(left, top, left + width, top + height);
+
+        if (canvasPlacement is not null && Math.Abs(canvasPlacement.RotationDegrees) > 0.01)
+        {
+            var centerX = target.MidX;
+            var centerY = target.MidY;
+            canvas.Translate(centerX, centerY);
+            canvas.RotateDegrees((float)canvasPlacement.RotationDegrees);
+            target = new SKRect(-width / 2, -height / 2, width / 2, height / 2);
+        }
+
+        ClipFrame(canvas, target, canvasPlacement?.Shape, dpi);
+
         var geometry = ContentFitCalculator.Calculate(
             source.Width,
             source.Height,
@@ -94,10 +120,13 @@ public static class A4PreviewRenderer
             target.Height,
             fit);
 
-        var sourceRect = ToSourceRect(source, geometry.Source);
+        var transform = canvasPlacement?.Transform ?? new ImageTransformSpec();
+        var sourceRect = TransformSourceRect(
+            ToSourceRect(source, geometry.Source),
+            source,
+            transform);
         var destinationRect = ToDestinationRect(target, geometry.Destination);
 
-        canvas.ClipRect(target);
         var sampling = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.None);
         canvas.DrawBitmap(source, sourceRect, destinationRect, sampling);
         canvas.Restore();
@@ -122,6 +151,72 @@ public static class A4PreviewRenderer
                 MmToPxF(mark.Y2Mm, dpi),
                 paint);
         }
+    }
+
+    private static void ClipFrame(
+        SKCanvas canvas,
+        SKRect target,
+        ShapeSpec? shape,
+        int dpi)
+    {
+        shape ??= new ShapeSpec();
+
+        switch (shape.Kind)
+        {
+            case FrameShape.Circle:
+            {
+                var radius = Math.Min(target.Width, target.Height) / 2;
+                canvas.ClipPath(CreateOvalPath(new SKRect(
+                    target.MidX - radius,
+                    target.MidY - radius,
+                    target.MidX + radius,
+                    target.MidY + radius)));
+                break;
+            }
+            case FrameShape.Ellipse:
+                canvas.ClipPath(CreateOvalPath(target));
+                break;
+            case FrameShape.RoundedRectangle:
+            {
+                var radius = Math.Min(
+                    MmToPxF(shape.CornerRadiusMm, dpi),
+                    Math.Min(target.Width, target.Height) / 2);
+                using var path = new SKPath();
+                path.AddRoundRect(target, radius, radius);
+                canvas.ClipPath(path);
+                break;
+            }
+            default:
+                canvas.ClipRect(target);
+                break;
+        }
+    }
+
+    private static SKPath CreateOvalPath(SKRect rect)
+    {
+        var path = new SKPath();
+        path.AddOval(rect);
+        return path;
+    }
+
+    private static SKRect TransformSourceRect(
+        SKRect sourceRect,
+        SKBitmap source,
+        ImageTransformSpec transform)
+    {
+        var scale = Math.Max(0.01, transform.Scale);
+        var width = sourceRect.Width / (float)scale;
+        var height = sourceRect.Height / (float)scale;
+        var maxLeft = Math.Max(0, source.Width - width);
+        var maxTop = Math.Max(0, source.Height - height);
+        var centerX = sourceRect.MidX +
+            (float)(transform.OffsetX * sourceRect.Width * 0.5);
+        var centerY = sourceRect.MidY +
+            (float)(transform.OffsetY * sourceRect.Height * 0.5);
+        var left = Math.Clamp(centerX - width / 2, 0, maxLeft);
+        var top = Math.Clamp(centerY - height / 2, 0, maxTop);
+
+        return new SKRect(left, top, left + width, top + height);
     }
 
     private static SKRect ToSourceRect(SKBitmap source, NormalizedRect rect) =>

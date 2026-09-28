@@ -44,7 +44,10 @@ public sealed record DesktopDuplexView(
     string? PrinterName,
     bool ProfileVerified,
     string? Instruction,
-    bool CanContinueBack);
+    bool CanContinueBack,
+    string BackOrder,
+    int LongEdgeBackRotationDegrees,
+    int ShortEdgeBackRotationDegrees);
 
 public sealed record DesktopReadinessView(
     bool ReadyForCorePrinting,

@@ -1,7 +1,8 @@
 using System.Drawing;
-using System.IO;
 using System.Drawing.Printing;
+using System.IO;
 using System.Printing;
+using PrintAI.Domain;
 
 namespace PrintAI.Windows.Printing;
 
@@ -28,13 +29,52 @@ public static class WindowsSpoolerPrinter
         double paperHeightMm,
         bool landscape,
         PrinterDeviceProfile? profile = null,
-        short copies = 1)
+        short copies = 1) =>
+        SubmitPages(
+            printerName,
+            [new PrintablePage(pngPath)],
+            paperWidthMm,
+            paperHeightMm,
+            landscape,
+            profile,
+            copies,
+            DuplexMode.Off);
+
+    public static PrintSubmissionResult SubmitPages(
+        string printerName,
+        IReadOnlyList<PrintablePage> pages,
+        double paperWidthMm,
+        double paperHeightMm,
+        bool landscape,
+        PrinterDeviceProfile? profile = null,
+        short copies = 1,
+        DuplexMode duplex = DuplexMode.Off)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(printerName);
-        ArgumentException.ThrowIfNullOrWhiteSpace(pngPath);
+        ArgumentNullException.ThrowIfNull(pages);
 
-        if (!File.Exists(pngPath))
-            return Failed(printerName, "unknown", $"PNG file not found: {pngPath}");
+        if (pages.Count == 0)
+            return Failed(printerName, "unknown", "At least one printable page is required.");
+
+        foreach (var page in pages)
+        {
+            if (string.IsNullOrWhiteSpace(page.PngPath) ||
+                !File.Exists(page.PngPath))
+            {
+                return Failed(
+                    printerName,
+                    "unknown",
+                    $"PNG file not found: {page.PngPath}");
+            }
+
+            if (page.RotationDegrees is not (0 or 180))
+            {
+                return Failed(
+                    printerName,
+                    "unknown",
+                    "Printable page rotation must be 0 or 180 degrees.");
+            }
+        }
 
         if (copies <= 0)
             return Failed(printerName, "unknown", "Copies must be greater than zero.");
@@ -48,7 +88,6 @@ public static class WindowsSpoolerPrinter
 
         try
         {
-            using var image = Image.FromFile(pngPath);
             using var document = new PrintDocument();
 
             document.DocumentName = documentName;
@@ -59,6 +98,15 @@ public static class WindowsSpoolerPrinter
 
             if (!document.PrinterSettings.IsValid)
                 return Failed(printerName, documentName, "Windows reports the printer as invalid.");
+
+            if (duplex != DuplexMode.Off &&
+                !document.PrinterSettings.CanDuplex)
+            {
+                return Failed(
+                    printerName,
+                    documentName,
+                    "The printer driver does not advertise automatic duplex. Use the guided manual-duplex path.");
+            }
 
             var paper = FindPaper(
                 document.PrinterSettings,
@@ -76,12 +124,23 @@ public static class WindowsSpoolerPrinter
 
             document.DefaultPageSettings.PaperSize = paper;
             document.DefaultPageSettings.Landscape = landscape;
-            document.DefaultPageSettings.Color = document.PrinterSettings.SupportsColor;
+            document.DefaultPageSettings.Color =
+                document.PrinterSettings.SupportsColor;
+            document.PrinterSettings.Duplex =
+                ResolveDuplexSetting(duplex, landscape);
+
+            var pageIndex = 0;
 
             document.PrintPage += (_, e) =>
             {
                 if (e.Graphics is null)
                     throw new InvalidOperationException("Printer graphics context is unavailable.");
+
+                var printablePage = pages[pageIndex];
+
+                using var image = Image.FromFile(printablePage.PngPath);
+                if (printablePage.RotationDegrees == 180)
+                    image.RotateFlip(RotateFlipType.Rotate180FlipNone);
 
                 e.Graphics.PageUnit = GraphicsUnit.Millimeter;
 
@@ -103,12 +162,15 @@ public static class WindowsSpoolerPrinter
                     image,
                     new RectangleF(0, 0, targetWidth, targetHeight));
 
-                e.HasMorePages = false;
+                pageIndex++;
+                e.HasMorePages = pageIndex < pages.Count;
             };
 
             document.Print();
 
-            var job = SpoolerJobMonitor.FindByDocumentName(printerName, documentName);
+            var job = SpoolerJobMonitor.FindByDocumentName(
+                printerName,
+                documentName);
 
             return new(
                 State: job is null
@@ -123,6 +185,21 @@ public static class WindowsSpoolerPrinter
             return Failed(printerName, documentName, ex.Message);
         }
     }
+
+    public static Duplex ResolveDuplexSetting(
+        DuplexMode duplex,
+        bool landscape) =>
+        duplex switch
+        {
+            DuplexMode.Off => Duplex.Simplex,
+            DuplexMode.LongEdge => landscape
+                ? Duplex.Horizontal
+                : Duplex.Vertical,
+            DuplexMode.ShortEdge => landscape
+                ? Duplex.Vertical
+                : Duplex.Horizontal,
+            _ => Duplex.Simplex
+        };
 
     public static bool MatchesPaperSize(
         PaperCapability paper,

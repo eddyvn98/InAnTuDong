@@ -6,6 +6,7 @@ public sealed class LocalWorkflowPlanner
 {
     private readonly AntigravityPlannerClient? _client;
     private readonly PrintPlanner? _planner;
+    private string? _lastTier;
 
     public LocalWorkflowPlanner()
     {
@@ -19,18 +20,38 @@ public sealed class LocalWorkflowPlanner
         var options = AntigravityPlannerOptions.FromEnvironment(cliPath);
         _client = new AntigravityPlannerClient(options);
         _planner = new PrintPlanner(_client);
-        Readiness = new(true, $"{options.FastModel} → {options.DeepModel}", "AGY đã sẵn sàng.");
+        Readiness = new(true,
+            $"A4 đen trắng có sẵn · AGY {options.FastModel} → {options.DeepModel} khi cần",
+            "AGY đã sẵn sàng.");
     }
 
     public LocalPlannerReadiness Readiness { get; }
-    public string? LastTier => _client?.LastExecution?.Tier;
+    public string? LastTier => _lastTier ?? _client?.LastExecution?.Tier;
 
     public Task<PlanningOutcome> PlanAsync(
         PlanningRequest request,
         CancellationToken cancellationToken,
         IProgress<PlannerProgressUpdate>? progress = null) =>
-        (_planner ?? throw new InvalidOperationException("AGY chưa sẵn sàng."))
-        .PlanAsync(request, cancellationToken, progress);
+        PlanCoreAsync(request, cancellationToken, progress);
+
+    private async Task<PlanningOutcome> PlanCoreAsync(
+        PlanningRequest request,
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress)
+    {
+        if (SimpleA4MonochromePlanner.TryPlan(request, out var quickPlan))
+        {
+            _lastTier = "fast-rules";
+            progress?.Report(new(
+                "status",
+                "Yêu cầu khớp luồng A4 đen trắng có sẵn; đang xử lý nhanh, không cần gọi AGY."));
+            return quickPlan;
+        }
+
+        _lastTier = null;
+        return await (_planner ?? throw new InvalidOperationException("AGY chưa sẵn sàng."))
+            .PlanAsync(request, cancellationToken, progress);
+    }
 }
 
 public sealed record LocalPlannerReadiness(bool IsReady, string? Models, string Message);

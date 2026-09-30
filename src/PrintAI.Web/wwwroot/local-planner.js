@@ -141,11 +141,7 @@ async function handlePlanEvent(frame) {
     pendingQuestion = (payload.questions || []).join(" · ");
     byId("planner-question").textContent = `Cần làm rõ: ${pendingQuestion}`;
     byId("planner-clarification").hidden = false;
-    const plannerName = payload.tier === "fast-rules" ? "Luồng nhanh" : "AGY";
-    byId("planner-answer-button").textContent = payload.tier === "fast-rules"
-      ? "Xác nhận & tiếp tục"
-      : "Gửi trả lời cho AGY";
-    planStage = `${plannerName} phản hồi sau ${(payload.durationMilliseconds / 1000).toFixed(1)} giây. Trả lời bên dưới để lập tiếp kế hoạch`;
+    planStage = `AGY đã trả lời sau ${(payload.durationMilliseconds / 1000).toFixed(1)} giây. Trả lời bên dưới để AGY lập tiếp kế hoạch`;
     updatePlanTimer();
     byId("planner-answer").focus();
     return;
@@ -157,11 +153,9 @@ async function handlePlanEvent(frame) {
   previewReady = false;
   byId("pdf-button").disabled = false;
   updatePrintButton();
-  const plannerName = payload.tier === "fast-rules"
-    ? "Luồng nhanh"
-    : `AGY ${payload.tier || "planner"} · ${Math.round(payload.confidence * 100)}%`;
   byId("job-summary").textContent =
-    `${plannerName} · ${(payload.durationMilliseconds / 1000).toFixed(1)} giây · ` +
+    `AGY ${payload.tier || "planner"} · ${Math.round(payload.confidence * 100)}% · ` +
+    `${(payload.durationMilliseconds / 1000).toFixed(1)} giây · ` +
     `${activeJob.itemCount} mục · ${activeJob.outputPageCount} trang A4`;
   byId("planner-result").textContent = payload.warnings?.length
     ? `Lưu ý: ${payload.warnings.join(" · ")}`

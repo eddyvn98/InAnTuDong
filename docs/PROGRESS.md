@@ -1,6 +1,6 @@
 # Progress / Session Handoff
 
-Last updated: 2026-09-28
+Last updated: 2026-09-30
 
 ## Current milestone
 
@@ -1218,6 +1218,40 @@ Current local-web limitation:
 
 See `docs/LOCAL_WEB.md`.
 
+## M8 macOS local browser workflow
+
+The repository's `PrintAI.Web` demo runs cross-platform on macOS with the .NET 10 SDK. On this Apple Silicon Mac, SDK 10.0.401 is installed per-user at `~/.dotnet`, and `.zprofile` adds it to PATH for future login shells. Local runs default to `127.0.0.1:5272`; deployments with `PORT` configured retain the `0.0.0.0` binding expected by hosting platforms. `PRINTAI_WEB_HOST` can override the bind address.
+
+The Mac local route supports image/PDF upload, source inspection, manual layout settings, optional AGY natural-language print planning, multi-page A4 preview, 300 DPI PDF export and selected CUPS queue submission. Planned jobs are parsed/validated, rebound to the uploaded-source allowlist, laid out locally, and forced through preview before export or print. Printing reuses the generated job PDF, checks the chosen destination against the current CUPS list, and bounds print copies to 100. It calls `/usr/bin/lp` with separate arguments and never accepts a shell command or local path from the browser. Uploads and outputs are process-scoped temporary files and removed at shutdown. Per-process limits are 100 files/256 MB, 100 MB per file, 200 PDF pages per source, 1,000 placements and 20 output pages.
+
+The route is registered only for a local loopback run with no hosting `PORT`; it uses a process-random session header, loopback/Host/Origin checks and no CORS. Railway retains the generated-data demo. Mac scanning is not implemented.
+
+Verification at initial Mac web setup: `PrintAI.Web` built on this Apple Silicon Mac with 0 warnings/errors. Manual local browser flow uploaded a generated PNG and a two-page PDF, inspected both pages, created and navigated a four-page A4 job, rendered page 2, and exported its four-page 300 DPI PDF. CUPS reports no configured printer on this Mac; the app exposes that state and disables sending until one is added. `/health` remains available; the listener is loopback-only on `127.0.0.1:5272`.
+
+Next physical-print task: add a printer in macOS System Settings, reload the printer list, and validate one reviewed A4 job for scale, media and driver settings. Then validate representative JPG and HEIC/HEIF inputs.
+
+## M8 AGY trial on macOS
+
+On 2026-09-30, local AGY CLI 1.1.9 was available. The first model-list response was incomplete; a fresh query confirmed the configured Gemini 3.8 Flash medium/high models are available, along with Gemini 3.7/3.6 Flash tiers, Gemini 3.1 Pro, Claude Sonnet 4.6, Claude Opus 4.6 Thinking, and GPT-OSS 120B medium.
+
+Initial synthetic 4x6 cm / 20-copy trials through the actual planners exposed two issues: the schema described planner payloads only as generic objects, and the runner always supplied `--effort`, which model-tier slugs and Claude Sonnet do not uniformly accept. Earlier calls also returned extra fields (`items`, `summary`) rejected by the domain parsers. The first Gemini 3.6 low direct trial had no capacity (503).
+
+Fixed the schema to export complete closed JSON contracts from `PrintJobSpec`/`PrintPlan`; effort now defaults to `auto`, omits unsupported/redundant flags, and rejects explicit effort that conflicts with a model's embedded tier. Gemini 3.8 medium/high defaults are retained. Focused planner tests pass (6/6).
+
+Two live synthetic 4x6 cm / 20-copy calls through the real `PrintPlanner` and `AntigravityPlannerClient` now pass strict parsing, validation, and deterministic layout: 40.7s / 31.2s, fast tier, no escalation, confidence 0.95 / 0.98. Both produced 40x60 mm items on A4; the second produced 20 placements on one page (3x7 grid). No printer command was sent. The Mac has no configured CUPS printer, so physical output remains unverified.
+
+The loopback-only Mac web flow now exposes AGY readiness and natural-language planning. Browser smoke check on this Mac: AGY readiness showed Gemini 3.8 medium/high; an uploaded synthetic 1200x1800 PNG plus “4x6 cm, 20 bản, xếp trên giấy A4, không cắt ảnh” returned AGY fast at 98% confidence and a validated 20-item, two-page job. Both deterministic previews rendered, and PDF export completed in the UI. The source ID was server-bound, and the print action remained disabled because CUPS has no configured printer. No print command was sent. The local host remains on `127.0.0.1:5272`.
+
+Next task: validate one ambiguous request through the browser, then add a printer and check physical scale/media settings before treating physical printing as verified.
+
+## M8 local web multi-file gallery and AGY queue
+
+The Mac local web flow now uploads files immediately after selection, renders each source as a thumbnail, supports selecting multiple sources for a request, and removes selected sources from the process session. Removing sources also invalidates derived print jobs and cancels queued requests that reference those sources. AGY requests can be queued and run sequentially; clarification pauses the queue until answered, and completed jobs remain selectable for preview.
+
+Manual verification on 2026-09-30 used generated, non-user test images on `127.0.0.1:5274` after confirming that port was free. Selecting two images uploaded both without an upload button and showed both thumbnails; a single-source request entered the queue, AGY fast returned a validated one-item/one-page A4 job in 16.9 seconds, and preview rendered. The authenticated thumbnail and source-removal APIs passed, including removal of the linked job. `PrintAI.Web` builds with 0 warnings/errors, and the four local JavaScript files pass syntax checks. Existing user sessions on 5272 and 5273 were left running.
+
+Next task: open `http://127.0.0.1:5274/` to use the updated local web session. Continue physical printer scale/media verification when a Mac printer is configured.
+
 Automated verification for commit `f3f923e2e00aa06680b6c1fda09ebff875cbf947`:
 
 - GitHub CI #251: success on Ubuntu + Windows
@@ -1237,3 +1271,41 @@ Next concrete task after merge:
 2. measure AGY cold/warm latency through the browser path;
 3. decide whether persistent `stream-json` is justified;
 4. migrate the highest-value remaining desktop controls to browser mode.
+
+## M8 web UI consistency pass
+
+The macOS/Windows local workflow and Railway demo now share `wwwroot/site.css` for color, typography, controls, cards, focus states and responsive layout. Removed page-level style duplication, corrected the local printer label to be platform-neutral, and made online/degraded/offline status colors reflect actual state. A browser review found and fixed a hidden delete-confirmation panel that was exposed by the new flex styling. Manual browser review on the local workflow and demo confirmed the shared styling, the hidden-state fix, demo preview rendering, and online status. `PrintAI.Web` builds with 0 warnings and 0 errors.
+
+The local web manual dimensions/copies/gap/margin form has since been removed at the user's request. Job creation now stays on the AGY request queue, which already creates and previews the validated job; PDF export and printer controls remain available for that job. Removed the obsolete manual-preview handler. Browser refresh confirmed AGY readiness, preserved the current uploaded-source session, and showed no remaining manual-size controls; CUPS has no printer configured on this Mac.
+
+The web action buttons now use a shared local SVG icon sprite, including dynamically rendered queue and page controls. Each icon button retains an accessible name and hover title, while queue state text remains in a live status element outside the button. Browser visual review confirms icon rendering on the local workflow.
+
+Added a source-file preview dialog opened from each thumbnail, with page navigation for PDFs. AGY request submission stays disabled until every selected source has been rendered in that dialog. After AGY creates a print job, its output preview must finish decoding before print becomes available; printer controls are now positioned below that preview. Built with 0 warnings/errors and manually checked the rendered source preview and request gate on a separate local port with generated test data. The existing 5275 session was preserved because restarting it would delete its uploaded temporary files. Physical print remains unavailable until a Mac CUPS printer is configured.
+
+Next concrete task: continue the M8 real-browser validation of the packaged Windows app and record cold/warm AGY latency.
+
+## M8 inline source review
+
+Replaced the source-preview popup and page navigation controls with a scrollable source review panel beside the AGY input on desktop. The first selected source appears automatically; thumbnails switch the source being reviewed. PDF pages load near the scroll position and release their preview images when they leave the review window. The AGY request remains locked until the first source page is rendered and actually visible for each selected file. Browser review on `127.0.0.1:5276` confirmed the prompt and original page are side by side and the source can be scrolled. The existing session on `5275` remains untouched.
+
+Next concrete task: continue the M8 real-browser validation of the packaged Windows app and record cold/warm AGY latency.
+
+## M8 local preview workspace layout
+
+Reworked the local web workspace so source upload and AGY planning stay in a narrower left column while the original/output preview fills the right column. Removed the global header and reduced the printer controls to a 230 px selector, 76 px copy count and 36 px icon actions above the preview. Replaced the numbered page-check section with icon-only original and pre-print preview switches; moved PDF export beside the preview.
+
+Manual browser review on `127.0.0.1:5276` confirmed the wide original preview, printer toolbar placement, icon-only preview switches and responsive two-column desktop layout. The original-view interaction rendered the existing PDF. The pre-print view stays disabled until a generated job has a decoded preview; it was not exercised because this pass did not submit the existing meeting document to AGY. No printer was configured and no print was sent.
+
+The user clarified that the earlier upload error came from opening the wrong port. Duplicate local web servers were consolidated to `127.0.0.1:5276`; ports 5272–5275 were stopped with the user's confirmation, clearing their per-process temporary sessions.
+
+Next concrete task: exercise the pre-print switch using synthetic test input after AGY creates a preview, then continue the M8 packaged-Windows validation.
+
+## M8 multi-page source preview thumbnails
+
+The original-source preview now uses a page thumbnail sidebar beside one large selected page. Selecting a thumbnail loads that page in the main viewer. The sidebar is shown only for multi-page sources; thumbnail images lazy-load near the sidebar viewport and release when scrolled away.
+
+Manual browser review on `127.0.0.1:5276` with a three-page source confirmed all page thumbnails appear and selecting page 2 updates the large viewer to page 2. The standalone macOS web host currently accepts images and PDF; this UI works for any multi-page source the host returns, while direct Office upload/conversion remains outside this change.
+
+Final pre-PR verification: `PrintAI.Web` builds with 0 warnings and 0 errors; shared suite passes 272/272; all local workflow JavaScript files pass `node --check`; `git diff --check` is clean.
+
+Next concrete task: if Office upload is needed on the standalone macOS web host, connect its existing document-conversion library and validate one real Office file; otherwise continue packaged-Windows validation.

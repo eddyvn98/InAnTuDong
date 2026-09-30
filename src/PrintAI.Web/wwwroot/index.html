@@ -4,33 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Print AI</title>
-  <style>
-    :root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f6fa}
-    *{box-sizing:border-box} body{margin:0}
-    main{max-width:1100px;margin:0 auto;padding:32px 20px 56px}
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-    h1{font-size:28px;margin:0}.badge{background:#e8fff1;color:#087a43;padding:8px 12px;border-radius:999px;font-size:13px}
-    .grid{display:grid;grid-template-columns:1fr .9fr;gap:20px}
-    .card{background:white;border:1px solid #e3e7ef;border-radius:18px;padding:20px;box-shadow:0 8px 24px rgba(20,30,55,.05)}
-    textarea{width:100%;min-height:120px;border:1px solid #ccd3df;border-radius:12px;padding:14px;font:inherit;resize:vertical}
-    button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;background:#172033;color:white}
-    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.chip{background:#f0f3f8;padding:7px 10px;border-radius:999px;font-size:13px}
-    .paper{display:block;width:min(100%,368px);aspect-ratio:210/297;object-fit:contain;background:white;border:1px solid #cbd2df;box-shadow:0 10px 35px rgba(20,30,55,.12);margin:0 auto}
-    .muted{color:#6b7280;font-size:14px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
-    .stat{background:#f6f8fb;border-radius:10px;padding:10px}.stat b{display:block;font-size:18px}
-    @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  </style>
+  <link rel="stylesheet" href="/site.css?v=svg-buttons">
 </head>
 <body>
-<main>
-  <header><div><h1>Print AI</h1><div class="muted">M1 deterministic A4 engine · Railway demo</div></div><span class="badge" id="health">checking…</span></header>
+<main class="demo">
+  <header><div><h1>Print AI</h1><div class="muted">M1 deterministic A4 engine · local web demo</div></div><span class="badge" id="health">checking…</span></header>
   <div class="grid">
     <section class="card">
       <h2>Yêu cầu in</h2>
       <div class="chips"><span class="chip">generated-demo.png ×20</span><span class="chip">40 × 60 mm</span><span class="chip">cover</span><span class="chip">cut marks</span></div>
-      <textarea>Ảnh 4x6cm, 20 bản, xếp tiết kiệm A4 nhất, chừa khe 3mm và có đường cắt.</textarea>
+      <label for="demo-request">Yêu cầu mẫu</label>
+      <textarea id="demo-request" readonly>Ảnh 4x6cm, 20 bản, xếp tiết kiệm A4 nhất, chừa khe 3mm và có đường cắt.</textarea>
       <p class="muted">Preview bên phải là PNG thật do SkiaSharp render từ geometry tính bằng mm.</p>
-      <button id="run">Render lại preview</button>
+      <button id="run" class="icon-only" aria-label="Render lại preview" title="Render lại preview"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#refresh"></use></svg></button>
       <div class="stats">
         <div class="stat"><span class="muted">Lưới</span><b id="gridStat">-</b></div>
         <div class="stat"><span class="muted">Mỗi trang</span><b id="capStat">-</b></div>
@@ -52,9 +38,13 @@ async function checkHealth(){
   try{
     const r=await fetch('/health');
     const j=await r.json();
-    document.querySelector('#health').textContent=j.status==='ok'?'service online':'degraded';
+    const health=document.querySelector('#health');
+    health.textContent=j.status==='ok'?'service online':'degraded';
+    health.dataset.state=j.status==='ok'?'success':'neutral';
   }catch{
-    document.querySelector('#health').textContent='offline';
+    const health=document.querySelector('#health');
+    health.textContent='offline';
+    health.dataset.state='error';
   }
 }
 async function run(){

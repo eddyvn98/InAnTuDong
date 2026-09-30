@@ -31,7 +31,7 @@ This file prevents project drift between AI/chat sessions.
 - Avoid Epson UI automation except as a documented fallback.
 - Keep source files focused and reasonably small.
 - New meaningful dependencies must be documented in `docs/LIBRARIES.md`.
-- Railway remains test/demo only; production printer/scanner control and the local web/desktop surface stay on the same Windows machine.
+- Railway remains test/demo only. Windows remains the production scanner target. The cross-platform `PrintAI.Web` host supports macOS local upload, preview, PDF export, and direct CUPS printer submission through a dedicated adapter; real-device print fidelity still requires validation on a configured Mac printer.
 - Natural-language planning uses the installed Antigravity CLI by default. Do not add a hidden AI API-key dependency.
 - Antigravity may propose structured print intent only; deterministic PrintAI code owns validation, geometry, preview, policy and spooler execution.
 

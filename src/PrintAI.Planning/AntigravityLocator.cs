@@ -15,8 +15,15 @@ public static class AntigravityLocator
                 return explicitPath;
         }
 
+        var userLocalCli = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".local",
+            "bin",
+            "agy");
+
         return ResolveCandidate("agy.exe") ??
-               ResolveCandidate("agy");
+               ResolveCandidate("agy") ??
+               ResolveCandidate(userLocalCli);
     }
 
     private static string? ResolveCandidate(string candidate)

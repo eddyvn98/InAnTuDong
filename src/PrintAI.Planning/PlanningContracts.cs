@@ -16,7 +16,14 @@ public sealed record PlanningRequest(
 
 public sealed record PlannerModelRequest(
     string SystemInstruction,
-    string UserPayload);
+    string UserPayload,
+    IProgress<PlannerProgressUpdate>? Progress = null);
+
+public sealed record PlannerProgressUpdate(
+    string Kind,
+    string Message,
+    string? Delta = null,
+    long? ElapsedMilliseconds = null);
 
 public interface IPlannerModelClient
 {

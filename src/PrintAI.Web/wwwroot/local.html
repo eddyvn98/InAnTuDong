@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print AI · Local</title>
+  <link rel="stylesheet" href="/site.css?v=office-page-thumbnails-v1">
+</head>
+<body>
+<main>
+  <span id="status" class="sr-only" role="status" aria-live="polite">Đang kết nối…</span>
+  <div class="grid local-workspace">
+    <section class="workflow-column">
+      <div class="card">
+        <h2>Chọn ảnh hoặc PDF</h2>
+        <form id="upload-form">
+          <div class="row"><label id="choose-files-button" for="files-input" class="button icon-only" aria-label="Chọn ảnh hoặc PDF" title="Chọn ảnh hoặc PDF"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#upload"></use></svg></label><button id="remove-sources-button" class="danger secondary icon-only" type="button" aria-label="Xóa file đang chọn" title="Xóa file đang chọn" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#trash"></use></svg></button><input id="files-input" class="file-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple></div>
+          <div id="upload-status" class="muted inline-note" aria-live="polite"></div>
+        </form>
+        <div class="muted inline-note">Tối đa 100 MB mỗi tệp, 256 MB mỗi phiên. PDF tối đa 200 trang.</div>
+        <div id="source-delete-confirm" class="queue-entry" role="alert" hidden>
+          <div id="source-delete-text" class="queue-entry-text"></div>
+          <div class="row"><button id="source-delete-confirm-button" class="danger icon-only" type="button" aria-label="Xóa file" title="Xóa file"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#trash"></use></svg></button><button id="source-delete-cancel-button" class="secondary icon-only" type="button" aria-label="Giữ lại" title="Giữ lại"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#close"></use></svg></button></div>
+        </div>
+        <div id="sources"></div>
+      </div>
+      <div id="job-form" class="card" hidden>
+        <div class="planner-layout">
+          <div class="planner-controls">
+            <h2>Mô tả cách in</h2>
+            <label for="planner-request">Yêu cầu in, AGY sẽ lập kế hoạch</label>
+            <textarea id="planner-request" class="local-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4"></textarea>
+            <div id="planner-status" class="muted planner-status">Đang kiểm tra AGY…</div>
+            <div id="source-preview-requirement" class="muted source-preview-requirement" aria-live="polite" hidden></div>
+            <div class="row"><button id="planner-button" class="icon-only" type="button" aria-label="Thêm vào hàng đợi AGY" title="Thêm vào hàng đợi AGY" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#plus"></use></svg></button><button id="queue-run-button" class="secondary icon-only" type="button" aria-label="Hàng đợi trống" title="Hàng đợi trống" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#play"></use></svg></button><span id="queue-run-status" class="muted queue-run-status" role="status" aria-live="polite">Hàng đợi trống</span></div>
+            <div id="request-queue" aria-live="polite"></div>
+            <div id="planner-result" class="muted planner-result"></div>
+            <div id="planner-clarification" class="planner-clarification" hidden>
+              <div id="planner-question" class="planner-question"></div>
+              <label for="planner-answer">Trả lời câu hỏi của AGY</label>
+              <div class="row local-answer-row"><input id="planner-answer" type="text" maxlength="1000" placeholder="Ví dụ: In một mặt"><button id="planner-answer-button" class="icon-only" type="button" aria-label="Gửi trả lời cho AGY" title="Gửi trả lời cho AGY"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#send"></use></svg></button></div>
+            </div>
+            <details id="planner-stream" class="planner-stream" hidden><summary>Phản hồi đang nhận từ AGY</summary><pre id="planner-stream-text"></pre></details>
+          </div>
+        </div>
+      </div>
+      <p id="message" class="error" role="status"></p>
+    </section>
+    <section class="card preview-workspace" aria-label="Preview và in">
+      <div class="printer-toolbar">
+        <label>Máy in <select id="printer-select" class="printer-select" disabled><option value="">Đang tìm máy in…</option></select></label>
+        <label>Số bộ in <input id="print-copies" class="print-copies" type="number" min="1" max="100" value="1" disabled></label>
+        <button id="print-button" class="icon-only" type="button" aria-label="Gửi tới máy in" title="Gửi tới máy in" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#printer"></use></svg></button>
+        <button id="printer-refresh" type="button" class="secondary icon-only" aria-label="Tải lại máy in" title="Tải lại máy in"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#refresh"></use></svg></button>
+      </div>
+      <div id="printer-message" class="muted printer-message" role="status" aria-live="polite">Máy in sẽ xuất hiện khi đã được thêm trong Cài đặt hệ thống.</div>
+      <div class="preview-toolbar" role="group" aria-label="Chọn preview">
+        <button id="source-preview-tab" class="secondary icon-only active" type="button" aria-label="Bản gốc" title="Bản gốc" aria-pressed="true"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#file"></use></svg></button>
+        <button id="print-preview-tab" class="secondary icon-only" type="button" aria-label="Trước khi in" title="Trước khi in" aria-pressed="false" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#eye"></use></svg></button>
+      </div>
+      <div id="source-preview-panel" class="preview-panel">
+        <aside class="source-review-panel" aria-labelledby="source-preview-title">
+          <header class="source-review-header">
+            <div><h2 id="source-preview-title">Bản gốc</h2><div id="source-preview-name" class="muted source-preview-name">Chưa có file</div></div>
+            <span id="source-preview-status" class="muted" role="status" aria-live="polite">Chọn file để xem</span>
+          </header>
+          <div id="source-preview-layout" class="source-preview-layout">
+            <nav id="source-preview-thumbnails" class="source-preview-thumbnails" aria-label="Thumbnail các trang" hidden></nav>
+            <div id="source-preview-canvas" class="source-preview-canvas" tabindex="0" aria-label="Preview trang đang chọn">
+              <div id="source-preview-pages" class="source-preview-pages"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <div id="print-preview-panel" class="preview-panel" hidden>
+        <div id="pages" class="pages"></div>
+        <img id="preview" class="preview" alt="Preview bố cục A4" hidden>
+        <div id="job-summary" class="sr-only" role="status" aria-live="polite">Chưa có kế hoạch in.</div>
+      </div>
+      <button id="pdf-button" class="secondary icon-only pdf-download" type="button" aria-label="Tải PDF A4" title="Tải PDF A4" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#download"></use></svg></button>
+    </section>
+  </div>
+</main>
+<script src="/local.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-source-preview.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-sources.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-queue.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-planner.js?v=office-page-thumbnails-v1" defer></script>
+</body>
+</html>

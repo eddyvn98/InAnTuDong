@@ -283,5 +283,9 @@ M7 deterministic primitive coverage is complete. Prioritize M8 Antigravity targe
 - [ ] add persistent `stream-json` session if measurements justify it
 - [ ] migrate Smart Collage local-image analysis to AGY without reintroducing API keys
 - [~] loopback-only local host — core upload → AGY → preview → print browser flow implemented; advanced desktop controls still migrating
+- [x] macOS loopback web workflow — source upload, deterministic A4 preview, 300 DPI PDF export, and selected CUPS queue submission
+- [x] optional macOS AGY natural-language planner — strict schema, uploaded-source binding, deterministic layout, mandatory preview
+- [x] local-web multi-file gallery — automatic upload, source thumbnails, multi-selection, removal and sequential AGY request queue
+- [~] macOS physical print validation — adapter builds and enumerates CUPS; this Mac has no configured printer, so scale/driver fidelity needs a real device
 
 Exit: natural-language planning works on the target Windows machine through the user's existing Antigravity account, without an AI API key or local LLM, with measured latency and deterministic print safety unchanged.

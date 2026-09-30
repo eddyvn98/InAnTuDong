@@ -1,6 +1,6 @@
 # Progress / Session Handoff
 
-Last updated: 2026-09-28
+Last updated: 2026-09-30
 
 ## Current milestone
 
@@ -1217,6 +1217,32 @@ Current local-web limitation:
 - target-Windows browser validation is still required for this slice
 
 See `docs/LOCAL_WEB.md`.
+
+## M8 macOS local browser workflow
+
+The repository's `PrintAI.Web` demo runs cross-platform on macOS with the .NET 10 SDK. On this Apple Silicon Mac, SDK 10.0.401 is installed per-user at `~/.dotnet`, and `.zprofile` adds it to PATH for future login shells. Local runs default to `127.0.0.1:5272`; deployments with `PORT` configured retain the `0.0.0.0` binding expected by hosting platforms. `PRINTAI_WEB_HOST` can override the bind address.
+
+The Mac local route supports image/PDF upload, source inspection, manual layout settings, optional AGY natural-language print planning, multi-page A4 preview, 300 DPI PDF export and selected CUPS queue submission. Planned jobs are parsed/validated, rebound to the uploaded-source allowlist, laid out locally, and forced through preview before export or print. Printing reuses the generated job PDF, checks the chosen destination against the current CUPS list, and bounds print copies to 100. It calls `/usr/bin/lp` with separate arguments and never accepts a shell command or local path from the browser. Uploads and outputs are process-scoped temporary files and removed at shutdown. Per-process limits are 100 files/256 MB, 100 MB per file, 200 PDF pages per source, 1,000 placements and 20 output pages.
+
+The route is registered only for a local loopback run with no hosting `PORT`; it uses a process-random session header, loopback/Host/Origin checks and no CORS. Railway retains the generated-data demo. Mac scanning is not implemented.
+
+Verification at initial Mac web setup: `PrintAI.Web` built on this Apple Silicon Mac with 0 warnings/errors. Manual local browser flow uploaded a generated PNG and a two-page PDF, inspected both pages, created and navigated a four-page A4 job, rendered page 2, and exported its four-page 300 DPI PDF. CUPS reports no configured printer on this Mac; the app exposes that state and disables sending until one is added. `/health` remains available; the listener is loopback-only on `127.0.0.1:5272`.
+
+Next physical-print task: add a printer in macOS System Settings, reload the printer list, and validate one reviewed A4 job for scale, media and driver settings. Then validate representative JPG and HEIC/HEIF inputs.
+
+## M8 AGY trial on macOS
+
+On 2026-09-30, local AGY CLI 1.1.9 was available. The first model-list response was incomplete; a fresh query confirmed the configured Gemini 3.8 Flash medium/high models are available, along with Gemini 3.7/3.6 Flash tiers, Gemini 3.1 Pro, Claude Sonnet 4.6, Claude Opus 4.6 Thinking, and GPT-OSS 120B medium.
+
+Initial synthetic 4x6 cm / 20-copy trials through the actual planners exposed two issues: the schema described planner payloads only as generic objects, and the runner always supplied `--effort`, which model-tier slugs and Claude Sonnet do not uniformly accept. Earlier calls also returned extra fields (`items`, `summary`) rejected by the domain parsers. The first Gemini 3.6 low direct trial had no capacity (503).
+
+Fixed the schema to export complete closed JSON contracts from `PrintJobSpec`/`PrintPlan`; effort now defaults to `auto`, omits unsupported/redundant flags, and rejects explicit effort that conflicts with a model's embedded tier. Gemini 3.8 medium/high defaults are retained. Focused planner tests pass (6/6).
+
+Two live synthetic 4x6 cm / 20-copy calls through the real `PrintPlanner` and `AntigravityPlannerClient` now pass strict parsing, validation, and deterministic layout: 40.7s / 31.2s, fast tier, no escalation, confidence 0.95 / 0.98. Both produced 40x60 mm items on A4; the second produced 20 placements on one page (3x7 grid). No printer command was sent. The Mac has no configured CUPS printer, so physical output remains unverified.
+
+The loopback-only Mac web flow now exposes AGY readiness and natural-language planning. Browser smoke check on this Mac: AGY readiness showed Gemini 3.8 medium/high; an uploaded synthetic 1200x1800 PNG plus “4x6 cm, 20 bản, xếp trên giấy A4, không cắt ảnh” returned AGY fast at 98% confidence and a validated 20-item, two-page job. Both deterministic previews rendered, and PDF export completed in the UI. The source ID was server-bound, and the print action remained disabled because CUPS has no configured printer. No print command was sent. The local host remains on `127.0.0.1:5272`.
+
+Next task: validate one ambiguous request through the browser, then add a printer and check physical scale/media settings before treating physical printing as verified.
 
 Automated verification for commit `f3f923e2e00aa06680b6c1fda09ebff875cbf947`:
 

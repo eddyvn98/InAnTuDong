@@ -119,7 +119,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             _options.CliPath,
             prompt,
             model,
-            effort,
+            _options.ResolveEffort(model, effort),
             AntigravityPlannerSchema.Resolve(request.SystemInstruction),
             _options.PrintTimeout);
 

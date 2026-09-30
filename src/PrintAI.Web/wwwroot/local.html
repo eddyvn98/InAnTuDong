@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Print AI · Local</title>
+  <style>
+    :root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f6fa}
+    *{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:auto;padding:28px 18px 54px}
+    header,.row,.actions,.pages{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    header{justify-content:space-between;margin-bottom:20px}h1{font-size:27px;margin:0}h2{font-size:18px;margin:0 0 14px}
+    .muted{color:#657083;font-size:14px}.badge{background:#e8fff1;color:#087a43;padding:7px 11px;border-radius:99px;font-size:13px}
+    .grid{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(360px,1.15fr);gap:18px}
+    .card{background:white;border:1px solid #e3e7ef;border-radius:16px;padding:18px;box-shadow:0 8px 24px #1420370d;margin-bottom:16px}
+    input,button{font:inherit}input[type=file]{max-width:100%}.fields{display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:12px}
+    .fields label{font-size:13px;color:#526074}.fields input{display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #ccd3df;border-radius:9px}
+    button,.button{border:0;border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer;background:#172033;color:white;text-decoration:none}
+    button:disabled{opacity:.5;cursor:default}.secondary{background:#edf1f7;color:#26334a}
+    #sources{display:grid;gap:8px;margin-top:12px}.source{display:flex;align-items:center;gap:9px;padding:9px;background:#f6f8fb;border-radius:9px;overflow-wrap:anywhere}
+    .preview{display:block;width:min(100%,390px);max-height:75vh;object-fit:contain;background:#eef1f6;border:1px solid #d7deea;margin:14px auto}.preview[hidden]{display:none}
+    .pages{justify-content:center}.pages button{padding:7px 10px}.pages .active{background:#1664d8}
+    .stats{padding:11px;background:#f6f8fb;border-radius:10px;margin:12px 0}.error{color:#a12626;min-height:1.4em;margin:10px 0}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><h1>Print AI · Web local</h1><div class="muted">Ảnh/PDF → bố cục A4 → preview → xuất PDF</div></div>
+    <div class="row"><span class="badge" id="status">Đang kết nối…</span><a href="/index.html" class="muted">Demo engine</a></div>
+  </header>
+  <div class="grid">
+    <section>
+      <div class="card">
+        <h2>1. Chọn ảnh hoặc PDF</h2>
+        <form id="upload-form">
+          <div class="row"><input id="files-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple required><button id="upload-button">Tải tệp lên</button></div>
+        </form>
+        <div class="muted" style="margin-top:9px">Tối đa 100 MB mỗi tệp, 256 MB mỗi phiên. PDF tối đa 200 trang.</div>
+        <div id="sources"></div>
+      </div>
+      <form id="job-form" class="card" hidden>
+        <h2>2. Kích thước và số bản</h2>
+        <label for="planner-request">Hoặc mô tả cách in, AGY sẽ lập kế hoạch</label>
+        <textarea id="planner-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4" style="display:block;width:100%;margin:7px 0 10px;padding:10px;border:1px solid #ccd3df;border-radius:9px;font:inherit"></textarea>
+        <div id="planner-status" class="muted" style="margin-bottom:10px">Đang kiểm tra AGY…</div>
+        <button id="planner-button" type="button" disabled>Lập kế hoạch bằng AGY</button>
+        <div id="planner-result" class="muted" style="margin-top:8px"></div>
+        <hr style="border:0;border-top:1px solid #e3e7ef;margin:18px 0">
+        <h2>Hoặc nhập kích thước thủ công</h2>
+        <div class="fields">
+          <label>Rộng (mm)<input name="width" type="number" min="5" max="200" step="0.1" value="40" required></label>
+          <label>Cao (mm)<input name="height" type="number" min="5" max="287" step="0.1" value="60" required></label>
+          <label>Số bản mỗi ảnh/trang<input name="copies" type="number" min="1" max="100" value="1" required></label>
+          <label>Khe giữa ảnh (mm)<input name="gap" type="number" min="0" max="50" step="0.1" value="3" required></label>
+          <label>Lề trang (mm)<input name="margin" type="number" min="0" max="50" step="0.1" value="5" required></label>
+        </div>
+        <p class="muted">Ảnh được thu vừa khung, không cắt. Với PDF, chọn kích thước gần A4 nếu muốn giữ nguyên cỡ trang.</p>
+        <div class="actions"><button id="preview-button" disabled>Tạo preview</button><button id="pdf-button" class="secondary" type="button" disabled>Tải PDF A4</button></div>
+        <hr style="border:0;border-top:1px solid #e3e7ef;margin:18px 0">
+        <h2>4. In trên máy Mac</h2>
+        <div class="row">
+          <label>Máy in <select id="printer-select" style="font:inherit;padding:9px;border:1px solid #ccd3df;border-radius:9px;min-width:190px" disabled><option value="">Đang tìm máy in…</option></select></label>
+          <label>Số bộ in <input id="print-copies" type="number" min="1" max="100" value="1" style="width:90px;padding:9px;border:1px solid #ccd3df;border-radius:9px" disabled></label>
+          <button id="print-button" type="button" disabled>Gửi tới máy in</button>
+          <button id="printer-refresh" type="button" class="secondary">Tải lại máy in</button>
+        </div>
+        <div id="printer-message" class="muted" style="margin-top:10px">Máy in sẽ xuất hiện khi đã được thêm trong Cài đặt hệ thống.</div>
+      </form>
+      <p id="message" class="error" role="status"></p>
+    </section>
+    <section class="card">
+      <h2>3. Kiểm tra từng trang</h2>
+      <div id="job-summary" class="stats muted">Tải ảnh hoặc PDF lên để bắt đầu.</div>
+      <div id="pages" class="pages"></div>
+      <img id="preview" class="preview" alt="Preview bố cục A4" hidden>
+      <div class="muted">PDF xuất ở 300 DPI; kích thước trang A4 là 210 × 297 mm.</div>
+    </section>
+  </div>
+</main>
+<script src="/local.js" defer></script>
+<script src="/local-planner.js" defer></script>
+</body>
+</html>

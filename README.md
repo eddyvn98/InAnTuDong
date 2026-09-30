@@ -48,7 +48,9 @@ Run locally:
 dotnet run --project src/PrintAI.Web/PrintAI.Web.csproj
 ```
 
-Then open the address printed by ASP.NET Core.
+Then open `http://127.0.0.1:5272/`. Local runs bind to loopback; deployments with `PORT` set bind to `0.0.0.0` for the hosting platform. Set `PRINTAI_WEB_HOST` to override the bind address.
+
+On macOS, install the .NET 10 SDK and run the same command in a new terminal. The local browser workflow accepts JPG/JPEG/PNG/HEIC/HEIF/PDF files, builds a deterministic A4 layout, shows each output page, exports a 300 DPI A4 PDF and sends it to a selected macOS CUPS printer. When AGY is installed and signed in, it can also turn a natural-language request into a validated print plan. The app binds to loopback and removes uploaded files when the server closes. Set `PRINTAI_WEB_PORT` if port 5272 is occupied. Add a printer in System Settings → Printers & Scanners before printing. Scanning remains a Windows desktop feature. See [Local Web on macOS](docs/LOCAL_MAC_WEB.md).
 
 Windows desktop shell:
 

@@ -4,12 +4,28 @@ using PrintAI.Rendering;
 using PrintAI.Web;
 
 var builder = WebApplication.CreateBuilder(args);
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+var hostedPort = Environment.GetEnvironmentVariable("PORT");
+var port = hostedPort ?? Environment.GetEnvironmentVariable("PRINTAI_WEB_PORT") ?? "5272";
+var host = Environment.GetEnvironmentVariable("PRINTAI_WEB_HOST")
+    ?? (hostedPort is null ? "127.0.0.1" : "0.0.0.0");
+var localWorkflowEnabled = hostedPort is null &&
+    (host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+     host.Equals("localhost", StringComparison.OrdinalIgnoreCase));
+if (localWorkflowEnabled)
+{
+    LocalWorkflowEndpoints.Configure(builder);
+    builder.Services.AddSingleton<LocalWorkflowSession>();
+    builder.Services.AddSingleton<MacCupsPrinterAdapter>();
+    builder.Services.AddSingleton<LocalWorkflowPlanner>();
+}
+builder.WebHost.UseUrls($"http://{host}:{port}");
 
 var app = builder.Build();
-app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.MapGet("/", () => Results.File(
+    Path.Combine(app.Environment.WebRootPath!, localWorkflowEnabled ? "local.html" : "index.html"),
+    "text/html"));
 
 app.MapGet("/health", () => Results.Ok(new
 {
@@ -65,6 +81,16 @@ app.MapGet("/api/calibration-info", () => Results.Ok(new
         new { name = "vertical ruler", expected = "100 mm", origin = "20 mm left, 175 mm top" }
     }
 }));
+
+if (localWorkflowEnabled)
+{
+    var localWorkflow = app.Services.GetRequiredService<LocalWorkflowSession>();
+    app.Lifetime.ApplicationStopped.Register(localWorkflow.Dispose);
+    app.MapLocalWorkflow(
+        localWorkflow,
+        app.Services.GetRequiredService<MacCupsPrinterAdapter>(),
+        app.Services.GetRequiredService<LocalWorkflowPlanner>());
+}
 
 app.MapFallbackToFile("index.html");
 app.Run();

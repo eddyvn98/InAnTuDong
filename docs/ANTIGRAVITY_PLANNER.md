@@ -60,13 +60,12 @@ Current defaults:
 ```text
 fast model: gemini-3.8-flash-medium
 deep model: gemini-3.8-flash-high
-fast effort: low
-deep effort: high
+fast/deep effort: auto (use the effort encoded by the selected model; omit a conflicting `--effort` flag)
 escalate below confidence: 0.80
 timeout: 2m
 ```
 
-Model names are deliberately configuration values. If Antigravity changes its available model catalog, PrintAI should update configuration rather than change the print-domain contract.
+Model names are deliberately configuration values. If Antigravity changes its available model catalog, PrintAI should update configuration rather than change the print-domain contract. Effort accepts `auto`, `low`, `medium`, or `high`; `auto` omits `--effort` for model slugs that encode their tier and models that do not support the flag. An explicit effort must match a tier encoded in the model slug.
 
 ## AGY invocation
 
@@ -75,7 +74,7 @@ The first implementation launches AGY headlessly and requests structured output:
 ```text
 agy -p <prompt>
     --model <tier model>
-    --effort <tier effort>
+    [--effort <explicit tier effort>]
     --output-format json
     --json-schema <schema>
     --print-timeout <timeout>
@@ -98,6 +97,7 @@ The fast prompt is intentionally narrow:
 - confidence reflects planning certainty.
 
 For PrintJobSpec 1.0 and PrintPlan 2.0, the returned JSON is immediately parsed by the existing strict parsers.
+The CLI schema is generated from those domain contracts, including nested fields and enum values, and closes objects against unknown properties. The parser and deterministic validators remain the final authority if a CLI/model ignores the schema.
 
 The fast result is accepted when:
 

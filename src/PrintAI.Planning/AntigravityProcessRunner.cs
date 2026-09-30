@@ -21,7 +21,8 @@ public sealed class AntigravityProcessRunner : IAntigravityCommandRunner
 
         Add(start, "-p", invocation.Prompt);
         Add(start, "--model", invocation.Model);
-        Add(start, "--effort", invocation.Effort);
+        if (!string.IsNullOrWhiteSpace(invocation.Effort))
+            Add(start, "--effort", invocation.Effort);
         Add(start, "--output-format", "json");
         Add(start, "--json-schema", invocation.JsonSchema);
         Add(start, "--print-timeout", invocation.PrintTimeout);

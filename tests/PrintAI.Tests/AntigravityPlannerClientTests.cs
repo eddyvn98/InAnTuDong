@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Xunit;
 using PrintAI.Planning;
 
@@ -67,6 +68,80 @@ public sealed class AntigravityPlannerClientTests
         Assert.Equal("fast-transport-failure", client.LastExecution?.Reason);
     }
 
+    [Fact]
+    public async Task CompleteAsync_UsesStrictPrintJobSchema_AndOmitsModelEncodedEffort()
+    {
+        const string payload = """{"job":{"jobName":"test","sources":[{"path":"fixture.png"}],"paper":{},"layout":{"mode":"exactSize","itemWidthMm":40,"itemHeightMm":60},"print":{},"policy":{}},"confidence":0.95,"questions":[],"warnings":[]}""";
+        var runner = new FakeRunner(Success(payload));
+        var options = new AntigravityPlannerOptions(
+            CliPath: "agy",
+            FastModel: "gemini-3.6-flash-medium",
+            DeepModel: "gemini-3.6-flash-high",
+            FastEffort: "auto",
+            DeepEffort: "auto");
+        var client = new AntigravityPlannerClient(options, runner);
+
+        await client.CompleteAsync(new PlannerModelRequest(
+            "job.schemaVersion must be \"1.0\"",
+            "{}"));
+
+        var invocation = Assert.Single(runner.Invocations);
+        Assert.Null(invocation.Effort);
+        using var schema = System.Text.Json.JsonDocument.Parse(invocation.JsonSchema);
+        var root = schema.RootElement;
+        var jobSchema = root.GetProperty("properties").GetProperty("job");
+        if (jobSchema.TryGetProperty("$ref", out var reference))
+        {
+            var definitionName = reference.GetString()!.Split('/').Last();
+            jobSchema = root.GetProperty("$defs").GetProperty(definitionName);
+        }
+
+        Assert.Equal(JsonValueKind.False, root.GetProperty("additionalProperties").ValueKind);
+        Assert.Equal(JsonValueKind.False, jobSchema.GetProperty("additionalProperties").ValueKind);
+        Assert.False(jobSchema.GetProperty("properties").TryGetProperty("items", out _));
+        Assert.True(jobSchema.GetProperty("properties").TryGetProperty("jobName", out _));
+        Assert.Equal("fast", client.LastExecution?.Tier);
+    }
+
+    [Fact]
+    public async Task CompleteAsync_UsesStrictPrintPlanSchema()
+    {
+        var runner = new FakeRunner(Success(
+            """{"plan":{"planName":"test","sources":[{"path":"fixture.png","pageCount":1}],"outputGroups":[{"name":"A4","selections":[{"sourceIndex":0,"include":[{"startPage":1,"endPage":1}],"exclude":[],"parity":"all"}],"paper":{"widthMm":210,"heightMm":297,"orientation":"portrait"},"layout":{"mode":"exactSize","itemWidthMm":40,"itemHeightMm":60},"print":{},"sets":1,"collate":true,"sequence":0}],"policy":{},"schemaVersion":"2.0"},"confidence":0.95,"questions":[],"warnings":[]}"""));
+        var client = CreateClient(runner);
+
+        await client.CompleteAsync(new PlannerModelRequest(
+            "plan.schemaVersion must be \"2.0\"",
+            "{}"));
+
+        using var schema = JsonDocument.Parse(Assert.Single(runner.Invocations).JsonSchema);
+        var root = schema.RootElement;
+        var planSchema = ResolveSchema(root, root.GetProperty("properties").GetProperty("plan"));
+        var groupSchema = ResolveSchema(
+            root,
+            ResolveSchema(root, planSchema.GetProperty("properties").GetProperty("outputGroups"))
+                .GetProperty("items"));
+
+        Assert.Equal(JsonValueKind.False, root.GetProperty("additionalProperties").ValueKind);
+        Assert.Equal(JsonValueKind.False, planSchema.GetProperty("additionalProperties").ValueKind);
+        Assert.Equal(JsonValueKind.False, groupSchema.GetProperty("additionalProperties").ValueKind);
+        Assert.False(planSchema.GetProperty("properties").TryGetProperty("summary", out _));
+        Assert.True(planSchema.GetProperty("properties").TryGetProperty("planName", out _));
+    }
+
+    [Fact]
+    public void Options_RejectEffortThatConflictsWithModelTier()
+    {
+        var options = new AntigravityPlannerOptions(
+            CliPath: "agy",
+            FastModel: "gemini-3.6-flash-medium",
+            DeepModel: "gemini-3.6-flash-high",
+            FastEffort: "low",
+            DeepEffort: "auto");
+
+        Assert.Throws<ArgumentException>(options.Validate);
+    }
+
     private static AntigravityPlannerClient CreateClient(
         IAntigravityCommandRunner runner) =>
         new(
@@ -84,6 +159,15 @@ public sealed class AntigravityPlannerClientTests
             0,
             $$"""{"status":"SUCCESS","structured_output":{{payload}}}""",
             "");
+
+    private static JsonElement ResolveSchema(JsonElement root, JsonElement schema)
+    {
+        if (!schema.TryGetProperty("$ref", out var reference))
+            return schema;
+
+        var definitionName = reference.GetString()!.Split('/').Last();
+        return root.GetProperty("$defs").GetProperty(definitionName);
+    }
 
     private sealed class FakeRunner(
         params AntigravityCommandResult[] results) :

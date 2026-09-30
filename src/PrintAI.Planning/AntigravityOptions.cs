@@ -19,8 +19,8 @@ public sealed record AntigravityPlannerOptions(
             CliPath: cliPath,
             FastModel: Read("PRINTAI_AGY_FAST_MODEL", "gemini-3.8-flash-medium"),
             DeepModel: Read("PRINTAI_AGY_DEEP_MODEL", "gemini-3.8-flash-high"),
-            FastEffort: Read("PRINTAI_AGY_FAST_EFFORT", "low"),
-            DeepEffort: Read("PRINTAI_AGY_DEEP_EFFORT", "high"),
+            FastEffort: Read("PRINTAI_AGY_FAST_EFFORT", "auto"),
+            DeepEffort: Read("PRINTAI_AGY_DEEP_EFFORT", "auto"),
             EscalateBelowConfidence: ReadConfidence(),
             PrintTimeout: Read("PRINTAI_AGY_TIMEOUT", "2m"));
     }
@@ -31,8 +31,8 @@ public sealed record AntigravityPlannerOptions(
         ArgumentException.ThrowIfNullOrWhiteSpace(FastModel);
         ArgumentException.ThrowIfNullOrWhiteSpace(DeepModel);
 
-        ValidateEffort(FastEffort, nameof(FastEffort));
-        ValidateEffort(DeepEffort, nameof(DeepEffort));
+        ValidateEffort(FastModel, FastEffort, nameof(FastEffort));
+        ValidateEffort(DeepModel, DeepEffort, nameof(DeepEffort));
 
         if (EscalateBelowConfidence is < 0 or > 1)
             throw new ArgumentOutOfRangeException(
@@ -64,10 +64,33 @@ public sealed record AntigravityPlannerOptions(
 
     private static void ValidateEffort(string effort, string parameterName)
     {
-        if (effort is not ("low" or "medium" or "high"))
+        if (effort is not ("auto" or "low" or "medium" or "high"))
             throw new ArgumentException(
-                "Antigravity effort must be low, medium or high.",
+                "Antigravity effort must be auto, low, medium or high.",
                 parameterName);
+    }
+
+    private static void ValidateEffort(string model, string effort, string parameterName)
+    {
+        ValidateEffort(effort, parameterName);
+        var modelTier = ModelTier(model);
+        if (effort != "auto" && modelTier is not null && effort != modelTier)
+            throw new ArgumentException(
+                $"Model '{model}' already encodes effort '{modelTier}'. Use effort '{modelTier}' or 'auto'.",
+                parameterName);
+    }
+
+    public string? ResolveEffort(string model, string effort)
+    {
+        if (effort == "auto" || ModelTier(model) is not null)
+            return null;
+        return effort;
+    }
+
+    private static string? ModelTier(string model)
+    {
+        var suffix = model[(model.LastIndexOf('-') + 1)..];
+        return suffix is "low" or "medium" or "high" ? suffix : null;
     }
 }
 
@@ -75,7 +98,7 @@ public sealed record AntigravityInvocation(
     string CliPath,
     string Prompt,
     string Model,
-    string Effort,
+    string? Effort,
     string JsonSchema,
     string PrintTimeout);
 

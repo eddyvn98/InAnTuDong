@@ -400,3 +400,35 @@ ASP.NET Core request threads may not mutate `DesktopSession` directly. Browser o
 The WPF shell remains the process owner for this first slice. A later browser-first startup mode may make the visible WPF window optional without changing the loopback security or deterministic print boundaries.
 
 See `docs/LOCAL_WEB.md`.
+
+
+## ADR-038 - Cross-platform web demo binds to loopback for local runs
+Status: accepted
+
+`PrintAI.Web` defaults to `127.0.0.1:5272` when run locally, avoiding common development ports and keeping the demo reachable only from the same machine. When a hosting platform supplies `PORT`, the app retains the `0.0.0.0` binding required by platforms such as Railway. `PRINTAI_WEB_HOST` is an explicit override.
+
+This is the cross-platform A4 geometry and preview demo; it does not change the Windows-only desktop, Antigravity, scanner, or spooler architecture.
+
+
+## ADR-039 - macOS local browser workflow reuses deterministic core
+Status: accepted
+
+`PrintAI.Web` may run without a hosting `PORT` as a loopback-only macOS workflow. It accepts bounded uploads into a random process-scoped temporary directory, inspects supported image/PDF sources, and delegates layout and preview to the existing Domain/Layout/Rendering pipeline. A4 PDF export embeds the deterministic 300 DPI rendered pages.
+
+The local workflow requires a random per-process request token and loopback Host/Origin checks. The hosted Railway demo remains sample-only. The initial slice did not enable Mac printer submission; ADR-040 adds the dedicated CUPS adapter. Scanning and Antigravity planning remain out of scope on macOS.
+
+
+## ADR-040 - macOS local printing submits the reviewed PDF through CUPS
+Status: accepted
+
+The local macOS browser workflow may enumerate installed CUPS destinations and submit its deterministic A4 export through the system `lp` utility. The browser provides only a selected destination name and bounded copy count; it cannot provide a shell command or filesystem path. The server rechecks the destination, creates the PDF from the in-session job, and submits it with individually quoted process arguments. Preview remains required before the UI enables printing.
+
+This adapter does not cover scanners or Antigravity and does not certify physical scale, color, media, or driver settings. A real printer must be configured and physically validated on macOS before those properties are claimed.
+
+
+## ADR-041 - macOS browser planning uses the local Antigravity session
+Status: accepted
+
+The loopback-only macOS browser workflow may use the installed AGY CLI session for natural-language print planning. AGY receives request text and metadata for selected, server-held upload IDs; it does not receive arbitrary browser paths. PrintAI validates the strict planner contract, binds output to the uploaded-source allowlist, computes layout locally, and forces preview before export or CUPS submission. Credentials stay with the AGY installation, and no API key is added.
+
+If AGY is unavailable, deterministic manual layout remains available. This does not validate physical Mac printer fidelity or migrate scanning.

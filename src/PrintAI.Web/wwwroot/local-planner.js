@@ -73,12 +73,22 @@ async function runPlanner() {
 
   try {
     const requestText = buildRequest();
-    const response = await authorizedFetch("/api/local/plan/stream", {
+    const requestBody = JSON.stringify({ sourceIds, userRequest: requestText });
+    const options = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sourceIds, userRequest: requestText })
-    });
-    await readPlanEvents(response);
+      body: requestBody
+    };
+    try {
+      const response = await authorizedFetch("/api/local/plan/stream", options);
+      await readPlanEvents(response);
+    } catch (error) {
+      if (error.status !== 404 && error.status !== 405) throw error;
+      planStage = "Máy chủ này chưa hỗ trợ stream; đang dùng luồng AGY tương thích";
+      updatePlanTimer();
+      const response = await authorizedFetch("/api/local/plan", options);
+      await handlePlanComplete(await response.json());
+    }
   } catch (error) {
     resultBox.textContent = error.message;
     byId("job-summary").textContent = "Chưa có kế hoạch mới.";
@@ -137,11 +147,18 @@ async function handlePlanEvent(frame) {
   if (event === "error") throw new Error(payload.error);
   if (event !== "complete") return;
 
+  await handlePlanComplete(payload);
+}
+
+async function handlePlanComplete(payload) {
   if (!payload.job) {
     pendingQuestion = (payload.questions || []).join(" · ");
     byId("planner-question").textContent = `Cần làm rõ: ${pendingQuestion}`;
     byId("planner-clarification").hidden = false;
-    planStage = `AGY đã trả lời sau ${(payload.durationMilliseconds / 1000).toFixed(1)} giây. Trả lời bên dưới để AGY lập tiếp kế hoạch`;
+    const duration = Number(payload.durationMilliseconds || 0);
+    planStage = duration
+      ? `AGY đã trả lời sau ${(duration / 1000).toFixed(1)} giây. Trả lời bên dưới để AGY lập tiếp kế hoạch`
+      : "AGY cần bạn trả lời câu hỏi bên dưới để lập tiếp kế hoạch";
     updatePlanTimer();
     byId("planner-answer").focus();
     return;
@@ -155,7 +172,7 @@ async function handlePlanEvent(frame) {
   updatePrintButton();
   byId("job-summary").textContent =
     `AGY ${payload.tier || "planner"} · ${Math.round(payload.confidence * 100)}% · ` +
-    `${(payload.durationMilliseconds / 1000).toFixed(1)} giây · ` +
+    `${Number(payload.durationMilliseconds) ? `${(payload.durationMilliseconds / 1000).toFixed(1)} giây · ` : ""}` +
     `${activeJob.itemCount} mục · ${activeJob.outputPageCount} trang A4`;
   byId("planner-result").textContent = payload.warnings?.length
     ? `Lưu ý: ${payload.warnings.join(" · ")}`

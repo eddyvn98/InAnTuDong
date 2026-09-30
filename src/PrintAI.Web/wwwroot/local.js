@@ -14,7 +14,9 @@ async function authorizedFetch(url, options = {}) {
   const response = await fetch(url, { ...options, headers });
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    throw new Error(body?.error || `Yêu cầu thất bại (${response.status}).`);
+    const error = new Error(body?.error || `Yêu cầu thất bại (${response.status}).`);
+    error.status = response.status;
+    throw error;
   }
   return response;
 }

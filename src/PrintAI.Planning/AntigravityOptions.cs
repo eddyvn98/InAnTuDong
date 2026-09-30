@@ -114,8 +114,17 @@ public interface IAntigravityCommandRunner
         CancellationToken cancellationToken = default);
 }
 
+public interface IAntigravityStreamingCommandRunner : IAntigravityCommandRunner
+{
+    Task<AntigravityCommandResult> RunStreamingAsync(
+        AntigravityInvocation invocation,
+        IProgress<PlannerProgressUpdate> progress,
+        CancellationToken cancellationToken = default);
+}
+
 public sealed record AntigravityExecutionInfo(
     string Tier,
     string Model,
     bool Escalated,
-    string Reason);
+    string Reason,
+    double DurationMilliseconds = 0);

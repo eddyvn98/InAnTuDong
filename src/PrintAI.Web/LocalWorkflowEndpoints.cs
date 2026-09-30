@@ -6,7 +6,7 @@ using PrintAI.Planning;
 
 namespace PrintAI.Web;
 
-public static class LocalWorkflowEndpoints
+public static partial class LocalWorkflowEndpoints
 {
     public const long MaxRequestBytes = 256L * 1024 * 1024;
 
@@ -20,6 +20,7 @@ public static class LocalWorkflowEndpoints
         MacCupsPrinterAdapter printerAdapter,
         LocalWorkflowPlanner planner)
     {
+        MapLocalWorkflowStreaming(app, session, planner);
         app.MapGet("/api/bootstrap", (HttpContext context) =>
             IsLoopbackRequest(context)
                 ? Results.Ok(new { sessionToken = session.SessionToken })
@@ -63,6 +64,10 @@ public static class LocalWorkflowEndpoints
             catch (PlanningFormatException exception)
             {
                 return Results.BadRequest(new { error = $"Kế hoạch AGY không hợp lệ: {exception.Message}" });
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+            {
+                return Results.BadRequest(new { error = "Kích thước AGY đề xuất không vừa vùng in được trên giấy A4. Hãy yêu cầu thu vừa trang A4 và giữ đúng tỷ lệ." });
             }
         });
 
@@ -188,7 +193,7 @@ public static class LocalWorkflowEndpoints
         });
     }
 
-    private static bool IsAuthorized(HttpContext context, LocalWorkflowSession session)
+    internal static bool IsAuthorized(HttpContext context, LocalWorkflowSession session)
     {
         if (!IsLoopbackRequest(context))
             return false;

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace PrintAI.Planning;
 
@@ -42,6 +43,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var elapsed = Stopwatch.StartNew();
 
         string fast;
         try
@@ -68,7 +70,8 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
                 "deep",
                 _options.DeepModel,
                 Escalated: true,
-                Reason: "fast-transport-failure");
+                Reason: "fast-transport-failure",
+                DurationMilliseconds: elapsed.Elapsed.TotalMilliseconds);
 
             return deepAfterFailure;
         }
@@ -81,7 +84,8 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
                 "fast",
                 _options.FastModel,
                 Escalated: false,
-                Reason: inspection.Reason);
+                Reason: inspection.Reason,
+                DurationMilliseconds: elapsed.Elapsed.TotalMilliseconds);
 
             return fast;
         }
@@ -99,7 +103,8 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             "deep",
             _options.DeepModel,
             Escalated: true,
-            Reason: inspection.Reason);
+            Reason: inspection.Reason,
+            DurationMilliseconds: elapsed.Elapsed.TotalMilliseconds);
 
         return deep;
     }
@@ -123,9 +128,11 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             AntigravityPlannerSchema.Resolve(request.SystemInstruction),
             _options.PrintTimeout);
 
-        var result = await _runner.RunAsync(
-            invocation,
-            cancellationToken);
+        var result = request.Progress is not null &&
+                     _runner is IAntigravityStreamingCommandRunner streamingRunner
+            ? await streamingRunner.RunStreamingAsync(
+                invocation, request.Progress, cancellationToken)
+            : await _runner.RunAsync(invocation, cancellationToken);
 
         if (result.ExitCode != 0)
         {

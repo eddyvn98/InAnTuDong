@@ -27,9 +27,10 @@ public sealed class LocalWorkflowPlanner
 
     public Task<PlanningOutcome> PlanAsync(
         PlanningRequest request,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress = null) =>
         (_planner ?? throw new InvalidOperationException("AGY chưa sẵn sàng."))
-        .PlanAsync(request, cancellationToken);
+        .PlanAsync(request, cancellationToken, progress);
 }
 
 public sealed record LocalPlannerReadiness(bool IsReady, string? Models, string Message);

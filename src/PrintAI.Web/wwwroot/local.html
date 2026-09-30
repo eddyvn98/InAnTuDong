@@ -47,6 +47,12 @@
         <div id="planner-status" class="muted" style="margin-bottom:10px">Đang kiểm tra AGY…</div>
         <button id="planner-button" type="button" disabled>Lập kế hoạch bằng AGY</button>
         <div id="planner-result" class="muted" style="margin-top:8px"></div>
+        <div id="planner-clarification" hidden style="margin-top:10px;padding:12px;background:#f6f8fb;border-radius:10px">
+          <div id="planner-question" style="margin-bottom:8px"></div>
+          <label for="planner-answer">Trả lời câu hỏi của AGY</label>
+          <div class="row" style="margin-top:6px"><input id="planner-answer" type="text" maxlength="1000" style="flex:1;min-width:180px;padding:10px;border:1px solid #ccd3df;border-radius:9px" placeholder="Ví dụ: In một mặt"><button id="planner-answer-button" type="button">Gửi trả lời cho AGY</button></div>
+        </div>
+        <details id="planner-stream" hidden style="margin-top:8px"><summary>Phản hồi đang nhận từ AGY</summary><pre id="planner-stream-text" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto"></pre></details>
         <hr style="border:0;border-top:1px solid #e3e7ef;margin:18px 0">
         <h2>Hoặc nhập kích thước thủ công</h2>
         <div class="fields">

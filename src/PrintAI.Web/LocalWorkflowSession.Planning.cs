@@ -2,6 +2,7 @@ using PrintAI.Domain;
 using PrintAI.Layout;
 using PrintAI.Planning;
 using PrintAI.SourceInspection;
+using System.Diagnostics;
 
 namespace PrintAI.Web;
 
@@ -10,8 +11,10 @@ public sealed partial class LocalWorkflowSession
     public async Task<LocalPlanResult> PlanJobAsync(
         LocalPlanRequest request,
         LocalWorkflowPlanner planner,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress = null)
     {
+        var elapsed = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(request.UserRequest) || request.UserRequest.Length > 2000)
             throw new LocalWorkflowException("Yêu cầu in cần có nội dung và tối đa 2.000 ký tự.");
         if (request.SourceIds is null || request.SourceIds.Count is < 1 or > MaxFiles ||
@@ -41,9 +44,11 @@ public sealed partial class LocalWorkflowSession
                     page.Page, page.WidthMm, page.HeightMm)).ToArray());
         }).ToArray();
         var outcome = await planner.PlanAsync(
-            new PlanningRequest(request.UserRequest.Trim(), planningSources), cancellationToken);
+            new PlanningRequest(request.UserRequest.Trim(), planningSources), cancellationToken,
+            progress);
         if (outcome.Questions.Count > 0)
-            return new(null, outcome.Confidence, outcome.Questions, outcome.Warnings, planner.LastTier);
+            return new(null, outcome.Confidence, outcome.Questions, outcome.Warnings,
+                planner.LastTier, elapsed.ElapsedMilliseconds);
 
         var job = PlannerSourceBinder.BindToAllowedSources(outcome.Job, paths) with
         {
@@ -69,7 +74,8 @@ public sealed partial class LocalWorkflowSession
             outcome.Confidence,
             outcome.Questions,
             outcome.Warnings,
-            planner.LastTier);
+            planner.LastTier,
+            elapsed.ElapsedMilliseconds);
     }
 }
 
@@ -80,4 +86,5 @@ public sealed record LocalPlanResult(
     double Confidence,
     IReadOnlyList<string> Questions,
     IReadOnlyList<string> Warnings,
-    string? Tier);
+    string? Tier,
+    long DurationMilliseconds = 0);

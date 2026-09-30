@@ -17,6 +17,22 @@ public sealed partial class LocalWorkflowSession
         return SourceJobRenderer.RenderSourceThumbnailPng(source.Path, 0, maxDimension: 320);
     }
 
+    public byte[] RenderSourcePreview(Guid sourceId, int pageIndex)
+    {
+        UploadedSource source;
+        lock (_sync)
+        {
+            source = _sources.TryGetValue(sourceId, out var found)
+                ? found
+                : throw new LocalWorkflowException("File không còn trong phiên hiện tại.");
+        }
+
+        if (pageIndex < 0 || pageIndex >= source.View.PageCount)
+            throw new ArgumentOutOfRangeException(nameof(pageIndex), "Trang preview không hợp lệ.");
+
+        return SourceJobRenderer.RenderSourceThumbnailPng(source.Path, pageIndex, maxDimension: 2048);
+    }
+
     public RemoveLocalSourcesResult RemoveSources(IReadOnlyList<Guid> sourceIds)
     {
         if (sourceIds is null || sourceIds.Count is < 1 or > MaxFiles ||

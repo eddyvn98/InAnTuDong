@@ -62,6 +62,29 @@ public static partial class LocalWorkflowEndpoints
             }
         });
 
+        app.MapGet("/api/local/sources/{sourceId:guid}/preview/{page:int}", (
+            HttpContext context, Guid sourceId, int page) =>
+        {
+            if (!IsAuthorized(context, session))
+                return Results.Unauthorized();
+            try
+            {
+                return Results.File(session.RenderSourcePreview(sourceId, page), "image/png");
+            }
+            catch (LocalWorkflowException exception)
+            {
+                return Results.NotFound(new { error = exception.Message });
+            }
+            catch (ArgumentOutOfRangeException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (Exception exception) when (exception is InvalidDataException or IOException)
+            {
+                return Results.UnprocessableEntity(new { error = "Không tạo được preview cho trang này." });
+            }
+        });
+
         app.MapDelete("/api/local/sources", async (HttpContext context) =>
         {
             if (!IsAuthorized(context, session))

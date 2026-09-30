@@ -4,95 +4,87 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Print AI · Local</title>
-  <style>
-    :root{font-family:Inter,system-ui,sans-serif;color:#172033;background:#f4f6fa}
-    *{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:auto;padding:28px 18px 54px}
-    header,.row,.actions,.pages{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    header{justify-content:space-between;margin-bottom:20px}h1{font-size:27px;margin:0}h2{font-size:18px;margin:0 0 14px}
-    .muted{color:#657083;font-size:14px}.badge{background:#e8fff1;color:#087a43;padding:7px 11px;border-radius:99px;font-size:13px}
-    .grid{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(360px,1.15fr);gap:18px}
-    .card{background:white;border:1px solid #e3e7ef;border-radius:16px;padding:18px;box-shadow:0 8px 24px #1420370d;margin-bottom:16px}
-    input,button{font:inherit}input[type=file]{max-width:100%}.fields{display:grid;grid-template-columns:repeat(2,minmax(100px,1fr));gap:12px}
-    .fields label{font-size:13px;color:#526074}.fields input{display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #ccd3df;border-radius:9px}
-    button,.button{border:0;border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer;background:#172033;color:white;text-decoration:none}
-    button:disabled{opacity:.5;cursor:default}.secondary{background:#edf1f7;color:#26334a}
-    #sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;margin-top:12px}.source-card{position:relative;min-width:0;border:1px solid #dce2eb;border-radius:11px;padding:7px;background:white}.source-card.selected{border:2px solid #1664d8;padding:6px}.source-thumb{height:112px;display:grid;place-items:center;overflow:hidden;border-radius:7px;background:#eef1f6;color:#657083}.source-thumb img{width:100%;height:100%;object-fit:contain}.source-name{margin-top:6px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-meta{font-size:11px;color:#657083;margin-top:3px}.source-check{position:absolute;left:8px;top:8px;width:18px;height:18px;accent-color:#1664d8}.source-remove{position:absolute;right:5px;top:5px;width:25px;height:25px;padding:0;border-radius:50%;background:#fff;color:#a12626;box-shadow:0 1px 5px #0003}.danger{background:#fff0f0;color:#a12626}.queue-entry{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px;background:#f6f8fb;border-radius:9px;margin-top:8px}.queue-entry button{padding:6px 9px}.queue-entry-text{min-width:0;overflow-wrap:anywhere}.queue-status{font-size:12px;color:#657083;margin-top:4px}
-    .preview{display:block;width:min(100%,390px);max-height:75vh;object-fit:contain;background:#eef1f6;border:1px solid #d7deea;margin:14px auto}.preview[hidden]{display:none}
-    .pages{justify-content:center}.pages button{padding:7px 10px}.pages .active{background:#1664d8}
-    .stats{padding:11px;background:#f6f8fb;border-radius:10px;margin:12px 0}.error{color:#a12626;min-height:1.4em;margin:10px 0}
-    @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  </style>
+  <link rel="stylesheet" href="/site.css?v=office-page-thumbnails-v1">
 </head>
 <body>
 <main>
-  <header>
-    <div><h1>Print AI · Web local</h1><div class="muted">Ảnh/PDF → bố cục A4 → preview → xuất PDF</div></div>
-    <div class="row"><span class="badge" id="status">Đang kết nối…</span><a href="/index.html" class="muted">Demo engine</a></div>
-  </header>
-  <div class="grid">
-    <section>
+  <span id="status" class="sr-only" role="status" aria-live="polite">Đang kết nối…</span>
+  <div class="grid local-workspace">
+    <section class="workflow-column">
       <div class="card">
-        <h2>1. Chọn ảnh hoặc PDF</h2>
+        <h2>Chọn ảnh hoặc PDF</h2>
         <form id="upload-form">
-          <div class="row"><label for="files-input" class="button" style="text-align:center">+ Chọn ảnh hoặc PDF</label><button id="remove-sources-button" class="danger secondary" type="button" disabled>Xóa file đang chọn</button><input id="files-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple hidden></div>
-          <div id="upload-status" class="muted" style="margin-top:8px" aria-live="polite"></div>
+          <div class="row"><label id="choose-files-button" for="files-input" class="button icon-only" aria-label="Chọn ảnh hoặc PDF" title="Chọn ảnh hoặc PDF"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#upload"></use></svg></label><button id="remove-sources-button" class="danger secondary icon-only" type="button" aria-label="Xóa file đang chọn" title="Xóa file đang chọn" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#trash"></use></svg></button><input id="files-input" class="file-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple></div>
+          <div id="upload-status" class="muted inline-note" aria-live="polite"></div>
         </form>
-        <div class="muted" style="margin-top:9px">Tối đa 100 MB mỗi tệp, 256 MB mỗi phiên. PDF tối đa 200 trang.</div>
+        <div class="muted inline-note">Tối đa 100 MB mỗi tệp, 256 MB mỗi phiên. PDF tối đa 200 trang.</div>
         <div id="source-delete-confirm" class="queue-entry" role="alert" hidden>
           <div id="source-delete-text" class="queue-entry-text"></div>
-          <div class="row"><button id="source-delete-confirm-button" class="danger" type="button">Xóa file</button><button id="source-delete-cancel-button" class="secondary" type="button">Giữ lại</button></div>
+          <div class="row"><button id="source-delete-confirm-button" class="danger icon-only" type="button" aria-label="Xóa file" title="Xóa file"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#trash"></use></svg></button><button id="source-delete-cancel-button" class="secondary icon-only" type="button" aria-label="Giữ lại" title="Giữ lại"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#close"></use></svg></button></div>
         </div>
         <div id="sources"></div>
       </div>
-      <form id="job-form" class="card" hidden>
-        <h2>2. Kích thước và số bản</h2>
-        <label for="planner-request">Hoặc mô tả cách in, AGY sẽ lập kế hoạch</label>
-        <textarea id="planner-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4" style="display:block;width:100%;margin:7px 0 10px;padding:10px;border:1px solid #ccd3df;border-radius:9px;font:inherit"></textarea>
-        <div id="planner-status" class="muted" style="margin-bottom:10px">Đang kiểm tra AGY…</div>
-        <div class="row"><button id="planner-button" type="button" disabled>Thêm vào hàng đợi AGY</button><button id="queue-run-button" type="button" class="secondary" disabled>Chạy hàng đợi</button></div>
-        <div id="request-queue" aria-live="polite"></div>
-        <div id="planner-result" class="muted" style="margin-top:8px"></div>
-        <div id="planner-clarification" hidden style="margin-top:10px;padding:12px;background:#f6f8fb;border-radius:10px">
-          <div id="planner-question" style="margin-bottom:8px"></div>
-          <label for="planner-answer">Trả lời câu hỏi của AGY</label>
-          <div class="row" style="margin-top:6px"><input id="planner-answer" type="text" maxlength="1000" style="flex:1;min-width:180px;padding:10px;border:1px solid #ccd3df;border-radius:9px" placeholder="Ví dụ: In một mặt"><button id="planner-answer-button" type="button">Gửi trả lời cho AGY</button></div>
+      <div id="job-form" class="card" hidden>
+        <div class="planner-layout">
+          <div class="planner-controls">
+            <h2>Mô tả cách in</h2>
+            <label for="planner-request">Yêu cầu in, AGY sẽ lập kế hoạch</label>
+            <textarea id="planner-request" class="local-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4"></textarea>
+            <div id="planner-status" class="muted planner-status">Đang kiểm tra AGY…</div>
+            <div id="source-preview-requirement" class="muted source-preview-requirement" aria-live="polite" hidden></div>
+            <div class="row"><button id="planner-button" class="icon-only" type="button" aria-label="Thêm vào hàng đợi AGY" title="Thêm vào hàng đợi AGY" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#plus"></use></svg></button><button id="queue-run-button" class="secondary icon-only" type="button" aria-label="Hàng đợi trống" title="Hàng đợi trống" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#play"></use></svg></button><span id="queue-run-status" class="muted queue-run-status" role="status" aria-live="polite">Hàng đợi trống</span></div>
+            <div id="request-queue" aria-live="polite"></div>
+            <div id="planner-result" class="muted planner-result"></div>
+            <div id="planner-clarification" class="planner-clarification" hidden>
+              <div id="planner-question" class="planner-question"></div>
+              <label for="planner-answer">Trả lời câu hỏi của AGY</label>
+              <div class="row local-answer-row"><input id="planner-answer" type="text" maxlength="1000" placeholder="Ví dụ: In một mặt"><button id="planner-answer-button" class="icon-only" type="button" aria-label="Gửi trả lời cho AGY" title="Gửi trả lời cho AGY"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#send"></use></svg></button></div>
+            </div>
+            <details id="planner-stream" class="planner-stream" hidden><summary>Phản hồi đang nhận từ AGY</summary><pre id="planner-stream-text"></pre></details>
+          </div>
         </div>
-        <details id="planner-stream" hidden style="margin-top:8px"><summary>Phản hồi đang nhận từ AGY</summary><pre id="planner-stream-text" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto"></pre></details>
-        <hr style="border:0;border-top:1px solid #e3e7ef;margin:18px 0">
-        <h2>Hoặc nhập kích thước thủ công</h2>
-        <div class="fields">
-          <label>Rộng (mm)<input name="width" type="number" min="5" max="200" step="0.1" value="40" required></label>
-          <label>Cao (mm)<input name="height" type="number" min="5" max="287" step="0.1" value="60" required></label>
-          <label>Số bản mỗi ảnh/trang<input name="copies" type="number" min="1" max="100" value="1" required></label>
-          <label>Khe giữa ảnh (mm)<input name="gap" type="number" min="0" max="50" step="0.1" value="3" required></label>
-          <label>Lề trang (mm)<input name="margin" type="number" min="0" max="50" step="0.1" value="5" required></label>
-        </div>
-        <p class="muted">Ảnh được thu vừa khung, không cắt. Với PDF, chọn kích thước gần A4 nếu muốn giữ nguyên cỡ trang.</p>
-        <div class="actions"><button id="preview-button" disabled>Tạo preview</button><button id="pdf-button" class="secondary" type="button" disabled>Tải PDF A4</button></div>
-        <hr style="border:0;border-top:1px solid #e3e7ef;margin:18px 0">
-        <h2>4. In trên máy Mac</h2>
-        <div class="row">
-          <label>Máy in <select id="printer-select" style="font:inherit;padding:9px;border:1px solid #ccd3df;border-radius:9px;min-width:190px" disabled><option value="">Đang tìm máy in…</option></select></label>
-          <label>Số bộ in <input id="print-copies" type="number" min="1" max="100" value="1" style="width:90px;padding:9px;border:1px solid #ccd3df;border-radius:9px" disabled></label>
-          <button id="print-button" type="button" disabled>Gửi tới máy in</button>
-          <button id="printer-refresh" type="button" class="secondary">Tải lại máy in</button>
-        </div>
-        <div id="printer-message" class="muted" style="margin-top:10px">Máy in sẽ xuất hiện khi đã được thêm trong Cài đặt hệ thống.</div>
-      </form>
+      </div>
       <p id="message" class="error" role="status"></p>
     </section>
-    <section class="card">
-      <h2>3. Kiểm tra từng trang</h2>
-      <div id="job-summary" class="stats muted">Tải ảnh hoặc PDF lên để bắt đầu.</div>
-      <div id="pages" class="pages"></div>
-      <img id="preview" class="preview" alt="Preview bố cục A4" hidden>
-      <div class="muted">PDF xuất ở 300 DPI; kích thước trang A4 là 210 × 297 mm.</div>
+    <section class="card preview-workspace" aria-label="Preview và in">
+      <div class="printer-toolbar">
+        <label>Máy in <select id="printer-select" class="printer-select" disabled><option value="">Đang tìm máy in…</option></select></label>
+        <label>Số bộ in <input id="print-copies" class="print-copies" type="number" min="1" max="100" value="1" disabled></label>
+        <button id="print-button" class="icon-only" type="button" aria-label="Gửi tới máy in" title="Gửi tới máy in" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#printer"></use></svg></button>
+        <button id="printer-refresh" type="button" class="secondary icon-only" aria-label="Tải lại máy in" title="Tải lại máy in"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#refresh"></use></svg></button>
+      </div>
+      <div id="printer-message" class="muted printer-message" role="status" aria-live="polite">Máy in sẽ xuất hiện khi đã được thêm trong Cài đặt hệ thống.</div>
+      <div class="preview-toolbar" role="group" aria-label="Chọn preview">
+        <button id="source-preview-tab" class="secondary icon-only active" type="button" aria-label="Bản gốc" title="Bản gốc" aria-pressed="true"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#file"></use></svg></button>
+        <button id="print-preview-tab" class="secondary icon-only" type="button" aria-label="Trước khi in" title="Trước khi in" aria-pressed="false" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#eye"></use></svg></button>
+      </div>
+      <div id="source-preview-panel" class="preview-panel">
+        <aside class="source-review-panel" aria-labelledby="source-preview-title">
+          <header class="source-review-header">
+            <div><h2 id="source-preview-title">Bản gốc</h2><div id="source-preview-name" class="muted source-preview-name">Chưa có file</div></div>
+            <span id="source-preview-status" class="muted" role="status" aria-live="polite">Chọn file để xem</span>
+          </header>
+          <div id="source-preview-layout" class="source-preview-layout">
+            <nav id="source-preview-thumbnails" class="source-preview-thumbnails" aria-label="Thumbnail các trang" hidden></nav>
+            <div id="source-preview-canvas" class="source-preview-canvas" tabindex="0" aria-label="Preview trang đang chọn">
+              <div id="source-preview-pages" class="source-preview-pages"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <div id="print-preview-panel" class="preview-panel" hidden>
+        <div id="pages" class="pages"></div>
+        <img id="preview" class="preview" alt="Preview bố cục A4" hidden>
+        <div id="job-summary" class="sr-only" role="status" aria-live="polite">Chưa có kế hoạch in.</div>
+      </div>
+      <button id="pdf-button" class="secondary icon-only pdf-download" type="button" aria-label="Tải PDF A4" title="Tải PDF A4" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#download"></use></svg></button>
     </section>
   </div>
 </main>
-<script src="/local.js" defer></script>
-<script src="/local-sources.js" defer></script>
-<script src="/local-queue.js" defer></script>
-<script src="/local-planner.js" defer></script>
+<script src="/local.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-source-preview.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-sources.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-queue.js?v=office-page-thumbnails-v1" defer></script>
+<script src="/local-planner.js?v=office-page-thumbnails-v1" defer></script>
 </body>
 </html>

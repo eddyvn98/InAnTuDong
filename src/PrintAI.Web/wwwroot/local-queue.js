@@ -4,6 +4,8 @@ function enqueuePlannerRequest() {
   const request = byId("planner-request").value.trim();
   const sourceIds = [...selectedSourceIds];
   if (!sourceIds.length) return showError(new Error("Chọn ít nhất một file cho yêu cầu."));
+  if (!canSubmitPlannerRequest())
+    return showError(new Error("Xem preview các file đã chọn trước khi gửi yêu cầu."));
   if (!request) return showError(new Error("Nhập yêu cầu in trước khi đưa vào hàng đợi."));
 
   requestQueue.push({
@@ -26,7 +28,8 @@ function renderRequestQueue() {
   container.replaceChildren();
   if (!requestQueue.length) {
     byId("queue-run-button").disabled = true;
-    byId("queue-run-button").textContent = "Hàng đợi trống";
+    setIconButton(byId("queue-run-button"), "play", "Hàng đợi trống");
+    byId("queue-run-status").textContent = "Hàng đợi trống";
     return;
   }
 
@@ -55,7 +58,7 @@ function renderRequestQueue() {
       const retry = document.createElement("button");
       retry.type = "button";
       retry.className = "secondary";
-      retry.textContent = "Thử lại";
+      setIconButton(retry, "refresh", "Thử lại yêu cầu");
       retry.addEventListener("click", () => {
         item.status = "waiting";
         renderRequestQueue();
@@ -66,7 +69,7 @@ function renderRequestQueue() {
       const preview = document.createElement("button");
       preview.type = "button";
       preview.className = "secondary";
-      preview.textContent = "Xem preview";
+      setIconButton(preview, "eye", "Xem preview");
       preview.addEventListener("click", () => document.dispatchEvent(
         new CustomEvent("queued-result-selected", { detail: item })));
       actions.append(preview);
@@ -74,7 +77,7 @@ function renderRequestQueue() {
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "danger secondary";
-    remove.textContent = "Xóa";
+    setIconButton(remove, "trash", "Xóa yêu cầu khỏi hàng đợi");
     remove.disabled = queueRunning && activeQueueItem === item;
     remove.addEventListener("click", () => removeQueueItem(item));
     actions.append(remove);
@@ -84,12 +87,14 @@ function renderRequestQueue() {
 
   const waiting = requestQueue.filter(item => item.status === "waiting").length;
   const needsAnswer = requestQueue.some(item => item.status === "needs-answer");
-  byId("queue-run-button").disabled = queueRunning || waiting === 0 || !plannerReady || needsAnswer;
-  byId("queue-run-button").textContent = queueRunning
+  const runLabel = queueRunning
     ? "AGY đang xử lý hàng đợi…"
     : !plannerReady ? "AGY chưa sẵn sàng"
     : needsAnswer ? "Cần trả lời câu hỏi của AGY"
     : waiting ? `Chạy hàng đợi (${waiting})` : "Không còn yêu cầu chờ";
+  byId("queue-run-button").disabled = queueRunning || waiting === 0 || !plannerReady || needsAnswer;
+  setIconButton(byId("queue-run-button"), queueRunning ? "refresh" : "play", runLabel);
+  byId("queue-run-status").textContent = runLabel;
 }
 
 function queueStatusLabel(status) {

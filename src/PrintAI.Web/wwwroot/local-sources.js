@@ -3,12 +3,34 @@ const sourceThumbnailUrls = new Map();
 const sourceThumbnailLoads = new Set();
 let pendingRemovalIds = [];
 
+function canSubmitPlannerRequest() {
+  return selectedSourceIds.size > 0 &&
+    [...selectedSourceIds].every(sourceId => previewedSourceIds.has(sourceId));
+}
+
+function updatePlannerRequestButton() {
+  const ready = canSubmitPlannerRequest();
+  const button = byId("planner-button");
+  const requirement = byId("source-preview-requirement");
+  button.disabled = !ready;
+  const label = !selectedSourceIds.size
+    ? "Chọn file trước khi gửi yêu cầu"
+    : ready ? "Thêm vào hàng đợi AGY"
+    : "Rà soát preview các file đã chọn trước khi gửi yêu cầu";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  requirement.hidden = selectedSourceIds.size === 0;
+  requirement.textContent = ready
+    ? "Đã xem preview các file đã chọn. Bạn có thể gửi yêu cầu."
+    : "Mở preview bản gốc ở bên phải. Chọn thumbnail khác để rà soát từng file trước khi gửi yêu cầu.";
+}
+
 function renderSources(sourcesChanged = false) {
   const container = byId("sources");
   container.replaceChildren();
   for (const source of sources) {
     const card = document.createElement("div");
-    card.className = `source-card${selectedSourceIds.has(source.id) ? " selected" : ""}`;
+    card.className = `source-card${selectedSourceIds.has(source.id) ? " selected" : ""}${sourcePreview?.id === source.id ? " viewing" : ""}`;
     card.dataset.sourceId = source.id;
 
     const checkbox = document.createElement("input");
@@ -30,6 +52,15 @@ function renderSources(sourcesChanged = false) {
       loadSourceThumbnail(source);
     }
 
+    const previewTrigger = document.createElement("button");
+    previewTrigger.type = "button";
+    previewTrigger.className = "source-preview-trigger";
+    previewTrigger.setAttribute("aria-label", `Xem preview ${source.fileName}`);
+    previewTrigger.title = `Xem preview ${source.fileName}`;
+    previewTrigger.setAttribute("aria-pressed", String(sourcePreview?.id === source.id));
+    previewTrigger.append(thumbnail);
+    previewTrigger.addEventListener("click", () => showSourcePreview(source));
+
     const name = document.createElement("div");
     name.className = "source-name";
     name.title = source.fileName;
@@ -38,7 +69,7 @@ function renderSources(sourcesChanged = false) {
     meta.className = "source-meta";
     meta.textContent = source.pageCount > 1 ? `${source.pageCount} trang` : source.kind;
 
-    card.append(checkbox, thumbnail, name, meta);
+    card.append(checkbox, previewTrigger, name, meta);
     container.append(card);
   }
 
@@ -48,7 +79,11 @@ function renderSources(sourcesChanged = false) {
     : "Chọn xong, file sẽ tự tải lên và hiện tại đây.";
   byId("remove-sources-button").disabled = selectedCount === 0 || queueRunning;
   byId("job-form").hidden = sources.length === 0;
-  byId("preview-button").disabled = selectedCount === 0;
+  if (sourcesChanged && (!sourcePreview || !sources.some(source => source.id === sourcePreview.id))) {
+    const nextPreview = sources.find(source => selectedSourceIds.has(source.id)) || sources[0];
+    if (nextPreview) showSourcePreview(nextPreview);
+    else clearSourcePreview();
+  }
   document.dispatchEvent(new Event(sourcesChanged ? "sources-updated" : "selection-updated"));
 }
 
@@ -123,6 +158,7 @@ async function confirmRemoveSelectedSources() {
     cancelRequestsForSources(ids);
     for (const id of ids) {
       selectedSourceIds.delete(id);
+      previewedSourceIds.delete(id);
       const thumbnailUrl = sourceThumbnailUrls.get(id);
       if (thumbnailUrl) URL.revokeObjectURL(thumbnailUrl);
       sourceThumbnailUrls.delete(id);

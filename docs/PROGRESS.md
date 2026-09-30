@@ -1271,3 +1271,41 @@ Next concrete task after merge:
 2. measure AGY cold/warm latency through the browser path;
 3. decide whether persistent `stream-json` is justified;
 4. migrate the highest-value remaining desktop controls to browser mode.
+
+## M8 web UI consistency pass
+
+The macOS/Windows local workflow and Railway demo now share `wwwroot/site.css` for color, typography, controls, cards, focus states and responsive layout. Removed page-level style duplication, corrected the local printer label to be platform-neutral, and made online/degraded/offline status colors reflect actual state. A browser review found and fixed a hidden delete-confirmation panel that was exposed by the new flex styling. Manual browser review on the local workflow and demo confirmed the shared styling, the hidden-state fix, demo preview rendering, and online status. `PrintAI.Web` builds with 0 warnings and 0 errors.
+
+The local web manual dimensions/copies/gap/margin form has since been removed at the user's request. Job creation now stays on the AGY request queue, which already creates and previews the validated job; PDF export and printer controls remain available for that job. Removed the obsolete manual-preview handler. Browser refresh confirmed AGY readiness, preserved the current uploaded-source session, and showed no remaining manual-size controls; CUPS has no printer configured on this Mac.
+
+The web action buttons now use a shared local SVG icon sprite, including dynamically rendered queue and page controls. Each icon button retains an accessible name and hover title, while queue state text remains in a live status element outside the button. Browser visual review confirms icon rendering on the local workflow.
+
+Added a source-file preview dialog opened from each thumbnail, with page navigation for PDFs. AGY request submission stays disabled until every selected source has been rendered in that dialog. After AGY creates a print job, its output preview must finish decoding before print becomes available; printer controls are now positioned below that preview. Built with 0 warnings/errors and manually checked the rendered source preview and request gate on a separate local port with generated test data. The existing 5275 session was preserved because restarting it would delete its uploaded temporary files. Physical print remains unavailable until a Mac CUPS printer is configured.
+
+Next concrete task: continue the M8 real-browser validation of the packaged Windows app and record cold/warm AGY latency.
+
+## M8 inline source review
+
+Replaced the source-preview popup and page navigation controls with a scrollable source review panel beside the AGY input on desktop. The first selected source appears automatically; thumbnails switch the source being reviewed. PDF pages load near the scroll position and release their preview images when they leave the review window. The AGY request remains locked until the first source page is rendered and actually visible for each selected file. Browser review on `127.0.0.1:5276` confirmed the prompt and original page are side by side and the source can be scrolled. The existing session on `5275` remains untouched.
+
+Next concrete task: continue the M8 real-browser validation of the packaged Windows app and record cold/warm AGY latency.
+
+## M8 local preview workspace layout
+
+Reworked the local web workspace so source upload and AGY planning stay in a narrower left column while the original/output preview fills the right column. Removed the global header and reduced the printer controls to a 230 px selector, 76 px copy count and 36 px icon actions above the preview. Replaced the numbered page-check section with icon-only original and pre-print preview switches; moved PDF export beside the preview.
+
+Manual browser review on `127.0.0.1:5276` confirmed the wide original preview, printer toolbar placement, icon-only preview switches and responsive two-column desktop layout. The original-view interaction rendered the existing PDF. The pre-print view stays disabled until a generated job has a decoded preview; it was not exercised because this pass did not submit the existing meeting document to AGY. No printer was configured and no print was sent.
+
+The user clarified that the earlier upload error came from opening the wrong port. Duplicate local web servers were consolidated to `127.0.0.1:5276`; ports 5272–5275 were stopped with the user's confirmation, clearing their per-process temporary sessions.
+
+Next concrete task: exercise the pre-print switch using synthetic test input after AGY creates a preview, then continue the M8 packaged-Windows validation.
+
+## M8 multi-page source preview thumbnails
+
+The original-source preview now uses a page thumbnail sidebar beside one large selected page. Selecting a thumbnail loads that page in the main viewer. The sidebar is shown only for multi-page sources; thumbnail images lazy-load near the sidebar viewport and release when scrolled away.
+
+Manual browser review on `127.0.0.1:5276` with a three-page source confirmed all page thumbnails appear and selecting page 2 updates the large viewer to page 2. The standalone macOS web host currently accepts images and PDF; this UI works for any multi-page source the host returns, while direct Office upload/conversion remains outside this change.
+
+Final pre-PR verification: `PrintAI.Web` builds with 0 warnings and 0 errors; shared suite passes 272/272; all local workflow JavaScript files pass `node --check`; `git diff --check` is clean.
+
+Next concrete task: if Office upload is needed on the standalone macOS web host, connect its existing document-conversion library and validate one real Office file; otherwise continue packaged-Windows validation.

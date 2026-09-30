@@ -11,6 +11,19 @@ let queueRunning = false;
 const byId = id => document.getElementById(id);
 const message = byId("message");
 
+function setIconButton(button, icon, label) {
+  const image = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  image.setAttribute("aria-hidden", "true");
+  image.setAttribute("focusable", "false");
+  use.setAttribute("href", `/icons.svg?v=source-preview-v1#${icon}`);
+  image.append(use);
+  button.replaceChildren(image);
+  button.classList.add("icon-only");
+  button.setAttribute("aria-label", label);
+  button.title = label;
+}
+
 async function authorizedFetch(url, options = {}) {
   const headers = new Headers(options.headers || {});
   headers.set("X-PrintAI-Session", sessionToken);
@@ -28,6 +41,18 @@ function showError(error) {
   message.textContent = error instanceof Error ? error.message : String(error);
 }
 
+function setPreviewMode(mode) {
+  const showPrint = mode === "print" && previewReady;
+  byId("source-preview-panel").hidden = showPrint;
+  byId("print-preview-panel").hidden = !showPrint;
+  byId("source-preview-tab").classList.toggle("active", !showPrint);
+  byId("source-preview-tab").setAttribute("aria-pressed", String(!showPrint));
+  byId("source-preview-tab").disabled = sources.length === 0;
+  byId("print-preview-tab").classList.toggle("active", showPrint);
+  byId("print-preview-tab").setAttribute("aria-pressed", String(showPrint));
+  byId("print-preview-tab").disabled = !previewReady;
+}
+
 async function initialize() {
   const response = await fetch("/api/bootstrap");
   if (!response.ok) throw new Error("Mở web bằng địa chỉ local đã in ra trong Terminal.");
@@ -39,51 +64,9 @@ async function initialize() {
   renderSources(true);
   await loadPrinters();
   byId("status").textContent = "Local · đã kết nối";
-  byId("status").style.background = "#e8fff1";
+  byId("status").dataset.state = "success";
   document.dispatchEvent(new Event("local-ready"));
 }
-
-byId("job-form").addEventListener("submit", async event => {
-  event.preventDefault();
-  message.textContent = "";
-  const form = new FormData(event.currentTarget);
-  const sourceIds = [...selectedSourceIds];
-  byId("preview-button").disabled = true;
-  try {
-    const response = await authorizedFetch("/api/local/jobs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sourceIds,
-        itemWidthMm: Number(form.get("width")),
-        itemHeightMm: Number(form.get("height")),
-        copies: Number(form.get("copies")),
-        gapMm: Number(form.get("gap")),
-        marginMm: Number(form.get("margin"))
-      })
-    });
-    activeJob = await response.json();
-    previewReady = false;
-    byId("pdf-button").disabled = false;
-    updatePrintButton();
-    byId("job-summary").textContent = `${activeJob.itemCount} mục · ${activeJob.columns}×${activeJob.rows}/trang · ${activeJob.outputPageCount} trang A4${activeJob.rotated ? " · xoay 90°" : ""}`;
-    renderPageButtons();
-    await showPreview(0);
-  } catch (error) {
-    showError(error);
-  } finally {
-    byId("preview-button").disabled = false;
-  }
-});
-
-byId("job-form").addEventListener("input", () => {
-  if (!activeJob) return;
-  activeJob = null;
-  previewReady = false;
-  byId("pdf-button").disabled = true;
-  byId("job-summary").textContent = "Thiết lập đã đổi. Tạo preview mới trước khi xuất hoặc in.";
-  updatePrintButton();
-});
 
 function renderPageButtons() {
   const pages = byId("pages");
@@ -92,7 +75,7 @@ function renderPageButtons() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "secondary";
-    button.textContent = `Trang ${page + 1}`;
+    setIconButton(button, "file", `Xem trang ${page + 1}`);
     button.addEventListener("click", () => showPreview(page));
     pages.append(button);
   }
@@ -106,8 +89,10 @@ async function showPreview(page) {
     previewUrl = nextUrl;
     byId("preview").src = previewUrl;
     byId("preview").hidden = false;
+    await byId("preview").decode();
     previewReady = true;
     updatePrintButton();
+    setPreviewMode("print");
     byId("pages").querySelectorAll("button").forEach((button, index) => {
       button.classList.toggle("active", index === page);
     });
@@ -118,6 +103,7 @@ async function showPreview(page) {
 
 function updatePrintButton() {
   byId("print-button").disabled = !activeJob || !previewReady || printers.length === 0;
+  byId("print-preview-tab").disabled = !previewReady;
 }
 
 async function loadPrinters() {
@@ -143,7 +129,7 @@ async function loadPrinters() {
     }
     select.disabled = printers.length === 0;
     byId("print-copies").disabled = printers.length === 0;
-    note.textContent = result.message || "PDF preview sẽ được gửi vào hàng đợi CUPS của macOS.";
+    note.textContent = result.message || "PDF preview sẽ được gửi vào hàng đợi in hệ thống.";
     updatePrintButton();
   } catch (error) {
     printers = [];
@@ -156,6 +142,12 @@ async function loadPrinters() {
 }
 
 byId("printer-refresh").addEventListener("click", loadPrinters);
+byId("source-preview-tab").addEventListener("click", () => setPreviewMode("source"));
+byId("print-preview-tab").addEventListener("click", () => setPreviewMode("print"));
+document.addEventListener("sources-updated", () => {
+  byId("source-preview-tab").disabled = sources.length === 0;
+  if (sources.length) setPreviewMode("source");
+});
 byId("print-button").addEventListener("click", async () => {
   if (!activeJob || !previewReady || !byId("printer-select").value) return;
   byId("print-button").disabled = true;
@@ -190,7 +182,7 @@ byId("pdf-button").addEventListener("click", async () => {
     link.download = "PrintAI-A4.pdf";
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-    message.textContent = "Đã tạo PDF. Mở tệp để xem hoặc gửi tới máy in Mac.";
+    message.textContent = "Đã tạo PDF. Mở tệp để xem hoặc gửi tới máy in.";
   } catch (error) {
     showError(error);
   } finally {
@@ -200,5 +192,6 @@ byId("pdf-button").addEventListener("click", async () => {
 
 initialize().catch(error => {
   byId("status").textContent = "Chưa kết nối";
+  byId("status").dataset.state = "error";
   showError(error);
 });

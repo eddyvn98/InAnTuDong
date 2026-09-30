@@ -1,8 +1,6 @@
 document.addEventListener("local-ready", loadPlannerStatus);
 document.addEventListener("sources-updated", loadPlannerStatus);
-document.addEventListener("selection-updated", () => {
-  byId("planner-button").disabled = selectedSourceIds.size === 0;
-});
+document.addEventListener("selection-updated", updatePlannerRequestButton);
 
 let streamedText = "";
 let planStartedAt = 0;
@@ -21,12 +19,12 @@ async function loadPlannerStatus() {
     status.textContent = result.isReady
       ? `Sẵn sàng · ${result.models}`
       : result.message;
-    button.disabled = selectedSourceIds.size === 0;
+    updatePlannerRequestButton();
     renderRequestQueue();
   } catch (error) {
     plannerReady = false;
     status.textContent = error.message;
-    button.disabled = selectedSourceIds.size === 0;
+    updatePlannerRequestButton();
     renderRequestQueue();
   }
 }
@@ -86,6 +84,7 @@ async function runPlanner(queueItem) {
   planTimer = setInterval(updatePlanTimer, 1000);
   activeJob = null;
   previewReady = false;
+  setPreviewMode("source");
   byId("preview").hidden = true;
   byId("preview").removeAttribute("src");
   if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -123,7 +122,7 @@ async function runPlanner(queueItem) {
     renderRequestQueue();
   } finally {
     clearInterval(planTimer);
-    button.disabled = selectedSourceIds.size === 0;
+    updatePlannerRequestButton();
     answerButton.disabled = false;
   }
 }

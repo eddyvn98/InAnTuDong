@@ -4,29 +4,27 @@ const sourceThumbnailLoads = new Set();
 let pendingRemovalIds = [];
 
 function canSubmitPlannerRequest() {
-  return selectedSourceIds.size > 0 &&
-    [...selectedSourceIds].every(sourceId => previewedSourceIds.has(sourceId));
+  return selectedSourceIds.size > 0;
 }
 
 function updatePlannerRequestButton() {
   const ready = canSubmitPlannerRequest();
-  const button = byId("planner-button");
-  const requirement = byId("source-preview-requirement");
-  button.disabled = !ready;
-  const label = !selectedSourceIds.size
-    ? "Chọn file trước khi gửi yêu cầu"
-    : ready ? "Thêm vào hàng đợi AGY"
-    : "Rà soát preview các file đã chọn trước khi gửi yêu cầu";
-  button.setAttribute("aria-label", label);
-  button.title = label;
-  requirement.hidden = selectedSourceIds.size === 0;
-  requirement.textContent = ready
-    ? "Đã xem preview các file đã chọn. Bạn có thể gửi yêu cầu."
-    : "Mở preview bản gốc ở bên phải. Chọn thumbnail khác để rà soát từng file trước khi gửi yêu cầu.";
+  const input = byId("planner-request");
+  input.disabled = !ready;
+  input.placeholder = ready ? "Nhập yêu cầu in" : "Chọn file để nhập yêu cầu in";
+  byId("planner-send-button").disabled = !ready || !input.value.trim();
+  resizePlannerRequest();
+}
+
+function resizePlannerRequest() {
+  const input = byId("planner-request");
+  input.style.height = "auto";
+  input.style.height = `${input.scrollHeight}px`;
 }
 
 function renderSources(sourcesChanged = false) {
   const container = byId("sources");
+  const scrollTop = container.scrollTop;
   container.replaceChildren();
   for (const source of sources) {
     const card = document.createElement("div");
@@ -79,6 +77,9 @@ function renderSources(sourcesChanged = false) {
     : "Chọn xong, file sẽ tự tải lên và hiện tại đây.";
   byId("remove-sources-button").disabled = selectedCount === 0 || queueRunning;
   byId("job-form").hidden = sources.length === 0;
+  updatePlannerRequestButton();
+  if (!sourcesChanged) container.scrollTop = scrollTop;
+  renderSourceQueueBadges();
   if (sourcesChanged && (!sourcePreview || !sources.some(source => source.id === sourcePreview.id))) {
     const nextPreview = sources.find(source => selectedSourceIds.has(source.id)) || sources[0];
     if (nextPreview) showSourcePreview(nextPreview);
@@ -158,7 +159,6 @@ async function confirmRemoveSelectedSources() {
     cancelRequestsForSources(ids);
     for (const id of ids) {
       selectedSourceIds.delete(id);
-      previewedSourceIds.delete(id);
       const thumbnailUrl = sourceThumbnailUrls.get(id);
       if (thumbnailUrl) URL.revokeObjectURL(thumbnailUrl);
       sourceThumbnailUrls.delete(id);

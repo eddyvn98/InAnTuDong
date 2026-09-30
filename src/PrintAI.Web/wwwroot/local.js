@@ -129,12 +129,15 @@ async function loadPrinters() {
     }
     select.disabled = printers.length === 0;
     byId("print-copies").disabled = printers.length === 0;
-    note.textContent = result.message || "PDF preview sẽ được gửi vào hàng đợi in hệ thống.";
+    const detail = result.message || "PDF preview sẽ được gửi vào hàng đợi in hệ thống.";
+    note.textContent = detail;
+    note.title = detail;
     updatePrintButton();
   } catch (error) {
     printers = [];
     select.replaceChildren(new Option("Không đọc được danh sách máy in", ""));
     note.textContent = error.message;
+    note.title = error.message;
     updatePrintButton();
   } finally {
     byId("printer-refresh").disabled = false;

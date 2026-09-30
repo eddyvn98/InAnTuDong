@@ -1309,3 +1309,55 @@ Manual browser review on `127.0.0.1:5276` with a three-page source confirmed all
 Final pre-PR verification: `PrintAI.Web` builds with 0 warnings and 0 errors; shared suite passes 272/272; all local workflow JavaScript files pass `node --check`; `git diff --check` is clean.
 
 Next concrete task: if Office upload is needed on the standalone macOS web host, connect its existing document-conversion library and validate one real Office file; otherwise continue packaged-Windows validation.
+
+## M8 enter-to-plan queue and fixed preview frame
+
+Removed the planner description panel and queue controls. Selecting files enables one normal text input; Enter adds the request and immediately starts the sequential AGY queue. Requests wait visibly on their source thumbnails while AGY reconnects, and the status check retries every 10 seconds until ready. Thumbnail badges show request order and waiting, processing, clarification, complete, error or cancelled state. Removed the source-preview-before-planning gate so the user can choose files and submit directly; generated output still requires its existing preview before export or print.
+
+The queue previously only added a waiting item. It depended on a separate Play button to call the runner, so a single request stayed idle; a not-ready planner also had no automatic retry. Manual verification on `127.0.0.1:5276` with generated images confirmed Enter changed all 12 associated badges from `#1 đang xử lý` to `#1 xong`, then produced a 12-item A4 plan in 20.4 seconds. No print was sent.
+
+The source and output preview panels now have a viewport-based fixed height and fit page content inside the frame. At a 1512×760 viewport, wide and tall synthetic images both kept a 407 px canvas and scaled within it. The 14-file gallery remained a two-column, internally scrollable list; selecting the last file kept the gallery scroll position. All 14 synthetic files were removed from the local session after verification.
+
+Next concrete task: continue packaged-Windows validation; run the local-web queue again only with a non-sensitive print request if further planner validation is needed.
+
+## M8 planner input send button
+
+Added a submit icon inside the request input. It stays disabled until a source is selected and the user enters non-whitespace text; button click and Enter share the same form submission path. Source list rendering now also synchronizes the input state after reload. Browser verification confirmed a selected source enables the input, whitespace keeps Send disabled, and text enables it; the field was cleared afterward without submitting. JavaScript syntax and `git diff --check` pass.
+
+Next concrete task: continue packaged-Windows validation; run the local-web queue again only with a non-sensitive print request if further planner validation is needed.
+
+## M8 compact upload panel
+
+Removed the always-visible upload limit paragraph while retaining the live session/selection status. Moved upload and remove actions onto the title row and tightened panel padding. Browser review on `127.0.0.1:5276` at 1512×760 confirmed the heading, actions, status and thumbnail gallery remain visible, the upload card is 282 px high with the active single source, and the page has no viewport overflow. Cache version updated for existing browser sessions.
+
+Next concrete task: continue packaged-Windows validation; run the local-web queue again only with a non-sensitive print request if further planner validation is needed.
+
+## M8 preview column alignment
+
+Removed sticky positioning and the viewport-based minimum height from the preview card. The preview now stays in the same grid flow as the upload/planning column instead of floating as the page scrolls. Kept the page viewer scrollable inside its own area. Browser layout inspection confirmed the preview and workflow columns share the same top and bottom coordinates.
+
+Next concrete task: if Office upload is needed on the standalone macOS web host, connect its existing document-conversion library and validate one real Office file; otherwise continue packaged-Windows validation.
+
+## M8 compact preview toolbar
+
+Combined the printer selector, copy count, print/refresh actions, printer status, and original/pre-print switches into one compact responsive toolbar. Printer help remains available on hover while the visible status is truncated to avoid taking over the preview width. Added a stylesheet/script cache version so cloned or already-open browsers load the updated layout.
+
+Manual browser review on the existing local session at `127.0.0.1:5276` confirmed the toolbar occupies one 40 px row at a 2048 px viewport. A 390 px viewport had no horizontal page overflow; controls wrap for the narrow layout. The web build succeeds with 0 warnings and 0 errors; JavaScript syntax and `git diff --check` are clean. No files were uploaded, removed, or printed during this check.
+
+Next concrete task: if Office upload is needed on the standalone macOS web host, connect its existing document-conversion library and validate one real Office file; otherwise continue packaged-Windows validation.
+
+## M8 preview frame alignment correction
+
+At a 1512×760 browser viewport, the preview card and the bottom of the left planning card now both end at y=517; the preview canvas is fixed at 383 px inside a 409 px panel. The page has no viewport overflow. The source gallery has a fixed 170 px scrolling area so adding more files does not stretch the left column. Reloaded the active 5276 page and confirmed these dimensions with the existing single source file.
+
+Next concrete task: continue packaged-Windows validation; run the local-web queue again only with a non-sensitive print request if further planner validation is needed.
+
+## M8 full-height workspace, continuous page scroll, auto-growing request box
+
+Supersedes the fixed-height preview frame notes above. The local workspace now fills the viewport: the upload card grows to fill the left column, the planner card sits at the bottom, and the preview panel takes the remaining height. Icon buttons share one 38 px size (20 px glyph), including the in-input send button. Source thumbnails no longer collapse on top of each other.
+
+The source preview now renders every page stacked in one scroll area at full width. Pages load and release lazily through an `IntersectionObserver` while keeping their height; the active thumbnail and status follow scroll position, and clicking a thumbnail scrolls to that page. The request box is a `<textarea>` that grows up to 180 px and wraps long text; Enter submits, Shift+Enter inserts a newline, and IME composition is ignored.
+
+Verified in the browser at 1600×900 with a three-page PDF: the canvas scrolled (3517 px content), the active thumbnail tracked scroll, thumbnail click scrolled to the page, and the textarea grew from 48 px to 155 px and shrank back. JavaScript syntax checks pass. Not verified: narrow/mobile layout after these changes, real mouse scrolling, and automated tests for this UI.
+
+Next concrete task: review the mobile layout of the new workspace; otherwise continue packaged-Windows validation.

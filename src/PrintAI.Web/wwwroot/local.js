@@ -4,6 +4,9 @@ let activeJob = null;
 let previewUrl = "";
 let previewReady = false;
 let printers = [];
+let requestQueue = [];
+let activeQueueItem = null;
+let queueRunning = false;
 
 const byId = id => document.getElementById(id);
 const message = byId("message");
@@ -25,26 +28,6 @@ function showError(error) {
   message.textContent = error instanceof Error ? error.message : String(error);
 }
 
-function renderSources() {
-  const container = byId("sources");
-  container.replaceChildren();
-  for (const source of sources) {
-    const label = document.createElement("label");
-    label.className = "source";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = source.id;
-    checkbox.checked = true;
-    const description = document.createElement("span");
-    description.textContent = `${source.fileName} · ${source.pageCount} trang${source.pixelWidth ? ` · ${source.pixelWidth}×${source.pixelHeight}px` : ""}`;
-    label.append(checkbox, description);
-    container.append(label);
-  }
-  byId("job-form").hidden = sources.length === 0;
-  byId("preview-button").disabled = sources.length === 0;
-  document.dispatchEvent(new Event("sources-updated"));
-}
-
 async function initialize() {
   const response = await fetch("/api/bootstrap");
   if (!response.ok) throw new Error("Mở web bằng địa chỉ local đã in ra trong Terminal.");
@@ -52,36 +35,19 @@ async function initialize() {
   sessionToken = bootstrap.sessionToken;
   const sourceResponse = await authorizedFetch("/api/local/sources");
   sources = await sourceResponse.json();
-  renderSources();
+  selectedSourceIds = new Set(sources.map(source => source.id));
+  renderSources(true);
   await loadPrinters();
   byId("status").textContent = "Local · đã kết nối";
   byId("status").style.background = "#e8fff1";
   document.dispatchEvent(new Event("local-ready"));
 }
 
-byId("upload-form").addEventListener("submit", async event => {
-  event.preventDefault();
-  message.textContent = "";
-  const form = new FormData();
-  for (const file of byId("files-input").files) form.append("files", file);
-  byId("upload-button").disabled = true;
-  try {
-    const response = await authorizedFetch("/api/local/files", { method: "POST", body: form });
-    sources.push(...await response.json());
-    renderSources();
-    byId("files-input").value = "";
-  } catch (error) {
-    showError(error);
-  } finally {
-    byId("upload-button").disabled = false;
-  }
-});
-
 byId("job-form").addEventListener("submit", async event => {
   event.preventDefault();
   message.textContent = "";
   const form = new FormData(event.currentTarget);
-  const sourceIds = [...byId("sources").querySelectorAll("input:checked")].map(input => input.value);
+  const sourceIds = [...selectedSourceIds];
   byId("preview-button").disabled = true;
   try {
     const response = await authorizedFetch("/api/local/jobs", {

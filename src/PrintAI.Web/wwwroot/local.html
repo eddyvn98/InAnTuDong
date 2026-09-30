@@ -16,7 +16,7 @@
     .fields label{font-size:13px;color:#526074}.fields input{display:block;width:100%;margin-top:5px;padding:9px;border:1px solid #ccd3df;border-radius:9px}
     button,.button{border:0;border-radius:10px;padding:10px 14px;font-weight:650;cursor:pointer;background:#172033;color:white;text-decoration:none}
     button:disabled{opacity:.5;cursor:default}.secondary{background:#edf1f7;color:#26334a}
-    #sources{display:grid;gap:8px;margin-top:12px}.source{display:flex;align-items:center;gap:9px;padding:9px;background:#f6f8fb;border-radius:9px;overflow-wrap:anywhere}
+    #sources{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px;margin-top:12px}.source-card{position:relative;min-width:0;border:1px solid #dce2eb;border-radius:11px;padding:7px;background:white}.source-card.selected{border:2px solid #1664d8;padding:6px}.source-thumb{height:112px;display:grid;place-items:center;overflow:hidden;border-radius:7px;background:#eef1f6;color:#657083}.source-thumb img{width:100%;height:100%;object-fit:contain}.source-name{margin-top:6px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.source-meta{font-size:11px;color:#657083;margin-top:3px}.source-check{position:absolute;left:8px;top:8px;width:18px;height:18px;accent-color:#1664d8}.source-remove{position:absolute;right:5px;top:5px;width:25px;height:25px;padding:0;border-radius:50%;background:#fff;color:#a12626;box-shadow:0 1px 5px #0003}.danger{background:#fff0f0;color:#a12626}.queue-entry{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px;background:#f6f8fb;border-radius:9px;margin-top:8px}.queue-entry button{padding:6px 9px}.queue-entry-text{min-width:0;overflow-wrap:anywhere}.queue-status{font-size:12px;color:#657083;margin-top:4px}
     .preview{display:block;width:min(100%,390px);max-height:75vh;object-fit:contain;background:#eef1f6;border:1px solid #d7deea;margin:14px auto}.preview[hidden]{display:none}
     .pages{justify-content:center}.pages button{padding:7px 10px}.pages .active{background:#1664d8}
     .stats{padding:11px;background:#f6f8fb;border-radius:10px;margin:12px 0}.error{color:#a12626;min-height:1.4em;margin:10px 0}
@@ -34,10 +34,14 @@
       <div class="card">
         <h2>1. Chọn ảnh hoặc PDF</h2>
         <form id="upload-form">
-          <div class="row"><input id="files-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple required><button id="upload-button">Tải tệp lên</button></div>
+          <div class="row"><label for="files-input" class="button" style="text-align:center">+ Chọn ảnh hoặc PDF</label><button id="remove-sources-button" class="danger secondary" type="button" disabled>Xóa file đang chọn</button><input id="files-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf" multiple hidden></div>
+          <div id="upload-status" class="muted" style="margin-top:8px" aria-live="polite"></div>
         </form>
-        <div class="muted" style="margin-top:8px">Chọn tệp xong hãy bấm “Tải tệp lên”. Chỉ tệp hiện trong danh sách bên dưới mới được dùng để lập kế hoạch và xem preview.</div>
         <div class="muted" style="margin-top:9px">Tối đa 100 MB mỗi tệp, 256 MB mỗi phiên. PDF tối đa 200 trang.</div>
+        <div id="source-delete-confirm" class="queue-entry" role="alert" hidden>
+          <div id="source-delete-text" class="queue-entry-text"></div>
+          <div class="row"><button id="source-delete-confirm-button" class="danger" type="button">Xóa file</button><button id="source-delete-cancel-button" class="secondary" type="button">Giữ lại</button></div>
+        </div>
         <div id="sources"></div>
       </div>
       <form id="job-form" class="card" hidden>
@@ -45,7 +49,8 @@
         <label for="planner-request">Hoặc mô tả cách in, AGY sẽ lập kế hoạch</label>
         <textarea id="planner-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4" style="display:block;width:100%;margin:7px 0 10px;padding:10px;border:1px solid #ccd3df;border-radius:9px;font:inherit"></textarea>
         <div id="planner-status" class="muted" style="margin-bottom:10px">Đang kiểm tra AGY…</div>
-        <button id="planner-button" type="button" disabled>Lập kế hoạch bằng AGY</button>
+        <div class="row"><button id="planner-button" type="button" disabled>Thêm vào hàng đợi AGY</button><button id="queue-run-button" type="button" class="secondary" disabled>Chạy hàng đợi</button></div>
+        <div id="request-queue" aria-live="polite"></div>
         <div id="planner-result" class="muted" style="margin-top:8px"></div>
         <div id="planner-clarification" hidden style="margin-top:10px;padding:12px;background:#f6f8fb;border-radius:10px">
           <div id="planner-question" style="margin-bottom:8px"></div>
@@ -86,6 +91,8 @@
   </div>
 </main>
 <script src="/local.js" defer></script>
+<script src="/local-sources.js" defer></script>
+<script src="/local-queue.js" defer></script>
 <script src="/local-planner.js" defer></script>
 </body>
 </html>

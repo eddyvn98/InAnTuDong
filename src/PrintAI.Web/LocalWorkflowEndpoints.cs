@@ -43,6 +43,43 @@ public static partial class LocalWorkflowEndpoints
                 ? Results.Ok(planner.Readiness)
                 : Results.Unauthorized());
 
+        app.MapGet("/api/local/sources/{sourceId:guid}/thumbnail", (
+            HttpContext context, Guid sourceId) =>
+        {
+            if (!IsAuthorized(context, session))
+                return Results.Unauthorized();
+            try
+            {
+                return Results.File(session.RenderSourceThumbnail(sourceId), "image/png");
+            }
+            catch (LocalWorkflowException exception)
+            {
+                return Results.NotFound(new { error = exception.Message });
+            }
+            catch (Exception exception) when (exception is InvalidDataException or IOException or ArgumentOutOfRangeException)
+            {
+                return Results.UnprocessableEntity(new { error = "Không tạo được thumbnail cho file này." });
+            }
+        });
+
+        app.MapDelete("/api/local/sources", async (HttpContext context) =>
+        {
+            if (!IsAuthorized(context, session))
+                return Results.Unauthorized();
+            var request = await context.Request.ReadFromJsonAsync<RemoveLocalSourcesRequest>(
+                cancellationToken: context.RequestAborted);
+            if (request is null)
+                return Results.BadRequest(new { error = "Chọn file cần xóa." });
+            try
+            {
+                return Results.Ok(session.RemoveSources(request.SourceIds));
+            }
+            catch (LocalWorkflowException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+        });
+
         app.MapPost("/api/local/plan", async (HttpContext context) =>
         {
             if (!IsAuthorized(context, session))

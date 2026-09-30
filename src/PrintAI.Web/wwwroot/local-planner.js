@@ -1,13 +1,14 @@
 document.addEventListener("local-ready", loadPlannerStatus);
 document.addEventListener("sources-updated", loadPlannerStatus);
+document.addEventListener("selection-updated", () => {
+  byId("planner-button").disabled = selectedSourceIds.size === 0;
+});
 
-let planningConversation = false;
-let clarificationHistory = [];
-let pendingQuestion = "";
 let streamedText = "";
 let planStartedAt = 0;
 let planStage = "";
 let planTimer = 0;
+let plannerReady = false;
 
 async function loadPlannerStatus() {
   const status = byId("planner-status");
@@ -16,40 +17,64 @@ async function loadPlannerStatus() {
   try {
     const response = await authorizedFetch("/api/local/planner");
     const result = await response.json();
+    plannerReady = result.isReady;
     status.textContent = result.isReady
       ? `Sẵn sàng · ${result.models}`
       : result.message;
-    button.disabled = !result.isReady || sources.length === 0;
+    button.disabled = selectedSourceIds.size === 0;
+    renderRequestQueue();
   } catch (error) {
+    plannerReady = false;
     status.textContent = error.message;
+    button.disabled = selectedSourceIds.size === 0;
+    renderRequestQueue();
   }
 }
 
-byId("planner-button").addEventListener("click", () => runPlanner());
 byId("planner-answer-button").addEventListener("click", () => {
   const answer = byId("planner-answer").value.trim();
   if (!answer) {
     byId("planner-answer").focus();
     return;
   }
-  clarificationHistory.push({ question: pendingQuestion, answer });
+  if (!activeQueueItem) return;
+  activeQueueItem.history.push({ question: activeQueueItem.pendingQuestion, answer });
+  activeQueueItem.pendingQuestion = "";
+  activeQueueItem.status = "waiting";
   byId("planner-answer").value = "";
-  runPlanner();
+  renderRequestQueue();
+  runPlannerQueue();
 });
 
-async function runPlanner() {
+async function runPlannerQueue() {
+  if (queueRunning || !plannerReady || activeQueueItem?.status === "needs-answer") return;
+  queueRunning = true;
+  renderRequestQueue();
+  try {
+    while (true) {
+      const next = requestQueue.find(item => item.status === "waiting");
+      if (!next) break;
+      activeQueueItem = next;
+      next.status = "processing";
+      renderRequestQueue();
+      await runPlanner(next);
+      if (next.status === "needs-answer") break;
+      activeQueueItem = null;
+    }
+  } finally {
+    queueRunning = false;
+    if (activeQueueItem?.status !== "needs-answer") activeQueueItem = null;
+    renderRequestQueue();
+    byId("remove-sources-button").disabled = selectedSourceIds.size === 0;
+  }
+}
+
+async function runPlanner(queueItem) {
   const resultBox = byId("planner-result");
   const button = byId("planner-button");
   const answerButton = byId("planner-answer-button");
-  const sourceIds = [...byId("sources").querySelectorAll("input:checked")]
-    .map(input => input.value);
-
-  if (!planningConversation) {
-    planningConversation = true;
-    clarificationHistory = [];
-    pendingQuestion = "";
-  }
-  button.disabled = true;
+  const sourceIds = queueItem.sourceIds;
+  button.disabled = selectedSourceIds.size === 0;
   answerButton.disabled = true;
   byId("planner-clarification").hidden = true;
   byId("planner-stream").hidden = true;
@@ -72,7 +97,7 @@ async function runPlanner() {
   resultBox.textContent = "Đang kết nối với AGY…";
 
   try {
-    const requestText = buildRequest();
+    const requestText = buildRequest(queueItem);
     const requestBody = JSON.stringify({ sourceIds, userRequest: requestText });
     const options = {
       method: "POST",
@@ -84,7 +109,7 @@ async function runPlanner() {
       await readPlanEvents(response);
     } catch (error) {
       if (error.status !== 404 && error.status !== 405) throw error;
-      planStage = "Máy chủ này chưa hỗ trợ stream; đang dùng luồng AGY tương thích";
+      planStage = "Đang dùng luồng AGY tương thích";
       updatePlanTimer();
       const response = await authorizedFetch("/api/local/plan", options);
       await handlePlanComplete(await response.json());
@@ -92,12 +117,13 @@ async function runPlanner() {
   } catch (error) {
     resultBox.textContent = error.message;
     byId("job-summary").textContent = "Chưa có kế hoạch mới.";
-    planningConversation = false;
-    pendingQuestion = "";
+    queueItem.status = "error";
+    queueItem.pendingQuestion = "";
     byId("planner-clarification").hidden = true;
+    renderRequestQueue();
   } finally {
     clearInterval(planTimer);
-    button.disabled = sources.length === 0 || Boolean(pendingQuestion);
+    button.disabled = selectedSourceIds.size === 0;
     answerButton.disabled = false;
   }
 }
@@ -107,10 +133,10 @@ function updatePlanTimer() {
   byId("planner-result").textContent = `${planStage} · ${seconds} giây`;
 }
 
-function buildRequest() {
-  return clarificationHistory.reduce((text, exchange) =>
+function buildRequest(queueItem) {
+  return queueItem.history.reduce((text, exchange) =>
     `${text}\n\nCâu hỏi làm rõ của AGY: ${exchange.question}\nTrả lời của người dùng: ${exchange.answer}`,
-  byId("planner-request").value.trim());
+  queueItem.request);
 }
 
 async function readPlanEvents(response) {
@@ -152,8 +178,9 @@ async function handlePlanEvent(frame) {
 
 async function handlePlanComplete(payload) {
   if (!payload.job) {
-    pendingQuestion = (payload.questions || []).join(" · ");
-    byId("planner-question").textContent = `Cần làm rõ: ${pendingQuestion}`;
+    activeQueueItem.pendingQuestion = (payload.questions || []).join(" · ");
+    activeQueueItem.status = "needs-answer";
+    byId("planner-question").textContent = `Cần làm rõ: ${activeQueueItem.pendingQuestion}`;
     byId("planner-clarification").hidden = false;
     const duration = Number(payload.durationMilliseconds || 0);
     planStage = duration
@@ -161,11 +188,13 @@ async function handlePlanComplete(payload) {
       : "AGY cần bạn trả lời câu hỏi bên dưới để lập tiếp kế hoạch";
     updatePlanTimer();
     byId("planner-answer").focus();
+    renderRequestQueue();
     return;
   }
 
-  planningConversation = false;
-  pendingQuestion = "";
+  activeQueueItem.status = "done";
+  activeQueueItem.pendingQuestion = "";
+  activeQueueItem.result = payload;
   activeJob = payload.job;
   previewReady = false;
   byId("pdf-button").disabled = false;
@@ -179,4 +208,19 @@ async function handlePlanComplete(payload) {
     : "Đã lập kế hoạch. Kiểm tra preview trước khi xuất PDF hoặc in.";
   renderPageButtons();
   await showPreview(0);
+  renderRequestQueue();
 }
+
+document.addEventListener("queued-result-selected", async event => {
+  const payload = event.detail.result;
+  if (!payload?.job) return;
+  activeJob = payload.job;
+  previewReady = false;
+  byId("pdf-button").disabled = false;
+  updatePrintButton();
+  byId("job-summary").textContent =
+    `AGY ${payload.tier || "planner"} · ${Math.round(payload.confidence * 100)}% · ` +
+    `${activeJob.itemCount} mục · ${activeJob.outputPageCount} trang A4`;
+  renderPageButtons();
+  await showPreview(0);
+});

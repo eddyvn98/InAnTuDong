@@ -65,7 +65,7 @@ public sealed partial class LocalWorkflowSession
         {
             if (_jobs.Count >= 20)
                 throw new LocalWorkflowException("Phiên hiện tại tối đa 20 job. Khởi động lại ứng dụng để dọn phiên.");
-            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount));
+            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount, request.SourceIds.ToArray()));
         }
 
         return new(

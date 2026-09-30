@@ -191,7 +191,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
             throw new LocalWorkflowException("Job vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
         var id = Guid.NewGuid();
-        var job = new LocalPrintJob(id, spec, layout, outputPageCount);
+        var job = new LocalPrintJob(id, spec, layout, outputPageCount, request.SourceIds.ToArray());
         lock (_sync)
         {
             if (_jobs.Count >= 20)
@@ -277,5 +277,6 @@ public sealed partial class LocalWorkflowSession : IDisposable
         Guid Id,
         PrintJobSpec Spec,
         LayoutResult Layout,
-        int OutputPageCount);
+        int OutputPageCount,
+        IReadOnlyList<Guid> SourceIds);
 }

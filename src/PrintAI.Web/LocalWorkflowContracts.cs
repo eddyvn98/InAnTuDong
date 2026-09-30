@@ -8,6 +8,10 @@ public sealed record UploadedSourceView(
     int? PixelWidth,
     int? PixelHeight);
 
+public sealed record RemoveLocalSourcesRequest(IReadOnlyList<Guid> SourceIds);
+
+public sealed record RemoveLocalSourcesResult(int RemovedCount, IReadOnlyList<Guid> RemovedJobIds);
+
 public sealed record CreateLocalJobRequest(
     IReadOnlyList<Guid> SourceIds,
     double ItemWidthMm = 40,

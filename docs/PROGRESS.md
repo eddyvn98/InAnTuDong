@@ -1244,6 +1244,14 @@ The loopback-only Mac web flow now exposes AGY readiness and natural-language pl
 
 Next task: validate one ambiguous request through the browser, then add a printer and check physical scale/media settings before treating physical printing as verified.
 
+## M8 local web multi-file gallery and AGY queue
+
+The Mac local web flow now uploads files immediately after selection, renders each source as a thumbnail, supports selecting multiple sources for a request, and removes selected sources from the process session. Removing sources also invalidates derived print jobs and cancels queued requests that reference those sources. AGY requests can be queued and run sequentially; clarification pauses the queue until answered, and completed jobs remain selectable for preview.
+
+Manual verification on 2026-09-30 used generated, non-user test images on `127.0.0.1:5274` after confirming that port was free. Selecting two images uploaded both without an upload button and showed both thumbnails; a single-source request entered the queue, AGY fast returned a validated one-item/one-page A4 job in 16.9 seconds, and preview rendered. The authenticated thumbnail and source-removal APIs passed, including removal of the linked job. `PrintAI.Web` builds with 0 warnings/errors, and the four local JavaScript files pass syntax checks. Existing user sessions on 5272 and 5273 were left running.
+
+Next task: open `http://127.0.0.1:5274/` to use the updated local web session. Continue physical printer scale/media verification when a Mac printer is configured.
+
 Automated verification for commit `f3f923e2e00aa06680b6c1fda09ebff875cbf947`:
 
 - GitHub CI #251: success on Ubuntu + Windows

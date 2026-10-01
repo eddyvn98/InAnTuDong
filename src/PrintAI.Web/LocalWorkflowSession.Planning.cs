@@ -17,14 +17,22 @@ public sealed partial class LocalWorkflowSession
         var elapsed = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(request.UserRequest) || request.UserRequest.Length > 2000)
             throw new LocalWorkflowException("Yêu cầu in cần có nội dung và tối đa 2.000 ký tự.");
-        if (request.SourceIds is null || request.SourceIds.Count is < 1 or > MaxFiles ||
+        if (request.SourceIds is null || request.SourceIds.Count > MaxFiles ||
             request.SourceIds.Distinct().Count() != request.SourceIds.Count)
-            throw new LocalWorkflowException("Chọn ít nhất một tệp đã tải lên.");
+            throw new LocalWorkflowException("Danh sách tệp không hợp lệ.");
+
+        var effectiveSourceIds = request.SourceIds.ToList();
+        if (effectiveSourceIds.Count == 0)
+        {
+            var generatedId = await CreateTextSourceAsync(
+                request.UserRequest.Trim(), planner, cancellationToken, progress);
+            effectiveSourceIds.Add(generatedId);
+        }
 
         UploadedSource[] selected;
         lock (_sync)
         {
-            selected = request.SourceIds.Select(id =>
+            selected = effectiveSourceIds.Select(id =>
                 _sources.TryGetValue(id, out var source)
                     ? source
                     : throw new LocalWorkflowException("Một tệp đã chọn không còn trong phiên.")).ToArray();
@@ -81,7 +89,7 @@ public sealed partial class LocalWorkflowSession
         {
             if (_jobs.Count >= 20)
                 throw new LocalWorkflowException("Phiên hiện tại tối đa 20 job. Khởi động lại ứng dụng để dọn phiên.");
-            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount, request.SourceIds.ToArray()));
+            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount, effectiveSourceIds.ToArray()));
         }
 
         return new(

@@ -7,5 +7,6 @@
     <ProjectReference Include="../PrintAI.Rendering/PrintAI.Rendering.csproj" />
     <ProjectReference Include="../PrintAI.Scanning/PrintAI.Scanning.csproj" />
     <ProjectReference Include="../PrintAI.SourceInspection/PrintAI.SourceInspection.csproj" />
+      <PackageReference Include="PDFsharp" Version="6.2.4" />
   </ItemGroup>
 </Project>

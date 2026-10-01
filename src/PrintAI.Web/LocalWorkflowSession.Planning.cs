@@ -30,12 +30,12 @@ public sealed partial class LocalWorkflowSession
                     : throw new LocalWorkflowException("Một tệp đã chọn không còn trong phiên.")).ToArray();
         }
 
-        var paths = selected.Select(source => Path.GetFullPath(source.Path)).ToArray();
-        var planningSources = selected.Select((source, index) =>
+        var planningSources = selected.Select(source =>
         {
+            var path = Path.GetFullPath(source.Path);
             var metadata = SourceInspector.Inspect(source.Path);
             return new PlanningSource(
-                paths[index],
+                path,
                 metadata.Kind.ToString(),
                 metadata.PixelWidth,
                 metadata.PixelHeight,
@@ -43,17 +43,33 @@ public sealed partial class LocalWorkflowSession
                 metadata.Pages?.Select(page => new SourcePageSizeSpec(
                     page.Page, page.WidthMm, page.HeightMm)).ToArray());
         }).ToArray();
+
         var outcome = await planner.PlanAsync(
-            new PlanningRequest(request.UserRequest.Trim(), planningSources), cancellationToken,
+            new PlanningRequest(request.UserRequest.Trim(), planningSources),
+            cancellationToken,
             progress);
+
         if (outcome.Questions.Count > 0)
             return new(null, outcome.Confidence, outcome.Questions, outcome.Warnings,
                 planner.LastTier, elapsed.ElapsedMilliseconds);
 
-        var job = PlannerSourceBinder.BindToAllowedSources(outcome.Job, paths) with
+        var plan = GeneralPrintPlanSourceBinder.BindToAllowedSources(
+            outcome.Plan,
+            planningSources) with
         {
             Policy = new PolicySpec(PreviewPolicy.Required)
         };
+        var compiled = PrintPlanCompiler.Compile(plan);
+        if (compiled.Batches.Count == 0)
+            throw new LocalWorkflowException("Kế hoạch AI không tạo ra trang in nào.");
+
+        if (compiled.Batches.Count > 1)
+        {
+            throw new LocalWorkflowException(
+                $"Kế hoạch gồm {compiled.Batches.Count} nhóm in. Web local hiện đang hoàn thiện preview đa nhóm; hãy tách yêu cầu hoặc dùng một nhóm in trong lúc này.");
+        }
+
+        var job = compiled.Batches[0].Job;
         var layout = LayoutEngine.Layout(job);
         var itemCount = layout.Placements.Count;
         var pageCount = itemCount == 0 ? 0 : layout.Placements.Max(item => item.Page) + 1;

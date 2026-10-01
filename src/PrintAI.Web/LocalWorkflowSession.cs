@@ -6,6 +6,8 @@ using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace PrintAI.Web;
 
@@ -144,6 +146,55 @@ public sealed partial class LocalWorkflowSession : IDisposable
         {
             _uploadGate.Release();
         }
+    }
+
+    public async Task<Guid> CreateTextSourceAsync(
+        string userRequest,
+        LocalWorkflowPlanner planner,
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress = null)
+    {
+        var content = await planner.CreateSourceAsync(userRequest, cancellationToken, progress);
+        if (content.StartsWith("[NEEDS_TOOL:", StringComparison.OrdinalIgnoreCase))
+            throw new LocalWorkflowException(content);
+
+        var id = Guid.NewGuid();
+        var path = Path.Combine(_workspace, $"{id:N}.pdf");
+        using (var document = new PdfDocument())
+        {
+            var page = document.AddPage();
+            page.Width = XUnit.FromMillimeter(210);
+            page.Height = XUnit.FromMillimeter(297);
+            using var graphics = XGraphics.FromPdfPage(page);
+            var font = new XFont("Arial", 14);
+            var rect = new XRect(
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(180).Point,
+                XUnit.FromMillimeter(267).Point);
+            graphics.DrawString(
+                content,
+                font,
+                XBrushes.Black,
+                rect,
+                XStringFormats.TopLeft);
+            document.Save(path);
+        }
+
+        var metadata = SourceInspector.Inspect(path);
+        var view = new UploadedSourceView(
+            id,
+            "AI-generated.pdf",
+            metadata.Kind.ToString(),
+            metadata.PageCount ?? 1,
+            metadata.PixelWidth,
+            metadata.PixelHeight);
+        lock (_sync)
+        {
+            _sources.Add(id, new UploadedSource(view, path));
+            _storedBytes += new FileInfo(path).Length;
+        }
+        return id;
     }
 
     public LocalJobView CreateJob(CreateLocalJobRequest request)

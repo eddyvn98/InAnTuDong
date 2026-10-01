@@ -5,7 +5,7 @@ namespace PrintAI.Web;
 public sealed class LocalWorkflowPlanner
 {
     private readonly AntigravityPlannerClient? _client;
-    private readonly PrintPlanner? _planner;
+    private readonly GeneralPrintPlanner? _planner;
 
     public LocalWorkflowPlanner()
     {
@@ -18,14 +18,14 @@ public sealed class LocalWorkflowPlanner
 
         var options = AntigravityPlannerOptions.FromEnvironment(cliPath);
         _client = new AntigravityPlannerClient(options);
-        _planner = new PrintPlanner(_client);
+        _planner = new GeneralPrintPlanner(_client);
         Readiness = new(true, $"{options.FastModel} → {options.DeepModel}", "AGY đã sẵn sàng.");
     }
 
     public LocalPlannerReadiness Readiness { get; }
     public string? LastTier => _client?.LastExecution?.Tier;
 
-    public Task<PlanningOutcome> PlanAsync(
+    public Task<GeneralPlanningOutcome> PlanAsync(
         PlanningRequest request,
         CancellationToken cancellationToken,
         IProgress<PlannerProgressUpdate>? progress = null) =>

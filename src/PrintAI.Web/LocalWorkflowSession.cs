@@ -257,7 +257,11 @@ public sealed partial class LocalWorkflowSession : IDisposable
             throw new LocalWorkflowException("Job vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
         var id = Guid.NewGuid();
-        var job = new LocalPrintJob(id, spec, layout, outputPageCount, request.SourceIds.ToArray());
+        var job = new LocalPrintJob(
+            id,
+            [new LocalPrintBatch(spec, layout, outputPageCount)],
+            outputPageCount,
+            request.SourceIds.ToArray());
         lock (_sync)
         {
             if (_jobs.Count >= 20)
@@ -281,7 +285,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
         if (page < 0 || page >= job.OutputPageCount)
             throw new LocalWorkflowException("Trang preview không tồn tại.");
 
-        return SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 120);
+        var target = ResolveBatchPage(job, page);
+        return SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 120);
     }
 
     public string CreatePdf(Guid jobId)
@@ -296,7 +301,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
             for (var page = 0; page < job.OutputPageCount; page++)
             {
                 var imagePath = Path.Combine(exportDirectory, $"page-{page + 1:D3}.png");
-                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 300));
+                var target = ResolveBatchPage(job, page);
+                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 300));
                 pagePaths.Add(imagePath);
             }
 
@@ -304,6 +310,18 @@ public sealed partial class LocalWorkflowSession : IDisposable
             ScanPdfWriter.Write(pagePaths, pdfPath);
             return pdfPath;
         }
+    }
+
+    private static (LocalPrintBatch Batch, int Page) ResolveBatchPage(LocalPrintJob job, int page)
+    {
+        var offset = 0;
+        foreach (var batch in job.Batches)
+        {
+            if (page < offset + batch.OutputPageCount)
+                return (batch, page - offset);
+            offset += batch.OutputPageCount;
+        }
+        throw new LocalWorkflowException("Trang preview không tồn tại.");
     }
 
     private LocalPrintJob GetJob(Guid id)
@@ -339,10 +357,14 @@ public sealed partial class LocalWorkflowSession : IDisposable
     }
 
     private sealed record UploadedSource(UploadedSourceView View, string Path);
-    private sealed record LocalPrintJob(
-        Guid Id,
+    private sealed record LocalPrintBatch(
         PrintJobSpec Spec,
         LayoutResult Layout,
+        int OutputPageCount);
+
+    private sealed record LocalPrintJob(
+        Guid Id,
+        IReadOnlyList<LocalPrintBatch> Batches,
         int OutputPageCount,
         IReadOnlyList<Guid> SourceIds);
 }

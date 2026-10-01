@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Print AI · Local</title>
-  <link rel="stylesheet" href="/site.css?v=office-upload-formats-v1">
+  <link rel="stylesheet" href="/site.css?v=ai-first-local-v1">
 </head>
 <body>
 <main>
@@ -14,6 +14,10 @@
       <div class="card">
         <h2>Chọn ảnh, PDF hoặc Office</h2>
         <form id="upload-form">
+          <div id="file-drop-zone" class="file-drop-zone" tabindex="0" role="button" aria-label="Kéo thả file vào đây hoặc chọn file">
+            <strong>Kéo thả nhiều file vào đây</strong>
+            <span class="muted">hoặc bấm nút chọn file bên dưới</span>
+          </div>
           <div class="row"><label id="choose-files-button" for="files-input" class="button icon-only" aria-label="Chọn ảnh, PDF hoặc Office" title="Chọn ảnh, PDF hoặc Office"><svg aria-hidden="true" focusable="false"><use href="/icons.svg#upload"></use></svg></label><button id="remove-sources-button" class="danger secondary icon-only" type="button" aria-label="Xóa file đang chọn" title="Xóa file đang chọn" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#trash"></use></svg></button><input id="files-input" class="file-input" type="file" accept=".jpg,.jpeg,.png,.heic,.heif,.pdf,.doc,.docx,.docm,.dot,.dotx,.dotm,.rtf,.xls,.xlsx,.xlsm,.xlsb,.xlt,.xltx,.xltm,.ppt,.pptx,.pptm,.pps,.ppsx,.ppsm,.pot,.potx,.potm" multiple></div>
           <div id="upload-status" class="muted inline-note" aria-live="polite"></div>
         </form>
@@ -24,12 +28,12 @@
         </div>
         <div id="sources"></div>
       </div>
-      <div id="job-form" class="card" hidden>
+      <div id="job-form" class="card">
         <div class="planner-layout">
           <div class="planner-controls">
             <h2>Mô tả cách in</h2>
-            <label for="planner-request">Yêu cầu in, AGY sẽ lập kế hoạch</label>
-            <textarea id="planner-request" class="local-request" rows="3" maxlength="2000" placeholder="Ví dụ: In ảnh 4×6 cm, 20 bản trên giấy A4"></textarea>
+            <label for="planner-request">Bạn muốn tạo hoặc in gì?</label>
+            <textarea id="planner-request" class="local-request" rows="3" maxlength="2000" placeholder="Ví dụ: Dàn các file vừa A4; hoặc không cần file: Tạo bảng thông báo 'Đang họp' khổ A4 để in"></textarea>
             <div id="planner-status" class="muted planner-status">Đang kiểm tra AGY…</div>
             <div id="source-preview-requirement" class="muted source-preview-requirement" aria-live="polite" hidden></div>
             <div class="row"><button id="planner-button" class="icon-only" type="button" aria-label="Thêm vào hàng đợi AGY" title="Thêm vào hàng đợi AGY" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#plus"></use></svg></button><button id="queue-run-button" class="secondary icon-only" type="button" aria-label="Hàng đợi trống" title="Hàng đợi trống" disabled><svg aria-hidden="true" focusable="false"><use href="/icons.svg#play"></use></svg></button><span id="queue-run-status" class="muted queue-run-status" role="status" aria-live="polite">Hàng đợi trống</span></div>
@@ -81,10 +85,10 @@
     </section>
   </div>
 </main>
-<script src="/local.js?v=office-upload-formats-v1" defer></script>
-<script src="/local-source-preview.js?v=office-upload-formats-v1" defer></script>
-<script src="/local-sources.js?v=office-upload-formats-v1" defer></script>
-<script src="/local-queue.js?v=office-upload-formats-v1" defer></script>
-<script src="/local-planner.js?v=office-upload-formats-v1" defer></script>
+<script src="/local.js?v=ai-first-local-v1" defer></script>
+<script src="/local-source-preview.js?v=ai-first-local-v1" defer></script>
+<script src="/local-sources.js?v=ai-first-local-v1" defer></script>
+<script src="/local-queue.js?v=ai-first-local-v1" defer></script>
+<script src="/local-planner.js?v=ai-first-local-v1" defer></script>
 </body>
 </html>

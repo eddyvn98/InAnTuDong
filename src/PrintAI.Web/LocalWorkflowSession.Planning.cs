@@ -71,16 +71,17 @@ public sealed partial class LocalWorkflowSession
         if (compiled.Batches.Count == 0)
             throw new LocalWorkflowException("Kế hoạch AI không tạo ra trang in nào.");
 
-        if (compiled.Batches.Count > 1)
+        var batches = compiled.Batches.Select(compiledBatch =>
         {
-            throw new LocalWorkflowException(
-                $"Kế hoạch gồm {compiled.Batches.Count} nhóm in. Web local hiện đang hoàn thiện preview đa nhóm; hãy tách yêu cầu hoặc dùng một nhóm in trong lúc này.");
-        }
+            var layout = LayoutEngine.Layout(compiledBatch.Job);
+            var pages = layout.Placements.Count == 0
+                ? 0
+                : layout.Placements.Max(item => item.Page) + 1;
+            return new LocalPrintBatch(compiledBatch.Job, layout, pages);
+        }).ToArray();
 
-        var job = compiled.Batches[0].Job;
-        var layout = LayoutEngine.Layout(job);
-        var itemCount = layout.Placements.Count;
-        var pageCount = itemCount == 0 ? 0 : layout.Placements.Max(item => item.Page) + 1;
+        var itemCount = batches.Sum(batch => batch.Layout.Placements.Count);
+        var pageCount = batches.Sum(batch => batch.OutputPageCount);
         if (itemCount is < 1 or > MaxItems || pageCount > MaxOutputPages)
             throw new LocalWorkflowException("Kế hoạch vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
@@ -89,12 +90,13 @@ public sealed partial class LocalWorkflowSession
         {
             if (_jobs.Count >= 20)
                 throw new LocalWorkflowException("Phiên hiện tại tối đa 20 job. Khởi động lại ứng dụng để dọn phiên.");
-            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount, effectiveSourceIds.ToArray()));
+            _jobs.Add(id, new LocalPrintJob(id, batches, pageCount, effectiveSourceIds.ToArray()));
         }
 
+        var firstLayout = batches[0].Layout;
         return new(
-            new LocalJobView(id, pageCount, itemCount, layout.Columns, layout.Rows,
-                layout.CapacityPerPage, layout.Rotated),
+            new LocalJobView(id, pageCount, itemCount, firstLayout.Columns, firstLayout.Rows,
+                firstLayout.CapacityPerPage, firstLayout.Rotated),
             outcome.Confidence,
             outcome.Questions,
             outcome.Warnings,

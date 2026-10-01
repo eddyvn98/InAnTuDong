@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using PrintAI.Domain;
 using PrintAI.Layout;
+using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
@@ -17,7 +18,12 @@ public sealed partial class LocalWorkflowSession : IDisposable
     private const int MaxOutputPages = 20;
     private const int MaxItems = 1000;
     private static readonly HashSet<string> AllowedExtensions = new(
-        [".jpg", ".jpeg", ".png", ".heic", ".heif", ".pdf"],
+        [
+            ".jpg", ".jpeg", ".png", ".heic", ".heif", ".pdf",
+            ".doc", ".docx", ".docm", ".dot", ".dotx", ".dotm", ".rtf",
+            ".xls", ".xlsx", ".xlsm", ".xlsb", ".xlt", ".xltx", ".xltm",
+            ".ppt", ".pptx", ".pptm", ".pps", ".ppsx", ".ppsm", ".pot", ".potx", ".potm"
+        ],
         StringComparer.OrdinalIgnoreCase);
 
     private readonly string _workspace = Path.Combine(
@@ -51,7 +57,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
 
         var extensions = files.Select(file => Path.GetExtension(file.FileName)).ToArray();
         if (extensions.Any(extension => !AllowedExtensions.Contains(extension)))
-            throw new LocalWorkflowException("Chỉ nhận JPG, PNG, HEIC, HEIF và PDF.");
+            throw new LocalWorkflowException("Chỉ nhận ảnh, PDF và các định dạng Microsoft Office được hỗ trợ.");
 
         if (files.Any(file => file.Length <= 0 || file.Length > MaxFileBytes))
             throw new LocalWorkflowException("Mỗi tệp phải có dung lượng từ 1 byte đến 100 MB.");
@@ -93,7 +99,16 @@ public sealed partial class LocalWorkflowSession : IDisposable
                         await file.CopyToAsync(output, cancellationToken);
                     }
 
-                    var metadata = SourceInspector.Inspect(path);
+                    var sourcePath = path;
+                    if (OfficeDocumentConverter.IsSupported(path))
+                    {
+                        var convertedDirectory = Path.Combine(_workspace, "converted", id.ToString("N"));
+                        sourcePath = OfficeDocumentConverter.ConvertToPdf(path, convertedDirectory);
+                        createdPaths.Add(sourcePath);
+                        TryDelete(path);
+                    }
+
+                    var metadata = SourceInspector.Inspect(sourcePath);
                     var pageCount = metadata.PageCount ?? 1;
                     if (pageCount is < 1 or > MaxPdfPagesPerSource)
                         throw new LocalWorkflowException("Mỗi PDF được hỗ trợ tối đa 200 trang.");
@@ -106,7 +121,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
                             pageCount,
                             metadata.PixelWidth,
                             metadata.PixelHeight),
-                        path));
+                        sourcePath));
                 }
 
                 lock (_sync)

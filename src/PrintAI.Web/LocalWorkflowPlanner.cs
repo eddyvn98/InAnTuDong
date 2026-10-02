@@ -7,6 +7,7 @@ public sealed class LocalWorkflowPlanner
     private readonly AntigravityPlannerClient? _client;
     private readonly GeneralPrintPlanner? _planner;
     private readonly IPlannerModelClient? _modelClient;
+    private readonly SourceCapabilityRegistry _capabilities = new();
 
     public LocalWorkflowPlanner()
     {
@@ -35,13 +36,23 @@ public sealed class LocalWorkflowPlanner
         if (_modelClient is null)
             throw new InvalidOperationException("AGY chưa sẵn sàng.");
 
-        const string instruction = """
+        var instruction = """
+            You are the source-creation router for an AI printing system.
+            Available and unavailable capabilities are listed below.
+            Never pretend an unavailable capability exists.
+            Prefer an available capability that still fulfills the user's real goal.
+            If no available capability can fulfill the request, return exactly [NEEDS_TOOL:<capability-id>] followed by a short explanation.
+            
+            CAPABILITIES:
+            """ + "\n" + _capabilities.DescribeForModel() + "\n\n" + """
+            
+            When text-pdf can fulfill the request, create printable source content.
             You create printable source content when the user has not supplied a file.
             Return plain UTF-8 text only, not JSON or markdown fences.
             Create the actual content to place on an A4 document, not instructions about how to create it.
             Preserve the user's language. Keep content concise enough to print clearly.
             You may create notices, letters, simple forms, checklists, labels, signs, study sheets, and other text-first printable material.
-            If the request fundamentally requires an unavailable visual/image-generation capability, start the response with [NEEDS_TOOL:image] followed by a concise description of the missing capability.
+            Do not return markdown fences.
             """;
 
         return _modelClient.CompleteAsync(

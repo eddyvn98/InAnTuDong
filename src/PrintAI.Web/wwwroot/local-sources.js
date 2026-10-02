@@ -4,7 +4,7 @@ const sourceThumbnailLoads = new Set();
 let pendingRemovalIds = [];
 
 function canSubmitPlannerRequest() {
-  return selectedSourceIds.size > 0 &&
+  return selectedSourceIds.size === 0 ||
     [...selectedSourceIds].every(sourceId => previewedSourceIds.has(sourceId));
 }
 
@@ -12,15 +12,17 @@ function updatePlannerRequestButton() {
   const ready = canSubmitPlannerRequest();
   const button = byId("planner-button");
   const requirement = byId("source-preview-requirement");
-  button.disabled = !ready;
+  button.disabled = !plannerReady || !ready;
   const label = !selectedSourceIds.size
-    ? "Chọn file trước khi gửi yêu cầu"
+    ? "Gửi yêu cầu cho AI, không bắt buộc có file"
     : ready ? "Thêm vào hàng đợi AGY"
     : "Rà soát preview các file đã chọn trước khi gửi yêu cầu";
   button.setAttribute("aria-label", label);
   button.title = label;
-  requirement.hidden = selectedSourceIds.size === 0;
-  requirement.textContent = ready
+  requirement.hidden = false;
+  requirement.textContent = selectedSourceIds.size === 0
+    ? "Không có file: AI có thể tạo nguồn in từ mô tả của bạn."
+    : ready
     ? "Đã xem preview các file đã chọn. Bạn có thể gửi yêu cầu."
     : "Mở preview bản gốc ở bên phải. Chọn thumbnail khác để rà soát từng file trước khi gửi yêu cầu.";
 }
@@ -78,7 +80,6 @@ function renderSources(sourcesChanged = false) {
     ? `${sources.length} file trong phiên · đã chọn ${selectedCount} file cho yêu cầu`
     : "Chọn xong, file sẽ tự tải lên và hiện tại đây.";
   byId("remove-sources-button").disabled = selectedCount === 0 || queueRunning;
-  byId("job-form").hidden = sources.length === 0;
   if (sourcesChanged && (!sourcePreview || !sources.some(source => source.id === sourcePreview.id))) {
     const nextPreview = sources.find(source => selectedSourceIds.has(source.id)) || sources[0];
     if (nextPreview) showSourcePreview(nextPreview);
@@ -211,3 +212,28 @@ byId("sources").addEventListener("change", event => {
   else selectedSourceIds.delete(sourceId);
   renderSources();
 });
+
+const dropZone = byId("file-drop-zone");
+if (dropZone) {
+  for (const eventName of ["dragenter", "dragover"]) {
+    dropZone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropZone.classList.add("drag-active");
+    });
+  }
+  for (const eventName of ["dragleave", "drop"]) {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove("drag-active"));
+  }
+  dropZone.addEventListener("drop", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    uploadSelectedFiles(event.dataTransfer.files);
+  });
+  dropZone.addEventListener("click", () => byId("files-input").click());
+  dropZone.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      byId("files-input").click();
+    }
+  });
+}

@@ -2,9 +2,13 @@ using System.Security.Cryptography;
 using System.Text;
 using PrintAI.Domain;
 using PrintAI.Layout;
+using PrintAI.Planning;
+using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace PrintAI.Web;
 
@@ -17,7 +21,12 @@ public sealed partial class LocalWorkflowSession : IDisposable
     private const int MaxOutputPages = 20;
     private const int MaxItems = 1000;
     private static readonly HashSet<string> AllowedExtensions = new(
-        [".jpg", ".jpeg", ".png", ".heic", ".heif", ".pdf"],
+        [
+            ".jpg", ".jpeg", ".png", ".heic", ".heif", ".pdf",
+            ".doc", ".docx", ".docm", ".dot", ".dotx", ".dotm", ".rtf",
+            ".xls", ".xlsx", ".xlsm", ".xlsb", ".xlt", ".xltx", ".xltm",
+            ".ppt", ".pptx", ".pptm", ".pps", ".ppsx", ".ppsm", ".pot", ".potx", ".potm"
+        ],
         StringComparer.OrdinalIgnoreCase);
 
     private readonly string _workspace = Path.Combine(
@@ -51,7 +60,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
 
         var extensions = files.Select(file => Path.GetExtension(file.FileName)).ToArray();
         if (extensions.Any(extension => !AllowedExtensions.Contains(extension)))
-            throw new LocalWorkflowException("Chỉ nhận JPG, PNG, HEIC, HEIF và PDF.");
+            throw new LocalWorkflowException("Chỉ nhận ảnh, PDF và các định dạng Microsoft Office được hỗ trợ.");
 
         if (files.Any(file => file.Length <= 0 || file.Length > MaxFileBytes))
             throw new LocalWorkflowException("Mỗi tệp phải có dung lượng từ 1 byte đến 100 MB.");
@@ -93,7 +102,16 @@ public sealed partial class LocalWorkflowSession : IDisposable
                         await file.CopyToAsync(output, cancellationToken);
                     }
 
-                    var metadata = SourceInspector.Inspect(path);
+                    var sourcePath = path;
+                    if (OfficeDocumentConverter.IsSupported(path))
+                    {
+                        var convertedDirectory = Path.Combine(_workspace, "converted", id.ToString("N"));
+                        sourcePath = OfficeDocumentConverter.ConvertToPdf(path, convertedDirectory);
+                        createdPaths.Add(sourcePath);
+                        TryDelete(path);
+                    }
+
+                    var metadata = SourceInspector.Inspect(sourcePath);
                     var pageCount = metadata.PageCount ?? 1;
                     if (pageCount is < 1 or > MaxPdfPagesPerSource)
                         throw new LocalWorkflowException("Mỗi PDF được hỗ trợ tối đa 200 trang.");
@@ -106,7 +124,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
                             pageCount,
                             metadata.PixelWidth,
                             metadata.PixelHeight),
-                        path));
+                        sourcePath));
                 }
 
                 lock (_sync)
@@ -129,6 +147,55 @@ public sealed partial class LocalWorkflowSession : IDisposable
         {
             _uploadGate.Release();
         }
+    }
+
+    public async Task<Guid> CreateTextSourceAsync(
+        string userRequest,
+        LocalWorkflowPlanner planner,
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress = null)
+    {
+        var content = await planner.CreateSourceAsync(userRequest, cancellationToken, progress);
+        if (content.StartsWith("[NEEDS_TOOL:", StringComparison.OrdinalIgnoreCase))
+            throw new LocalWorkflowException(content);
+
+        var id = Guid.NewGuid();
+        var path = Path.Combine(_workspace, $"{id:N}.pdf");
+        using (var document = new PdfDocument())
+        {
+            var page = document.AddPage();
+            page.Width = XUnit.FromMillimeter(210);
+            page.Height = XUnit.FromMillimeter(297);
+            using var graphics = XGraphics.FromPdfPage(page);
+            var font = new XFont("Arial", 14);
+            var rect = new XRect(
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(180).Point,
+                XUnit.FromMillimeter(267).Point);
+            graphics.DrawString(
+                content,
+                font,
+                XBrushes.Black,
+                rect,
+                XStringFormats.TopLeft);
+            document.Save(path);
+        }
+
+        var metadata = SourceInspector.Inspect(path);
+        var view = new UploadedSourceView(
+            id,
+            "AI-generated.pdf",
+            metadata.Kind.ToString(),
+            metadata.PageCount ?? 1,
+            metadata.PixelWidth,
+            metadata.PixelHeight);
+        lock (_sync)
+        {
+            _sources.Add(id, new UploadedSource(view, path));
+            _storedBytes += new FileInfo(path).Length;
+        }
+        return id;
     }
 
     public LocalJobView CreateJob(CreateLocalJobRequest request)
@@ -191,7 +258,11 @@ public sealed partial class LocalWorkflowSession : IDisposable
             throw new LocalWorkflowException("Job vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
         var id = Guid.NewGuid();
-        var job = new LocalPrintJob(id, spec, layout, outputPageCount, request.SourceIds.ToArray());
+        var job = new LocalPrintJob(
+            id,
+            [new LocalPrintBatch(spec, layout, outputPageCount)],
+            outputPageCount,
+            request.SourceIds.ToArray());
         lock (_sync)
         {
             if (_jobs.Count >= 20)
@@ -215,7 +286,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
         if (page < 0 || page >= job.OutputPageCount)
             throw new LocalWorkflowException("Trang preview không tồn tại.");
 
-        return SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 120);
+        var target = ResolveBatchPage(job, page);
+        return SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 120);
     }
 
     public string CreatePdf(Guid jobId)
@@ -230,7 +302,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
             for (var page = 0; page < job.OutputPageCount; page++)
             {
                 var imagePath = Path.Combine(exportDirectory, $"page-{page + 1:D3}.png");
-                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 300));
+                var target = ResolveBatchPage(job, page);
+                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 300));
                 pagePaths.Add(imagePath);
             }
 
@@ -238,6 +311,18 @@ public sealed partial class LocalWorkflowSession : IDisposable
             ScanPdfWriter.Write(pagePaths, pdfPath);
             return pdfPath;
         }
+    }
+
+    private static (LocalPrintBatch Batch, int Page) ResolveBatchPage(LocalPrintJob job, int page)
+    {
+        var offset = 0;
+        foreach (var batch in job.Batches)
+        {
+            if (page < offset + batch.OutputPageCount)
+                return (batch, page - offset);
+            offset += batch.OutputPageCount;
+        }
+        throw new LocalWorkflowException("Trang preview không tồn tại.");
     }
 
     private LocalPrintJob GetJob(Guid id)
@@ -273,10 +358,14 @@ public sealed partial class LocalWorkflowSession : IDisposable
     }
 
     private sealed record UploadedSource(UploadedSourceView View, string Path);
-    private sealed record LocalPrintJob(
-        Guid Id,
+    private sealed record LocalPrintBatch(
         PrintJobSpec Spec,
         LayoutResult Layout,
+        int OutputPageCount);
+
+    private sealed record LocalPrintJob(
+        Guid Id,
+        IReadOnlyList<LocalPrintBatch> Batches,
         int OutputPageCount,
         IReadOnlyList<Guid> SourceIds);
 }

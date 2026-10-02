@@ -214,7 +214,8 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
 
     public async Task<GeneralPlanningOutcome> PlanAsync(
         PlanningRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        IProgress<PlannerProgressUpdate>? progress = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.UserRequest);
 
@@ -228,7 +229,7 @@ public sealed class GeneralPrintPlanner(IPlannerModelClient modelClient)
         });
 
         var raw = await modelClient.CompleteAsync(
-            new PlannerModelRequest(SystemInstruction, payload),
+            new PlannerModelRequest(SystemInstruction, payload, progress),
             cancellationToken);
 
         return GeneralPrintPlanParser.Parse(raw);

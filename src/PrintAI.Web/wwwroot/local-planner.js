@@ -72,7 +72,7 @@ async function runPlanner(queueItem) {
   const button = byId("planner-button");
   const answerButton = byId("planner-answer-button");
   const sourceIds = queueItem.sourceIds;
-  button.disabled = selectedSourceIds.size === 0;
+  button.disabled = !plannerReady;
   answerButton.disabled = true;
   byId("planner-clarification").hidden = true;
   byId("planner-stream").hidden = true;

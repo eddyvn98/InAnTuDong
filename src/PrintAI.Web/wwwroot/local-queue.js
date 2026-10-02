@@ -3,7 +3,6 @@ let nextQueueId = 1;
 function enqueuePlannerRequest() {
   const request = byId("planner-request").value.trim();
   const sourceIds = [...selectedSourceIds];
-  if (!sourceIds.length) return showError(new Error("Chọn ít nhất một file cho yêu cầu."));
   if (!canSubmitPlannerRequest())
     return showError(new Error("Xem preview các file đã chọn trước khi gửi yêu cầu."));
   if (!request) return showError(new Error("Nhập yêu cầu in trước khi đưa vào hàng đợi."));
@@ -49,7 +48,7 @@ function renderRequestQueue() {
       .filter(Boolean).join(", ");
     const files = document.createElement("div");
     files.className = "queue-status";
-    files.textContent = fileNames || "File đã bị xóa";
+    files.textContent = fileNames || (item.sourceIds.length ? "File đã bị xóa" : "Không có file · AI sẽ tạo nguồn in");
     content.append(title, prompt, files);
 
     const actions = document.createElement("div");

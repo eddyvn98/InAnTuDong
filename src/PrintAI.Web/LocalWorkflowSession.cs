@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using PrintAI.Domain;
 using PrintAI.Layout;
+using PrintAI.Planning;
 using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;

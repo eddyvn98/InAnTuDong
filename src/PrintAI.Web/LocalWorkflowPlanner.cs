@@ -100,7 +100,13 @@ public sealed class LocalWorkflowPlanner
 
         try
         {
-            using var json = System.Text.Json.JsonDocument.Parse(raw);
+            var jsonText = raw.Trim();
+            var objectStart = jsonText.IndexOf('{');
+            var objectEnd = jsonText.LastIndexOf('}');
+            if (objectStart >= 0 && objectEnd > objectStart)
+                jsonText = jsonText[objectStart..(objectEnd + 1)];
+
+            using var json = System.Text.Json.JsonDocument.Parse(jsonText);
             var root = json.RootElement;
             var route = root.GetProperty("route").GetString() ?? "print";
             if (route is not ("print" or "artifact" or "artifactThenPrint"))
@@ -138,6 +144,8 @@ public sealed class LocalWorkflowPlanner
             Put every final deliverable under output/. Keep the original input files untouched.
             You may create one or more output files when useful.
             Preserve editable/native formats when practical (for example DOCX stays DOCX).
+            Produce only final deliverables. Do not also create a duplicate PDF preview/export
+            unless the user explicitly requests it; PrintAI creates preview representations itself.
             Use installed local document/image tools when needed.
             Do not print and do not call a printer or spooler.
             Do not merely describe steps: perform the requested file work.

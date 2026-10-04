@@ -99,7 +99,7 @@ public sealed record AntigravityInvocation(
     string Prompt,
     string Model,
     string? Effort,
-    string JsonSchema,
+    string? JsonSchema,
     string PrintTimeout,
     string? WorkingDirectory = null,
     bool AllowTools = false,

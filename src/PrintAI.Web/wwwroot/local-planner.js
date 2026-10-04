@@ -1,35 +1,51 @@
-document.addEventListener("local-ready", loadPlannerStatus);
-document.addEventListener("sources-updated", loadPlannerStatus);
-document.addEventListener("selection-updated", updatePlannerRequestButton);
-
-let streamedText = "";
 let planStartedAt = 0;
 let planStage = "";
 let planTimer = 0;
 let plannerReady = false;
+let plannerStatusPromise = null;
+let plannerStatusRetryTimer = 0;
 
 async function loadPlannerStatus() {
+  if (plannerStatusPromise) return plannerStatusPromise;
+  plannerStatusPromise = checkPlannerStatus();
+  try {
+    await plannerStatusPromise;
+  } finally {
+    plannerStatusPromise = null;
+  }
+}
+
+async function checkPlannerStatus() {
   const status = byId("planner-status");
-  const button = byId("planner-button");
-  if (!status || !button) return;
+  if (!status) return;
   try {
     const response = await authorizedFetch("/api/local/planner");
     const result = await response.json();
     plannerReady = result.isReady;
-    status.textContent = result.isReady
-      ? `Sẵn sàng · ${result.models}`
-      : result.message;
+    status.textContent = result.isReady ? `Sẵn sàng · ${result.models}` : result.message;
     updatePlannerRequestButton();
     renderRequestQueue();
+    if (plannerReady) {
+      clearTimeout(plannerStatusRetryTimer);
+      plannerStatusRetryTimer = 0;
+      if (requestQueue.some(item => item.status === "waiting")) {
+        byId("planner-result").textContent = "AGY đã kết nối. Đang tiếp tục xử lý…";
+        void runPlannerQueue();
+      }
+    } else {
+      schedulePlannerStatusRetry();
+    }
   } catch (error) {
     plannerReady = false;
     status.textContent = error.message;
     updatePlannerRequestButton();
     renderRequestQueue();
+    schedulePlannerStatusRetry();
   }
 }
 
-byId("planner-answer-button").addEventListener("click", () => {
+function submitPlannerAnswer(event) {
+  event.preventDefault();
   const answer = byId("planner-answer").value.trim();
   if (!answer) {
     byId("planner-answer").focus();
@@ -41,8 +57,18 @@ byId("planner-answer-button").addEventListener("click", () => {
   activeQueueItem.status = "waiting";
   byId("planner-answer").value = "";
   renderRequestQueue();
-  runPlannerQueue();
-});
+  void runPlannerQueue();
+}
+
+function schedulePlannerStatusRetry() {
+  if (plannerStatusRetryTimer || !requestQueue.some(item => item.status === "waiting")) return;
+  plannerStatusRetryTimer = setTimeout(() => {
+    plannerStatusRetryTimer = 0;
+    void loadPlannerStatus();
+  }, 10000);
+}
+
+byId("planner-answer-form").addEventListener("submit", submitPlannerAnswer);
 
 async function runPlannerQueue() {
   if (queueRunning || !plannerReady || activeQueueItem?.status === "needs-answer") return;
@@ -69,15 +95,8 @@ async function runPlannerQueue() {
 
 async function runPlanner(queueItem) {
   const resultBox = byId("planner-result");
-  const button = byId("planner-button");
-  const answerButton = byId("planner-answer-button");
   const sourceIds = queueItem.sourceIds;
-  button.disabled = selectedSourceIds.size === 0;
-  answerButton.disabled = true;
   byId("planner-clarification").hidden = true;
-  byId("planner-stream").hidden = true;
-  byId("planner-stream-text").textContent = "";
-  streamedText = "";
   planStartedAt = Date.now();
   planStage = "AGY đang phân tích yêu cầu";
   clearInterval(planTimer);
@@ -115,6 +134,7 @@ async function runPlanner(queueItem) {
     }
   } catch (error) {
     resultBox.textContent = error.message;
+    showError(error);
     byId("job-summary").textContent = "Chưa có kế hoạch mới.";
     queueItem.status = "error";
     queueItem.pendingQuestion = "";
@@ -123,7 +143,6 @@ async function runPlanner(queueItem) {
   } finally {
     clearInterval(planTimer);
     updatePlannerRequestButton();
-    answerButton.disabled = false;
   }
 }
 
@@ -162,11 +181,6 @@ async function handlePlanEvent(frame) {
   if (event === "progress") {
     planStage = payload.message;
     updatePlanTimer();
-    if (payload.delta) {
-      streamedText += payload.delta;
-      byId("planner-stream").hidden = false;
-      byId("planner-stream-text").textContent = streamedText;
-    }
     return;
   }
   if (event === "error") throw new Error(payload.error);

@@ -126,7 +126,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             FastDirective,
             workingDirectory: null,
             allowTools: false,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         LastExecution = new(
             "fast",
@@ -163,7 +163,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             """,
             workingDirectory,
             allowTools: true,
-            cancellationToken);
+            cancellationToken: cancellationToken);
 
         LastExecution = new(
             "artifact",

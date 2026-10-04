@@ -7,8 +7,6 @@ using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
 
 namespace PrintAI.Web;
 
@@ -161,25 +159,17 @@ public sealed partial class LocalWorkflowSession : IDisposable
 
         var id = Guid.NewGuid();
         var path = Path.Combine(_workspace, $"{id:N}.pdf");
-        using (var document = new PdfDocument())
+        var pageImagePath = Path.Combine(_workspace, $"{id:N}.png");
+        try
         {
-            var page = document.AddPage();
-            page.Width = XUnit.FromMillimeter(210);
-            page.Height = XUnit.FromMillimeter(297);
-            using var graphics = XGraphics.FromPdfPage(page);
-            var font = new XFont("Arial", 14);
-            var rect = new XRect(
-                XUnit.FromMillimeter(15).Point,
-                XUnit.FromMillimeter(15).Point,
-                XUnit.FromMillimeter(180).Point,
-                XUnit.FromMillimeter(267).Point);
-            graphics.DrawString(
-                content,
-                font,
-                XBrushes.Black,
-                rect,
-                XStringFormats.TopLeft);
-            document.Save(path);
+            File.WriteAllBytes(
+                pageImagePath,
+                PrintableTextRenderer.RenderA4Png(content, dpi: 180));
+            ScanPdfWriter.Write([pageImagePath], path);
+        }
+        finally
+        {
+            TryDelete(pageImagePath);
         }
 
         var metadata = SourceInspector.Inspect(path);

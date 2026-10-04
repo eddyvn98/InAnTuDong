@@ -365,7 +365,7 @@ The common-case planner path is fast-first rather than router-first. A fast/low-
 
 A clarification question is a valid planner result and does not automatically escalate; stronger reasoning must not be used to guess a missing material fact.
 
-The AGY process runs with terminal sandboxing and PrintAI never passes `--dangerously-skip-permissions`. Prompts instruct AGY not to call tools, shell commands, edit files or control printing.
+The AGY process runs with terminal sandboxing and PrintAI never passes `--dangerously-skip-permissions`. Pure print-planner prompts instruct AGY not to call tools, shell commands or edit files. ADR-042 adds a separate artifact-task path that may use tools only inside an isolated per-task workspace; printer/spooler control remains forbidden.
 
 Regardless of model tier, AGY remains a proposal layer. It may not issue arbitrary print commands, address the Windows spooler, invent local source paths, calculate printer/device coordinates, or bypass PrintJobSpec/PrintPlan validation, preview or policy gates.
 
@@ -434,7 +434,7 @@ The loopback-only macOS browser workflow may use the installed AGY CLI session f
 If AGY is unavailable, deterministic manual layout remains available. This does not validate physical Mac printer fidelity or migrate scanning.
 
 
-## ADR-0XX - Artifact preparation is a first-class capability above printing
+## ADR-042 - Artifact preparation is a first-class capability above printing
 Status: accepted
 
 PrintAI is not limited to translating every request directly into a print schema.

@@ -1,3 +1,4 @@
+using Xunit;
 using PrintAI.Rendering;
 
 namespace PrintAI.Tests;

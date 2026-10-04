@@ -1,20 +1,17 @@
-const previewedSourceIds = new Set();
 let sourcePreview = null;
 let sourcePreviewRequest = 0;
 let sourcePreviewThumbnailObserver = null;
-let sourcePreviewPageVisibilityObserver = null;
-let sourcePreviewPageLoaded = false;
-let sourcePreviewPageVisible = false;
 let sourcePreviewPageIndex = 0;
+let sourcePreviewActiveSet = false;
+let sourcePreviewPageObserver = null;
 
 function showSourcePreview(source) {
   sourcePreview = source;
   const requestId = ++sourcePreviewRequest;
   sourcePreviewThumbnailObserver?.disconnect();
-  sourcePreviewPageVisibilityObserver?.disconnect();
-  sourcePreviewPageVisibilityObserver = null;
-  sourcePreviewPageLoaded = false;
-  sourcePreviewPageVisible = false;
+  sourcePreviewPageObserver?.disconnect();
+  sourcePreviewActiveSet = false;
+  byId("source-preview-canvas").scrollTop = 0;
   const pages = byId("source-preview-pages");
   const thumbnails = byId("source-preview-thumbnails");
   for (const page of pages.children) releaseSourcePreviewPage(page);
@@ -29,11 +26,12 @@ function showSourcePreview(source) {
   byId("source-preview-name").textContent = source.fileName;
   byId("source-preview-status").textContent = pageCount > 1
     ? `${pageCount} trang · chọn thumbnail để xem nhanh.`
-    : "Đang tải preview bản gốc…";
+    : "1 trang";
   renderSources();
 
   if (pageCount > 1) renderSourceThumbnails(source, pageCount, requestId);
-  showSourcePreviewPage(0, source, requestId);
+  renderSourcePreviewPages(source, pageCount, requestId);
+  setActiveSourcePreviewPage(0, source);
 }
 
 function renderSourceThumbnails(source, pageCount, requestId) {
@@ -71,40 +69,72 @@ function renderSourceThumbnails(source, pageCount, requestId) {
 
 function showSourcePreviewPage(pageIndex, source, requestId) {
   if (requestId !== sourcePreviewRequest || sourcePreview?.id !== source.id) return;
+  const page = byId("source-preview-pages").children[pageIndex];
+  if (!page) return;
+  const canvas = byId("source-preview-canvas");
+  canvas.scrollTo({ top: sourcePreviewPageTop(canvas, page) - 14 });
+  setActiveSourcePreviewPage(pageIndex, source);
+}
+
+function setActiveSourcePreviewPage(pageIndex, source) {
+  if (pageIndex === sourcePreviewPageIndex && sourcePreviewActiveSet) return;
   sourcePreviewPageIndex = pageIndex;
-  sourcePreviewPageLoaded = false;
-  sourcePreviewPageVisible = false;
-  sourcePreviewPageVisibilityObserver?.disconnect();
-
-  const pages = byId("source-preview-pages");
-  for (const page of pages.children) releaseSourcePreviewPage(page);
-  pages.replaceChildren();
-  const page = document.createElement("article");
-  page.className = "source-preview-page";
-  page.dataset.pageIndex = String(pageIndex);
-  const label = document.createElement("span");
-  label.className = "source-preview-page-label";
-  label.textContent = `Trang ${pageIndex + 1}`;
-  const content = document.createElement("div");
-  content.className = "source-preview-page-content";
-  content.textContent = "Đang tải preview trang…";
-  page.append(label, content);
-  pages.append(page);
-  byId("source-preview-canvas").scrollTop = 0;
-
+  sourcePreviewActiveSet = true;
   const thumbnails = byId("source-preview-thumbnails");
   for (const button of thumbnails.children) {
     const selected = Number(button.dataset.pageIndex) === pageIndex;
     button.classList.toggle("active", selected);
     button.setAttribute("aria-pressed", String(selected));
+    if (selected) button.scrollIntoView({ block: "nearest" });
   }
+  byId("source-preview-status").textContent =
+    `${pageCountLabel(source)} · đang xem trang ${pageIndex + 1}.`;
+}
 
-  sourcePreviewPageVisibilityObserver = new IntersectionObserver(entries => {
-    sourcePreviewPageVisible = entries.some(entry => entry.isIntersecting);
-    markSourcePreviewViewed(source, requestId);
-  }, { root: byId("source-preview-canvas"), threshold: 0.05 });
-  sourcePreviewPageVisibilityObserver.observe(page);
-  loadSourcePreviewPage(page, source, requestId);
+function sourcePreviewPageTop(canvas, page) {
+  return page.getBoundingClientRect().top - canvas.getBoundingClientRect().top + canvas.scrollTop;
+}
+
+function renderSourcePreviewPages(source, pageCount, requestId) {
+  const canvas = byId("source-preview-canvas");
+  const container = byId("source-preview-pages");
+  sourcePreviewPageObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) loadSourcePreviewPage(entry.target, source, requestId);
+      else releaseSourcePreviewPage(entry.target);
+    }
+  }, { root: canvas, rootMargin: "700px 0px" });
+
+  const fragment = document.createDocumentFragment();
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+    const page = document.createElement("article");
+    page.className = "source-preview-page";
+    page.dataset.pageIndex = String(pageIndex);
+    const label = document.createElement("span");
+    label.className = "source-preview-page-label";
+    label.textContent = `Trang ${pageIndex + 1}`;
+    const content = document.createElement("div");
+    content.className = "source-preview-page-content";
+    content.textContent = "Đang tải preview trang…";
+    page.append(label, content);
+    fragment.append(page);
+  }
+  container.append(fragment);
+  for (const page of container.children) sourcePreviewPageObserver.observe(page);
+
+  let frame = 0;
+  canvas.onscroll = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      if (requestId !== sourcePreviewRequest) return;
+      const probe = canvas.scrollTop + canvas.clientHeight / 3;
+      let current = 0;
+      for (const page of container.children)
+        if (sourcePreviewPageTop(canvas, page) <= probe) current = Number(page.dataset.pageIndex);
+      setActiveSourcePreviewPage(current, source);
+    });
+  };
 }
 
 async function loadSourcePreviewPage(page, source, requestId) {
@@ -116,22 +146,19 @@ async function loadSourcePreviewPage(page, source, requestId) {
     const response = await authorizedFetch(
       `/api/local/sources/${source.id}/preview/${pageIndex}`);
     url = URL.createObjectURL(await response.blob());
-    if (isStaleSourcePreview(page, source, requestId, pageIndex)) return;
+    if (isStaleSourcePreview(page, source, requestId)) return;
 
     const image = new Image();
     image.className = "source-preview-image";
     image.alt = `Preview ${source.fileName}, trang ${pageIndex + 1}`;
     image.src = url;
     await image.decode();
-    if (isStaleSourcePreview(page, source, requestId, pageIndex)) return;
+    if (isStaleSourcePreview(page, source, requestId)) return;
 
     page.querySelector(".source-preview-page-content").replaceChildren(image);
+    page.style.minHeight = "";
     page.dataset.previewUrl = url;
     url = "";
-    sourcePreviewPageLoaded = true;
-    byId("source-preview-status").textContent =
-      `${pageCountLabel(source)} · đang xem trang ${pageIndex + 1}.`;
-    markSourcePreviewViewed(source, requestId);
   } catch (error) {
     if (requestId === sourcePreviewRequest && page.isConnected)
       page.querySelector(".source-preview-page-content").textContent =
@@ -173,16 +200,9 @@ async function loadSourcePreviewThumbnail(button, source, requestId) {
   }
 }
 
-function markSourcePreviewViewed(source, requestId) {
-  if (requestId !== sourcePreviewRequest || !sourcePreviewPageLoaded || !sourcePreviewPageVisible)
-    return;
-  previewedSourceIds.add(source.id);
-  updatePlannerRequestButton();
-}
-
-function isStaleSourcePreview(page, source, requestId, pageIndex) {
+function isStaleSourcePreview(page, source, requestId) {
   return requestId !== sourcePreviewRequest || sourcePreview?.id !== source.id ||
-    sourcePreviewPageIndex !== pageIndex || !page.isConnected;
+    !page.isConnected;
 }
 
 function isStaleSourceThumbnail(button, source, requestId) {
@@ -192,6 +212,7 @@ function isStaleSourceThumbnail(button, source, requestId) {
 
 function releaseSourcePreviewPage(page) {
   if (!page.dataset.previewUrl) return;
+  page.style.minHeight = `${page.offsetHeight}px`;
   URL.revokeObjectURL(page.dataset.previewUrl);
   delete page.dataset.previewUrl;
   page.querySelector(".source-preview-page-content").textContent =
@@ -215,10 +236,8 @@ function clearSourcePreview() {
   sourcePreview = null;
   sourcePreviewThumbnailObserver?.disconnect();
   sourcePreviewThumbnailObserver = null;
-  sourcePreviewPageVisibilityObserver?.disconnect();
-  sourcePreviewPageVisibilityObserver = null;
-  sourcePreviewPageLoaded = false;
-  sourcePreviewPageVisible = false;
+  sourcePreviewPageObserver?.disconnect();
+  sourcePreviewPageObserver = null;
   const pages = byId("source-preview-pages");
   const thumbnails = byId("source-preview-thumbnails");
   for (const page of pages.children) releaseSourcePreviewPage(page);

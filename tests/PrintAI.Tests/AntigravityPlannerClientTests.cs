@@ -130,6 +130,49 @@ public sealed class AntigravityPlannerClientTests
     }
 
     [Fact]
+    public async Task CompleteUnstructuredAsync_DoesNotEnableArtifactTools()
+    {
+        var runner = new FakeRunner(SuccessResponse("{\"route\":\"print\"}"));
+        var client = CreateClient(runner);
+
+        await client.CompleteUnstructuredAsync(
+            "Return a routing object.",
+            "print this");
+
+        var invocation = Assert.Single(runner.Invocations);
+        Assert.Null(invocation.JsonSchema);
+        Assert.Null(invocation.WorkingDirectory);
+        Assert.False(invocation.AllowTools);
+    }
+
+    [Fact]
+    public async Task ExecuteArtifactTaskAsync_UsesIsolatedWorkingDirectoryAndToolMode()
+    {
+        var runner = new FakeRunner(SuccessResponse("done"));
+        var client = CreateClient(runner);
+        var workspace = Path.Combine(Path.GetTempPath(), "printai-artifact-test");
+        Directory.CreateDirectory(workspace);
+
+        try
+        {
+            await client.ExecuteArtifactTaskAsync(
+                "Edit only files in the workspace.",
+                "reformat the document",
+                workspace);
+
+            var invocation = Assert.Single(runner.Invocations);
+            Assert.Null(invocation.JsonSchema);
+            Assert.Equal(workspace, invocation.WorkingDirectory);
+            Assert.True(invocation.AllowTools);
+            Assert.Equal("deep-model", invocation.Model);
+        }
+        finally
+        {
+            Directory.Delete(workspace, recursive: true);
+        }
+    }
+
+    [Fact]
     public void Options_RejectEffortThatConflictsWithModelTier()
     {
         var options = new AntigravityPlannerOptions(
@@ -157,7 +200,13 @@ public sealed class AntigravityPlannerClientTests
     private static AntigravityCommandResult Success(string payload) =>
         new(
             0,
-            $$"""{"status":"SUCCESS","structured_output":{{payload}}}""",
+            $"""{"status":"SUCCESS","structured_output":{{payload}}}""",
+            "");
+
+    private static AntigravityCommandResult SuccessResponse(string response) =>
+        new(
+            0,
+            JsonSerializer.Serialize(new { status = "SUCCESS", response }),
             "");
 
     private static JsonElement ResolveSchema(JsonElement root, JsonElement schema)

@@ -17,25 +17,33 @@ public sealed partial class LocalWorkflowSession
         var elapsed = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(request.UserRequest) || request.UserRequest.Length > 2000)
             throw new LocalWorkflowException("Yêu cầu in cần có nội dung và tối đa 2.000 ký tự.");
-        if (request.SourceIds is null || request.SourceIds.Count is < 1 or > MaxFiles ||
+        if (request.SourceIds is null || request.SourceIds.Count > MaxFiles ||
             request.SourceIds.Distinct().Count() != request.SourceIds.Count)
-            throw new LocalWorkflowException("Chọn ít nhất một tệp đã tải lên.");
+            throw new LocalWorkflowException("Danh sách tệp không hợp lệ.");
+
+        var effectiveSourceIds = request.SourceIds.ToList();
+        if (effectiveSourceIds.Count == 0)
+        {
+            var generatedId = await CreateTextSourceAsync(
+                request.UserRequest.Trim(), planner, cancellationToken, progress);
+            effectiveSourceIds.Add(generatedId);
+        }
 
         UploadedSource[] selected;
         lock (_sync)
         {
-            selected = request.SourceIds.Select(id =>
+            selected = effectiveSourceIds.Select(id =>
                 _sources.TryGetValue(id, out var source)
                     ? source
                     : throw new LocalWorkflowException("Một tệp đã chọn không còn trong phiên.")).ToArray();
         }
 
-        var paths = selected.Select(source => Path.GetFullPath(source.Path)).ToArray();
-        var planningSources = selected.Select((source, index) =>
+        var planningSources = selected.Select(source =>
         {
+            var path = Path.GetFullPath(source.Path);
             var metadata = SourceInspector.Inspect(source.Path);
             return new PlanningSource(
-                paths[index],
+                path,
                 metadata.Kind.ToString(),
                 metadata.PixelWidth,
                 metadata.PixelHeight,
@@ -43,20 +51,37 @@ public sealed partial class LocalWorkflowSession
                 metadata.Pages?.Select(page => new SourcePageSizeSpec(
                     page.Page, page.WidthMm, page.HeightMm)).ToArray());
         }).ToArray();
+
         var outcome = await planner.PlanAsync(
-            new PlanningRequest(request.UserRequest.Trim(), planningSources), cancellationToken,
+            new PlanningRequest(request.UserRequest.Trim(), planningSources),
+            cancellationToken,
             progress);
+
         if (outcome.Questions.Count > 0)
             return new(null, outcome.Confidence, outcome.Questions, outcome.Warnings,
                 planner.LastTier, elapsed.ElapsedMilliseconds);
 
-        var job = PlannerSourceBinder.BindToAllowedSources(outcome.Job, paths) with
+        var plan = GeneralPrintPlanSourceBinder.BindToAllowedSources(
+            outcome.Plan,
+            planningSources) with
         {
             Policy = new PolicySpec(PreviewPolicy.Required)
         };
-        var layout = LayoutEngine.Layout(job);
-        var itemCount = layout.Placements.Count;
-        var pageCount = itemCount == 0 ? 0 : layout.Placements.Max(item => item.Page) + 1;
+        var compiled = PrintPlanCompiler.Compile(plan);
+        if (compiled.Batches.Count == 0)
+            throw new LocalWorkflowException("Kế hoạch AI không tạo ra trang in nào.");
+
+        var batches = compiled.Batches.Select(compiledBatch =>
+        {
+            var layout = LayoutEngine.Layout(compiledBatch.Job);
+            var pages = layout.Placements.Count == 0
+                ? 0
+                : layout.Placements.Max(item => item.Page) + 1;
+            return new LocalPrintBatch(compiledBatch.Job, layout, pages);
+        }).ToArray();
+
+        var itemCount = batches.Sum(batch => batch.Layout.Placements.Count);
+        var pageCount = batches.Sum(batch => batch.OutputPageCount);
         if (itemCount is < 1 or > MaxItems || pageCount > MaxOutputPages)
             throw new LocalWorkflowException("Kế hoạch vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
@@ -65,12 +90,13 @@ public sealed partial class LocalWorkflowSession
         {
             if (_jobs.Count >= 20)
                 throw new LocalWorkflowException("Phiên hiện tại tối đa 20 job. Khởi động lại ứng dụng để dọn phiên.");
-            _jobs.Add(id, new LocalPrintJob(id, job, layout, pageCount, request.SourceIds.ToArray()));
+            _jobs.Add(id, new LocalPrintJob(id, batches, pageCount, effectiveSourceIds.ToArray()));
         }
 
+        var firstLayout = batches[0].Layout;
         return new(
-            new LocalJobView(id, pageCount, itemCount, layout.Columns, layout.Rows,
-                layout.CapacityPerPage, layout.Rotated),
+            new LocalJobView(id, pageCount, itemCount, firstLayout.Columns, firstLayout.Rows,
+                firstLayout.CapacityPerPage, firstLayout.Rotated),
             outcome.Confidence,
             outcome.Questions,
             outcome.Warnings,

@@ -53,8 +53,10 @@ public sealed partial class LocalWorkflowSession
                 .Where(job => job.SourceIds.Any(removedIds.Contains))
                 .ToArray();
             var removedBytes = removedSources
-                .Where(source => File.Exists(source.Path))
-                .Sum(source => new FileInfo(source.Path).Length);
+                .Select(source => source.OriginalPath)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(File.Exists)
+                .Sum(path => new FileInfo(path).Length);
 
             foreach (var source in removedSources)
                 _sources.Remove(source.View.Id);
@@ -64,7 +66,11 @@ public sealed partial class LocalWorkflowSession
         }
 
         foreach (var source in removedSources)
+        {
             TryDelete(source.Path);
+            if (!string.Equals(source.OriginalPath, source.Path, StringComparison.OrdinalIgnoreCase))
+                TryDelete(source.OriginalPath);
+        }
         foreach (var job in removedJobs)
             TryDeleteDirectory(Path.Combine(_workspace, "exports", job.Id.ToString("N")));
 

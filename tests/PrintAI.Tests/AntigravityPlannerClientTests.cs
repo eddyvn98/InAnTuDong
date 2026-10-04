@@ -87,7 +87,7 @@ public sealed class AntigravityPlannerClientTests
 
         var invocation = Assert.Single(runner.Invocations);
         Assert.Null(invocation.Effort);
-        using var schema = System.Text.Json.JsonDocument.Parse(invocation.JsonSchema);
+        using var schema = System.Text.Json.JsonDocument.Parse(invocation.JsonSchema!);
         var root = schema.RootElement;
         var jobSchema = root.GetProperty("properties").GetProperty("job");
         if (jobSchema.TryGetProperty("$ref", out var reference))
@@ -114,7 +114,7 @@ public sealed class AntigravityPlannerClientTests
             "plan.schemaVersion must be \"2.0\"",
             "{}"));
 
-        using var schema = JsonDocument.Parse(Assert.Single(runner.Invocations).JsonSchema);
+        using var schema = JsonDocument.Parse(Assert.Single(runner.Invocations).JsonSchema!);
         var root = schema.RootElement;
         var planSchema = ResolveSchema(root, root.GetProperty("properties").GetProperty("plan"));
         var groupSchema = ResolveSchema(

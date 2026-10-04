@@ -15,6 +15,31 @@ Every implementation session must read:
 
 The repository, not chat history, is the source of truth.
 
+## Current AI-first UI
+
+The canonical current local UI is the browser workflow in:
+
+```text
+src/PrintAI.Web/wwwroot/local.html
+src/PrintAI.Web/wwwroot/local*.js
+src/PrintAI.Web/wwwroot/site.css
+```
+
+The main user flow is intentionally small:
+
+```text
+select/drop files
+  -> thumbnails/source preview
+  -> natural-language request
+  -> generated print preview
+  -> printer + copies
+  -> print
+```
+
+The older `src/PrintAI.Desktop/ui/index.html` contains a much denser WPF/WebView2 control surface and must not be treated as the current AI-first UI unless work explicitly targets that legacy desktop surface.
+
+The Railway-hosted `wwwroot/index.html` is also not the canonical local UI. Hosted environments set `PORT`, so `PrintAI.Web` serves the demo surface there; local loopback runs serve `local.html`. See `src/PrintAI.Web/Program.cs` before making UI/runtime assumptions.
+
 ## Architecture
 
 ```

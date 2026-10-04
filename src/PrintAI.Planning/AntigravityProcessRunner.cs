@@ -32,7 +32,10 @@ public sealed class AntigravityProcessRunner : IAntigravityStreamingCommandRunne
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            WorkingDirectory = string.IsNullOrWhiteSpace(invocation.WorkingDirectory)
+                ? Environment.CurrentDirectory
+                : invocation.WorkingDirectory
         };
 
         Add(start, "-p", invocation.Prompt);
@@ -40,7 +43,8 @@ public sealed class AntigravityProcessRunner : IAntigravityStreamingCommandRunne
         if (!string.IsNullOrWhiteSpace(invocation.Effort))
             Add(start, "--effort", invocation.Effort);
         Add(start, "--output-format", progress is null ? "json" : "stream-json");
-        Add(start, "--json-schema", invocation.JsonSchema);
+        if (!string.IsNullOrWhiteSpace(invocation.JsonSchema))
+            Add(start, "--json-schema", invocation.JsonSchema);
         Add(start, "--print-timeout", invocation.PrintTimeout);
         start.ArgumentList.Add("--sandbox");
 

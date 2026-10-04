@@ -10,6 +10,17 @@ This file prevents project drift between AI/chat sessions.
 4. Inspect existing code before proposing a rewrite.
 5. Continue the current milestone unless a documented decision changes direction.
 
+## Current UI source of truth
+
+Before making any claim about the current user-facing UI, inspect the host routing and the actual surface being used.
+
+- The current AI-first local browser UI is `src/PrintAI.Web/wwwroot/local.html` plus the `local*.js` modules and shared `site.css`.
+- Its intended primary surface is deliberately minimal: source selection/thumbnails, natural-language request input, document/print preview, and print controls. Do not infer extra user-facing complexity from internal capabilities.
+- `src/PrintAI.Desktop/ui/index.html` is the older WPF/WebView2 desktop surface. Do not use it as evidence of the current AI-first UI unless the task explicitly targets that legacy desktop surface.
+- `src/PrintAI.Web/wwwroot/index.html` is the hosted Railway demo surface. When the hosting platform sets `PORT`, `PrintAI.Web` intentionally serves this demo instead of the local workflow. Do not treat the Railway demo as the canonical local-product UI.
+- Check `src/PrintAI.Web/Program.cs` before deciding which web surface a runtime will serve.
+- The repository source currently wins over screenshots, old branches, and stale chat descriptions when identifying the active UI.
+
 ## Before ending a session
 
 1. Update `docs/PROGRESS.md` with what is actually complete.

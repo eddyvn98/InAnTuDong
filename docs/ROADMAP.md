@@ -283,6 +283,7 @@ M7 deterministic primitive coverage is complete. Prioritize M8 Antigravity targe
 - [ ] add persistent `stream-json` session if measurements justify it
 - [ ] migrate Smart Collage local-image analysis to AGY without reintroducing API keys
 - [~] loopback-only local host — core upload → AGY → preview → print browser flow implemented; advanced desktop controls still migrating
+- [~] general artifact agent — print/artifact/artifactThenPrint routing, isolated task workspace, Office-original retention and output re-import implemented in PR #47; target-machine AGY tool execution verification pending
 - [x] macOS loopback web workflow — source upload, deterministic A4 preview, 300 DPI PDF export, and selected CUPS queue submission
 - [x] optional macOS AGY natural-language planner — strict schema, uploaded-source binding, deterministic layout, mandatory preview
 - [x] local-web multi-file gallery — automatic upload, source thumbnails, multi-selection, removal and sequential AGY request queue

@@ -109,6 +109,72 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
         return deep;
     }
 
+
+    public async Task<string> CompleteUnstructuredAsync(
+        string systemInstruction,
+        string userPayload,
+        CancellationToken cancellationToken = default,
+        IProgress<PlannerProgressUpdate>? progress = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemInstruction);
+        var request = new PlannerModelRequest(systemInstruction, userPayload, progress);
+        var elapsed = Stopwatch.StartNew();
+        var result = await RunLooseTierAsync(
+            request,
+            _options.FastModel,
+            _options.FastEffort,
+            FastDirective,
+            workingDirectory: null,
+            allowTools: false,
+            cancellationToken: cancellationToken);
+
+        LastExecution = new(
+            "fast",
+            _options.FastModel,
+            Escalated: false,
+            Reason: "unstructured",
+            DurationMilliseconds: elapsed.Elapsed.TotalMilliseconds);
+
+        return result;
+    }
+
+    public async Task<string> ExecuteArtifactTaskAsync(
+        string systemInstruction,
+        string userPayload,
+        string workingDirectory,
+        CancellationToken cancellationToken = default,
+        IProgress<PlannerProgressUpdate>? progress = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemInstruction);
+        ArgumentException.ThrowIfNullOrWhiteSpace(workingDirectory);
+        var request = new PlannerModelRequest(systemInstruction, userPayload, progress);
+        var elapsed = Stopwatch.StartNew();
+        var result = await RunLooseTierAsync(
+            request,
+            _options.DeepModel,
+            _options.DeepEffort,
+            """
+            ARTIFACT TASK:
+            Work only inside the supplied workspace.
+            You may inspect and edit files in that workspace using available tools.
+            Do not access files outside the workspace.
+            Do not print or call printer/spooler commands.
+            Complete the requested artifact work, then give a concise text summary.
+            """,
+            workingDirectory,
+            allowTools: true,
+            cancellationToken: cancellationToken);
+
+        LastExecution = new(
+            "artifact",
+            _options.DeepModel,
+            Escalated: true,
+            Reason: "artifact-task",
+            DurationMilliseconds: elapsed.Elapsed.TotalMilliseconds);
+
+        return result;
+    }
+
     private async Task<string> RunTierAsync(
         PlannerModelRequest request,
         string model,
@@ -127,6 +193,48 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             _options.ResolveEffort(model, effort),
             AntigravityPlannerSchema.Resolve(request.SystemInstruction),
             _options.PrintTimeout);
+
+        var result = request.Progress is not null &&
+                     _runner is IAntigravityStreamingCommandRunner streamingRunner
+            ? await streamingRunner.RunStreamingAsync(
+                invocation, request.Progress, cancellationToken)
+            : await _runner.RunAsync(invocation, cancellationToken);
+
+        if (result.ExitCode != 0)
+        {
+            throw new PlannerTransportException(
+                $"Antigravity CLI exited with code {result.ExitCode}.",
+                result.StandardError);
+        }
+
+        return ExtractStructuredOutput(
+            result.StandardOutput,
+            result.StandardError);
+    }
+
+
+    private async Task<string> RunLooseTierAsync(
+        PlannerModelRequest request,
+        string model,
+        string effort,
+        string directive,
+        string? workingDirectory,
+        bool allowTools,
+        CancellationToken cancellationToken)
+    {
+        var prompt =
+            $"{directive}\n\nPRINTAI INSTRUCTION:\n{request.SystemInstruction}" +
+            $"\n\nINPUT:\n{request.UserPayload}";
+
+        var invocation = new AntigravityInvocation(
+            _options.CliPath,
+            prompt,
+            model,
+            _options.ResolveEffort(model, effort),
+            JsonSchema: null,
+            PrintTimeout: _options.PrintTimeout,
+            WorkingDirectory: workingDirectory,
+            AllowTools: allowTools);
 
         var result = request.Progress is not null &&
                      _runner is IAntigravityStreamingCommandRunner streamingRunner

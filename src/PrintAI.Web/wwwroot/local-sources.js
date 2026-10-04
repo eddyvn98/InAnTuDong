@@ -13,8 +13,8 @@ function updatePlannerRequestButton() {
   const input = byId("planner-request");
   input.disabled = !plannerReady;
   input.placeholder = selectedSourceIds.size
-    ? "Nhập yêu cầu in"
-    : "Mô tả thứ bạn muốn tạo hoặc cách bạn muốn in";
+    ? "Nhập yêu cầu chỉnh sửa, dàn trang hoặc in"
+    : "Mô tả thứ bạn muốn tạo, chỉnh sửa hoặc in";
   byId("planner-send-button").disabled = !plannerReady || !ready || !input.value.trim();
   resizePlannerRequest();
 }

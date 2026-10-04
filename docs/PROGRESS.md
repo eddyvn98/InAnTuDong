@@ -1,10 +1,29 @@
 # Progress / Session Handoff
 
-Last updated: 2026-09-30
+Last updated: 2026-10-04
 
 ## Current milestone
 
-**M8 - Antigravity local planner & latency**
+**M8 - Antigravity local planner, artifact routing & latency**
+
+## General artifact agent correction (PR #47)
+
+The AI-first local chat is no longer required to force every request directly into PrintPlan 2.0.
+
+Implemented on `feature/general-artifact-agent`:
+
+- one chat request routes to `print`, `artifact`, or `artifactThenPrint`;
+- pure print requests keep the existing strict deterministic PrintPlan / PrintJobSpec path;
+- artifact work receives only copies of user-selected originals in a per-task workspace;
+- Office originals are retained while PDF remains the preview/print representation;
+- final artifact outputs are imported back into the existing source/thumbnail/preview surface;
+- artifact+print automatically plans printing from the generated outputs;
+- no additional workflow UI was added;
+- AGY remains forbidden from direct printer/spooler execution.
+
+Automated CI/package verification is in progress on PR #47. Target-machine verification is still required for actual headless AGY tool execution inside the sandbox workspace; do not claim native Office/image/PDF editing fully field-verified until that test passes.
+
+See `docs/ARTIFACT_AGENT.md` and ADR-042.
 
 ## Completed milestones
 

@@ -16,16 +16,94 @@ public sealed partial class LocalWorkflowSession
     {
         var elapsed = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(request.UserRequest) || request.UserRequest.Length > 2000)
-            throw new LocalWorkflowException("Yêu cầu in cần có nội dung và tối đa 2.000 ký tự.");
+            throw new LocalWorkflowException("Yêu cầu cần có nội dung và tối đa 2.000 ký tự.");
         if (request.SourceIds is null || request.SourceIds.Count > MaxFiles ||
             request.SourceIds.Distinct().Count() != request.SourceIds.Count)
             throw new LocalWorkflowException("Danh sách tệp không hợp lệ.");
 
-        var effectiveSourceIds = request.SourceIds.ToList();
+        UploadedSourceView[] routeSources;
+        lock (_sync)
+        {
+            routeSources = request.SourceIds.Select(id =>
+                _sources.TryGetValue(id, out var source)
+                    ? source.View
+                    : throw new LocalWorkflowException("Một tệp đã chọn không còn trong phiên.")).ToArray();
+        }
+
+        var route = await planner.RouteAsync(
+            request.UserRequest.Trim(),
+            routeSources,
+            cancellationToken,
+            progress);
+
+        if (route.Route is "artifact" or "artifactThenPrint")
+        {
+            progress?.Report(new(
+                "status",
+                route.Route == "artifactThenPrint"
+                    ? "AGY đang chỉnh tài liệu trước khi lập kế hoạch in."
+                    : "AGY đang xử lý tài liệu trong workspace riêng."));
+
+            var artifact = await ExecuteArtifactTaskAsync(
+                request.SourceIds,
+                request.UserRequest.Trim(),
+                planner,
+                cancellationToken,
+                progress);
+
+            if (route.Route == "artifact")
+            {
+                return new(
+                    Job: null,
+                    Confidence: 1,
+                    Questions: [],
+                    Warnings: [],
+                    Tier: planner.LastTier,
+                    DurationMilliseconds: elapsed.ElapsedMilliseconds,
+                    Artifacts: artifact.Sources,
+                    Action: "artifact",
+                    Message: artifact.Summary);
+            }
+
+            var printRequest = string.IsNullOrWhiteSpace(route.PrintRequest)
+                ? "In các file kết quả vừa tạo, giữ nguyên bố cục và thu vừa vùng in."
+                : route.PrintRequest.Trim();
+
+            return await PlanPrintJobAsync(
+                artifact.Sources.Select(source => source.Id).ToArray(),
+                printRequest,
+                planner,
+                cancellationToken,
+                progress,
+                elapsed,
+                artifact.Sources,
+                artifact.Summary);
+        }
+
+        return await PlanPrintJobAsync(
+            request.SourceIds,
+            request.UserRequest.Trim(),
+            planner,
+            cancellationToken,
+            progress,
+            elapsed);
+    }
+
+    private async Task<LocalPlanResult> PlanPrintJobAsync(
+        IReadOnlyList<Guid> requestedSourceIds,
+        string userRequest,
+        LocalWorkflowPlanner planner,
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress,
+        Stopwatch elapsed,
+        IReadOnlyList<UploadedSourceView>? artifacts = null,
+        string? artifactMessage = null)
+    {
+        var effectiveSourceIds = requestedSourceIds.ToList();
         if (effectiveSourceIds.Count == 0)
         {
             var generatedId = await CreateTextSourceAsync(
-                request.UserRequest.Trim(), planner, cancellationToken, progress);
+                userRequest, planner, cancellationToken, progress);
             effectiveSourceIds.Add(generatedId);
         }
 
@@ -53,13 +131,23 @@ public sealed partial class LocalWorkflowSession
         }).ToArray();
 
         var outcome = await planner.PlanAsync(
-            new PlanningRequest(request.UserRequest.Trim(), planningSources),
+            new PlanningRequest(userRequest, planningSources),
             cancellationToken,
             progress);
 
         if (outcome.Questions.Count > 0)
-            return new(null, outcome.Confidence, outcome.Questions, outcome.Warnings,
-                planner.LastTier, elapsed.ElapsedMilliseconds);
+        {
+            return new(
+                null,
+                outcome.Confidence,
+                outcome.Questions,
+                outcome.Warnings,
+                planner.LastTier,
+                elapsed.ElapsedMilliseconds,
+                artifacts,
+                artifacts is null ? "print" : "artifactThenPrint",
+                artifactMessage);
+        }
 
         var plan = GeneralPrintPlanSourceBinder.BindToAllowedSources(
             outcome.Plan,
@@ -101,7 +189,10 @@ public sealed partial class LocalWorkflowSession
             outcome.Questions,
             outcome.Warnings,
             planner.LastTier,
-            elapsed.ElapsedMilliseconds);
+            elapsed.ElapsedMilliseconds,
+            artifacts,
+            artifacts is null ? "print" : "artifactThenPrint",
+            artifactMessage);
     }
 }
 
@@ -113,4 +204,7 @@ public sealed record LocalPlanResult(
     IReadOnlyList<string> Questions,
     IReadOnlyList<string> Warnings,
     string? Tier,
-    long DurationMilliseconds = 0);
+    long DurationMilliseconds = 0,
+    IReadOnlyList<UploadedSourceView>? Artifacts = null,
+    string Action = "print",
+    string? Message = null);

@@ -106,7 +106,6 @@ public sealed partial class LocalWorkflowSession : IDisposable
                         var convertedDirectory = Path.Combine(_workspace, "converted", id.ToString("N"));
                         sourcePath = OfficeDocumentConverter.ConvertToPdf(path, convertedDirectory);
                         createdPaths.Add(sourcePath);
-                        TryDelete(path);
                     }
 
                     var metadata = SourceInspector.Inspect(sourcePath);
@@ -122,7 +121,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
                             pageCount,
                             metadata.PixelWidth,
                             metadata.PixelHeight),
-                        sourcePath));
+                        sourcePath,
+                        path));
                 }
 
                 lock (_sync)
@@ -182,7 +182,7 @@ public sealed partial class LocalWorkflowSession : IDisposable
             metadata.PixelHeight);
         lock (_sync)
         {
-            _sources.Add(id, new UploadedSource(view, path));
+            _sources.Add(id, new UploadedSource(view, path, path));
             _storedBytes += new FileInfo(path).Length;
         }
         return id;
@@ -347,7 +347,10 @@ public sealed partial class LocalWorkflowSession : IDisposable
         catch (UnauthorizedAccessException) { }
     }
 
-    private sealed record UploadedSource(UploadedSourceView View, string Path);
+    private sealed record UploadedSource(
+        UploadedSourceView View,
+        string Path,
+        string OriginalPath);
     private sealed record LocalPrintBatch(
         PrintJobSpec Spec,
         LayoutResult Layout,

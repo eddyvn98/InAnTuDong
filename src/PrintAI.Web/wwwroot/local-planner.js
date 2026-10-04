@@ -190,6 +190,23 @@ async function handlePlanEvent(frame) {
 }
 
 async function handlePlanComplete(payload) {
+  syncArtifactSources(payload);
+
+  if (!payload.job && payload.artifacts?.length && !(payload.questions || []).length) {
+    activeQueueItem.status = "done";
+    activeQueueItem.pendingQuestion = "";
+    activeQueueItem.result = payload;
+    activeJob = null;
+    previewReady = false;
+    byId("pdf-button").disabled = true;
+    updatePrintButton();
+    setPreviewMode("source");
+    byId("job-summary").textContent = "Đã tạo/chỉnh file kết quả. Xem preview nguồn hoặc gửi yêu cầu tiếp theo.";
+    byId("planner-result").textContent = payload.message || "AGY đã hoàn tất xử lý tài liệu.";
+    renderRequestQueue();
+    return;
+  }
+
   if (!payload.job) {
     activeQueueItem.pendingQuestion = (payload.questions || []).join(" · ");
     activeQueueItem.status = "needs-answer";
@@ -222,6 +239,19 @@ async function handlePlanComplete(payload) {
   renderPageButtons();
   await showPreview(0);
   renderRequestQueue();
+}
+
+
+function syncArtifactSources(payload) {
+  const artifacts = payload.artifacts || [];
+  if (!artifacts.length) return;
+
+  const known = new Set(sources.map(source => source.id));
+  for (const artifact of artifacts)
+    if (!known.has(artifact.id)) sources.push(artifact);
+
+  selectedSourceIds = new Set(artifacts.map(artifact => artifact.id));
+  renderSources(true);
 }
 
 document.addEventListener("queued-result-selected", async event => {

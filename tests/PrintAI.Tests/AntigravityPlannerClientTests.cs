@@ -87,7 +87,7 @@ public sealed class AntigravityPlannerClientTests
 
         var invocation = Assert.Single(runner.Invocations);
         Assert.Null(invocation.Effort);
-        using var schema = System.Text.Json.JsonDocument.Parse(invocation.JsonSchema);
+        using var schema = System.Text.Json.JsonDocument.Parse(invocation.JsonSchema!);
         var root = schema.RootElement;
         var jobSchema = root.GetProperty("properties").GetProperty("job");
         if (jobSchema.TryGetProperty("$ref", out var reference))
@@ -114,7 +114,7 @@ public sealed class AntigravityPlannerClientTests
             "plan.schemaVersion must be \"2.0\"",
             "{}"));
 
-        using var schema = JsonDocument.Parse(Assert.Single(runner.Invocations).JsonSchema);
+        using var schema = JsonDocument.Parse(Assert.Single(runner.Invocations).JsonSchema!);
         var root = schema.RootElement;
         var planSchema = ResolveSchema(root, root.GetProperty("properties").GetProperty("plan"));
         var groupSchema = ResolveSchema(
@@ -127,6 +127,49 @@ public sealed class AntigravityPlannerClientTests
         Assert.Equal(JsonValueKind.False, groupSchema.GetProperty("additionalProperties").ValueKind);
         Assert.False(planSchema.GetProperty("properties").TryGetProperty("summary", out _));
         Assert.True(planSchema.GetProperty("properties").TryGetProperty("planName", out _));
+    }
+
+    [Fact]
+    public async Task CompleteUnstructuredAsync_DoesNotEnableArtifactTools()
+    {
+        var runner = new FakeRunner(SuccessResponse("{\"route\":\"print\"}"));
+        var client = CreateClient(runner);
+
+        await client.CompleteUnstructuredAsync(
+            "Return a routing object.",
+            "print this");
+
+        var invocation = Assert.Single(runner.Invocations);
+        Assert.Null(invocation.JsonSchema);
+        Assert.Null(invocation.WorkingDirectory);
+        Assert.False(invocation.AllowTools);
+    }
+
+    [Fact]
+    public async Task ExecuteArtifactTaskAsync_UsesIsolatedWorkingDirectoryAndToolMode()
+    {
+        var runner = new FakeRunner(SuccessResponse("done"));
+        var client = CreateClient(runner);
+        var workspace = Path.Combine(Path.GetTempPath(), "printai-artifact-test");
+        Directory.CreateDirectory(workspace);
+
+        try
+        {
+            await client.ExecuteArtifactTaskAsync(
+                "Edit only files in the workspace.",
+                "reformat the document",
+                workspace);
+
+            var invocation = Assert.Single(runner.Invocations);
+            Assert.Null(invocation.JsonSchema);
+            Assert.Equal(workspace, invocation.WorkingDirectory);
+            Assert.True(invocation.AllowTools);
+            Assert.Equal("deep-model", invocation.Model);
+        }
+        finally
+        {
+            Directory.Delete(workspace, recursive: true);
+        }
     }
 
     [Fact]
@@ -154,10 +197,23 @@ public sealed class AntigravityPlannerClientTests
                 EscalateBelowConfidence: 0.80),
             runner);
 
-    private static AntigravityCommandResult Success(string payload) =>
+    private static AntigravityCommandResult Success(string payload)
+    {
+        using var parsed = JsonDocument.Parse(payload);
+        return new(
+            0,
+            JsonSerializer.Serialize(new
+            {
+                status = "SUCCESS",
+                structured_output = parsed.RootElement.Clone()
+            }),
+            "");
+    }
+
+    private static AntigravityCommandResult SuccessResponse(string response) =>
         new(
             0,
-            $$"""{"status":"SUCCESS","structured_output":{{payload}}}""",
+            JsonSerializer.Serialize(new { status = "SUCCESS", response }),
             "");
 
     private static JsonElement ResolveSchema(JsonElement root, JsonElement schema)

@@ -99,8 +99,11 @@ public sealed record AntigravityInvocation(
     string Prompt,
     string Model,
     string? Effort,
-    string JsonSchema,
-    string PrintTimeout);
+    string? JsonSchema,
+    string PrintTimeout,
+    string? WorkingDirectory = null,
+    bool AllowTools = false,
+    bool AutoApproveSandboxTools = false);
 
 public sealed record AntigravityCommandResult(
     int ExitCode,

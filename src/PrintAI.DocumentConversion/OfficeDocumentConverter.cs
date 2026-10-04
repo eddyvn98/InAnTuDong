@@ -9,10 +9,27 @@ public static class OfficeDocumentConverter
         {
             ".doc",
             ".docx",
+            ".docm",
+            ".dot",
+            ".dotx",
+            ".dotm",
+            ".rtf",
             ".xls",
             ".xlsx",
+            ".xlsm",
+            ".xlsb",
+            ".xlt",
+            ".xltx",
+            ".xltm",
             ".ppt",
-            ".pptx"
+            ".pptx",
+            ".pptm",
+            ".pps",
+            ".ppsx",
+            ".ppsm",
+            ".pot",
+            ".potx",
+            ".potm"
         };
 
     public static bool IsSupported(string path) =>
@@ -40,7 +57,7 @@ public static class OfficeDocumentConverter
         if (!IsSupported(inputPath))
         {
             throw new NotSupportedException(
-                "Only DOC, DOCX, XLS, XLSX, PPT and PPTX are supported for Office conversion.");
+                "Unsupported Office document format.");
         }
 
         Directory.CreateDirectory(outputDirectory);

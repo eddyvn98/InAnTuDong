@@ -232,7 +232,7 @@ public sealed class AntigravityPlannerClient : IPlannerModelClient
             model,
             _options.ResolveEffort(model, effort),
             JsonSchema: null,
-            _options.PrintTimeout,
+            PrintTimeout: _options.PrintTimeout,
             WorkingDirectory: workingDirectory,
             AllowTools: allowTools);
 

@@ -32,22 +32,29 @@ public static class PrintableTextRenderer
             SKTypeface.FromFamilyName("Helvetica") ??
             SKTypeface.FromFamilyName("Noto Sans") ??
             SKTypeface.Default;
+        using var font = new SKFont(
+            typeface,
+            Math.Max(18, MmToPx(4.2, dpi)));
         using var paint = new SKPaint
         {
             Color = SKColors.Black,
-            IsAntialias = true,
-            Typeface = typeface,
-            TextSize = Math.Max(18, MmToPx(4.2, dpi))
+            IsAntialias = true
         };
 
-        var lineHeight = paint.TextSize * 1.45f;
+        var lineHeight = font.Size * 1.45f;
         var maxLines = Math.Max(1, (int)Math.Floor(maxHeight / lineHeight));
-        var lines = Wrap(content.Replace("\r\n", "\n"), paint, maxWidth, maxLines);
+        var lines = Wrap(content.Replace("\r\n", "\n"), font, paint, maxWidth, maxLines);
 
-        var y = margin + paint.TextSize;
+        var y = margin + font.Size;
         foreach (var line in lines)
         {
-            canvas.DrawText(line, margin, y, paint);
+            canvas.DrawText(
+                line,
+                margin,
+                y,
+                SKTextAlign.Left,
+                font,
+                paint);
             y += lineHeight;
         }
 
@@ -58,6 +65,7 @@ public static class PrintableTextRenderer
 
     private static IReadOnlyList<string> Wrap(
         string content,
+        SKFont font,
         SKPaint paint,
         float maxWidth,
         int maxLines)
@@ -78,7 +86,7 @@ public static class PrintableTextRenderer
             foreach (var word in paragraph.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             {
                 var candidate = line.Length == 0 ? word : $"{line} {word}";
-                if (paint.MeasureText(candidate) <= maxWidth)
+                if (font.MeasureText(candidate, paint) <= maxWidth)
                 {
                     line = candidate;
                     continue;
@@ -91,14 +99,14 @@ public static class PrintableTextRenderer
                         break;
                 }
 
-                line = FitLongWord(word, paint, maxWidth);
+                line = FitLongWord(word, font, paint, maxWidth);
             }
 
             if (result.Count < maxLines && line.Length > 0)
                 result.Add(line);
         }
 
-        if (result.Count == maxLines && paint.MeasureText(result[^1] + "…") <= maxWidth)
+        if (result.Count == maxLines && font.MeasureText(result[^1] + "…", paint) <= maxWidth)
             result[^1] += "…";
 
         return result;
@@ -106,14 +114,15 @@ public static class PrintableTextRenderer
 
     private static string FitLongWord(
         string word,
+        SKFont font,
         SKPaint paint,
         float maxWidth)
     {
-        if (paint.MeasureText(word) <= maxWidth)
+        if (font.MeasureText(word, paint) <= maxWidth)
             return word;
 
         var length = word.Length;
-        while (length > 1 && paint.MeasureText(word[..length] + "…") > maxWidth)
+        while (length > 1 && font.MeasureText(word[..length] + "…", paint) > maxWidth)
             length--;
 
         return word[..Math.Max(1, length)] + "…";

@@ -34,7 +34,7 @@ Before making any claim about the current user-facing UI, inspect the host routi
 - Prefer mature libraries/platform APIs over hand-written commodity infrastructure.
 - Keep physical print geometry deterministic.
 - AI may produce `PrintJobSpec 1.0` for simple uniform jobs or `PrintPlan 2.0` for multi-rule print intent; AI may not directly issue arbitrary print commands.
-- Keep the product print-only: do not add CRM, pricing, payment, inventory, delivery, or unrelated order-management scope.
+- Keep the product focused on document/image preparation plus printing. Editing, reformatting, arranging and generating user-selected artifacts are in scope; CRM, pricing, payment, inventory, delivery and unrelated order-management remain out of scope.
 - Store physical dimensions in millimetres.
 - A4 is the maximum paper size for the first printer profile.
 - Epson L3310 is a device profile, not a domain dependency.
@@ -44,7 +44,7 @@ Before making any claim about the current user-facing UI, inspect the host routi
 - New meaningful dependencies must be documented in `docs/LIBRARIES.md`.
 - Railway remains test/demo only. Windows remains the production scanner target. The cross-platform `PrintAI.Web` host supports macOS local upload, preview, PDF export, and direct CUPS printer submission through a dedicated adapter; real-device print fidelity still requires validation on a configured Mac printer.
 - Natural-language planning uses the installed Antigravity CLI by default. Do not add a hidden AI API-key dependency.
-- Antigravity may propose structured print intent only; deterministic PrintAI code owns validation, geometry, preview, policy and spooler execution.
+- Antigravity may execute artifact preparation only inside a per-task isolated workspace containing copies of user-selected files. Final artifact files are re-imported into PrintAI before preview/printing. Deterministic PrintAI code still owns print validation, geometry, preview, policy and spooler execution, and AGY must never call printer/spooler commands directly.
 
 ## Definition of done
 

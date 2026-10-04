@@ -197,11 +197,18 @@ public sealed class AntigravityPlannerClientTests
                 EscalateBelowConfidence: 0.80),
             runner);
 
-    private static AntigravityCommandResult Success(string payload) =>
-        new(
+    private static AntigravityCommandResult Success(string payload)
+    {
+        using var parsed = JsonDocument.Parse(payload);
+        return new(
             0,
-            $"""{"status":"SUCCESS","structured_output":{{payload}}}""",
+            JsonSerializer.Serialize(new
+            {
+                status = "SUCCESS",
+                structured_output = parsed.RootElement.Clone()
+            }),
             "");
+    }
 
     private static AntigravityCommandResult SuccessResponse(string response) =>
         new(

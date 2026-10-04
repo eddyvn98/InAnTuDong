@@ -2,10 +2,13 @@ using System.Security.Cryptography;
 using System.Text;
 using PrintAI.Domain;
 using PrintAI.Layout;
+using PrintAI.Planning;
 using PrintAI.DocumentConversion;
 using PrintAI.Rendering;
 using PrintAI.Scanning;
 using PrintAI.SourceInspection;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 
 namespace PrintAI.Web;
 
@@ -146,6 +149,55 @@ public sealed partial class LocalWorkflowSession : IDisposable
         }
     }
 
+    public async Task<Guid> CreateTextSourceAsync(
+        string userRequest,
+        LocalWorkflowPlanner planner,
+        CancellationToken cancellationToken,
+        IProgress<PlannerProgressUpdate>? progress = null)
+    {
+        var content = await planner.CreateSourceAsync(userRequest, cancellationToken, progress);
+        if (content.StartsWith("[NEEDS_TOOL:", StringComparison.OrdinalIgnoreCase))
+            throw new LocalWorkflowException(content);
+
+        var id = Guid.NewGuid();
+        var path = Path.Combine(_workspace, $"{id:N}.pdf");
+        using (var document = new PdfDocument())
+        {
+            var page = document.AddPage();
+            page.Width = XUnit.FromMillimeter(210);
+            page.Height = XUnit.FromMillimeter(297);
+            using var graphics = XGraphics.FromPdfPage(page);
+            var font = new XFont("Arial", 14);
+            var rect = new XRect(
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(15).Point,
+                XUnit.FromMillimeter(180).Point,
+                XUnit.FromMillimeter(267).Point);
+            graphics.DrawString(
+                content,
+                font,
+                XBrushes.Black,
+                rect,
+                XStringFormats.TopLeft);
+            document.Save(path);
+        }
+
+        var metadata = SourceInspector.Inspect(path);
+        var view = new UploadedSourceView(
+            id,
+            "AI-generated.pdf",
+            metadata.Kind.ToString(),
+            metadata.PageCount ?? 1,
+            metadata.PixelWidth,
+            metadata.PixelHeight);
+        lock (_sync)
+        {
+            _sources.Add(id, new UploadedSource(view, path));
+            _storedBytes += new FileInfo(path).Length;
+        }
+        return id;
+    }
+
     public LocalJobView CreateJob(CreateLocalJobRequest request)
     {
         if (request.SourceIds is null ||
@@ -206,7 +258,11 @@ public sealed partial class LocalWorkflowSession : IDisposable
             throw new LocalWorkflowException("Job vượt giới hạn 1.000 mục hoặc 20 trang A4.");
 
         var id = Guid.NewGuid();
-        var job = new LocalPrintJob(id, spec, layout, outputPageCount, request.SourceIds.ToArray());
+        var job = new LocalPrintJob(
+            id,
+            [new LocalPrintBatch(spec, layout, outputPageCount)],
+            outputPageCount,
+            request.SourceIds.ToArray());
         lock (_sync)
         {
             if (_jobs.Count >= 20)
@@ -230,7 +286,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
         if (page < 0 || page >= job.OutputPageCount)
             throw new LocalWorkflowException("Trang preview không tồn tại.");
 
-        return SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 120);
+        var target = ResolveBatchPage(job, page);
+        return SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 120);
     }
 
     public string CreatePdf(Guid jobId)
@@ -245,7 +302,8 @@ public sealed partial class LocalWorkflowSession : IDisposable
             for (var page = 0; page < job.OutputPageCount; page++)
             {
                 var imagePath = Path.Combine(exportDirectory, $"page-{page + 1:D3}.png");
-                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(job.Spec, page, dpi: 300));
+                var target = ResolveBatchPage(job, page);
+                File.WriteAllBytes(imagePath, SourceJobRenderer.RenderMixedA4(target.Batch.Spec, target.Page, dpi: 300));
                 pagePaths.Add(imagePath);
             }
 
@@ -253,6 +311,18 @@ public sealed partial class LocalWorkflowSession : IDisposable
             ScanPdfWriter.Write(pagePaths, pdfPath);
             return pdfPath;
         }
+    }
+
+    private static (LocalPrintBatch Batch, int Page) ResolveBatchPage(LocalPrintJob job, int page)
+    {
+        var offset = 0;
+        foreach (var batch in job.Batches)
+        {
+            if (page < offset + batch.OutputPageCount)
+                return (batch, page - offset);
+            offset += batch.OutputPageCount;
+        }
+        throw new LocalWorkflowException("Trang preview không tồn tại.");
     }
 
     private LocalPrintJob GetJob(Guid id)
@@ -288,10 +358,14 @@ public sealed partial class LocalWorkflowSession : IDisposable
     }
 
     private sealed record UploadedSource(UploadedSourceView View, string Path);
-    private sealed record LocalPrintJob(
-        Guid Id,
+    private sealed record LocalPrintBatch(
         PrintJobSpec Spec,
         LayoutResult Layout,
+        int OutputPageCount);
+
+    private sealed record LocalPrintJob(
+        Guid Id,
+        IReadOnlyList<LocalPrintBatch> Batches,
         int OutputPageCount,
         IReadOnlyList<Guid> SourceIds);
 }

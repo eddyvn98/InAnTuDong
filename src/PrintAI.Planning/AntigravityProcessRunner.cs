@@ -25,6 +25,13 @@ public sealed class AntigravityProcessRunner : IAntigravityStreamingCommandRunne
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(invocation);
+        if (invocation.AllowTools &&
+            (string.IsNullOrWhiteSpace(invocation.WorkingDirectory) ||
+             !Directory.Exists(invocation.WorkingDirectory)))
+        {
+            throw new PlannerTransportException(
+                "Artifact tool mode requires an existing isolated working directory.");
+        }
 
         var start = new ProcessStartInfo
         {

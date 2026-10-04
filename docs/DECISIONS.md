@@ -432,3 +432,19 @@ Status: accepted
 The loopback-only macOS browser workflow may use the installed AGY CLI session for natural-language print planning. AGY receives request text and metadata for selected, server-held upload IDs; it does not receive arbitrary browser paths. PrintAI validates the strict planner contract, binds output to the uploaded-source allowlist, computes layout locally, and forces preview before export or CUPS submission. Credentials stay with the AGY installation, and no API key is added.
 
 If AGY is unavailable, deterministic manual layout remains available. This does not validate physical Mac printer fidelity or migrate scanning.
+
+
+## ADR-0XX - Artifact preparation is a first-class capability above printing
+Status: accepted
+
+PrintAI is not limited to translating every request directly into a print schema.
+
+The AI-first local request surface may route a request to deterministic print planning, sandboxed artifact preparation, or artifact preparation followed by deterministic print planning.
+
+Artifact preparation may inspect, edit, reformat or create document/image files only inside a per-task workspace containing copies of user-selected sources. Generated files are re-imported into the PrintAI session before preview or printing. Native Office originals are retained; PDF conversion is a preview/print representation rather than a destructive replacement.
+
+`PrintPlan 2.0` and `PrintJobSpec 1.0` remain the only print execution boundaries. AGY artifact tasks may never call printer/spooler commands directly.
+
+This expands document-preparation capability without expanding into CRM, pricing, payment, inventory, delivery or unrelated business workflows.
+
+See `docs/ARTIFACT_AGENT.md`.

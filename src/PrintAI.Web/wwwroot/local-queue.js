@@ -3,14 +3,11 @@ let nextQueueId = 1;
 function enqueuePlannerRequest() {
   const request = byId("planner-request").value.trim();
   const sourceIds = [...selectedSourceIds];
-  if (!sourceIds.length) return showError(new Error("Chọn ít nhất một file cho yêu cầu."));
-  if (!canSubmitPlannerRequest())
-    return showError(new Error("Xem preview các file đã chọn trước khi gửi yêu cầu."));
-  if (!request) return showError(new Error("Nhập yêu cầu in trước khi đưa vào hàng đợi."));
+  if (!request) return showError(new Error("Nhập yêu cầu in trước khi gửi."));
 
   requestQueue.push({
-    id: nextQueueId++,
-    order: requestQueue.length + 1,
+    id: nextQueueId,
+    order: nextQueueId++,
     request,
     sourceIds,
     history: [],
@@ -19,104 +16,78 @@ function enqueuePlannerRequest() {
     result: null
   });
   byId("planner-request").value = "";
+  updatePlannerRequestButton();
   byId("message").textContent = "";
+  byId("planner-result").textContent = plannerReady
+    ? "Đang gửi yêu cầu tới AGY…"
+    : "Đã nhận yêu cầu. Đang chờ AGY kết nối…";
   renderRequestQueue();
+  void runPlannerQueue();
+  if (!plannerReady) void loadPlannerStatus();
+  byId("planner-request").focus();
 }
 
 function renderRequestQueue() {
-  const container = byId("request-queue");
-  container.replaceChildren();
-  if (!requestQueue.length) {
-    byId("queue-run-button").disabled = true;
-    setIconButton(byId("queue-run-button"), "play", "Hàng đợi trống");
-    byId("queue-run-status").textContent = "Hàng đợi trống";
-    return;
-  }
-
-  const heading = document.createElement("h3");
-  heading.textContent = `Hàng đợi · ${requestQueue.length} yêu cầu`;
-  container.append(heading);
-  for (const item of requestQueue) {
-    const row = document.createElement("div");
-    row.className = "queue-entry";
-    const content = document.createElement("div");
-    content.className = "queue-entry-text";
-    const title = document.createElement("strong");
-    title.textContent = `#${item.order} · ${queueStatusLabel(item.status)}`;
-    const prompt = document.createElement("div");
-    prompt.textContent = item.request;
-    const fileNames = item.sourceIds.map(id => sources.find(source => source.id === id)?.fileName)
-      .filter(Boolean).join(", ");
-    const files = document.createElement("div");
-    files.className = "queue-status";
-    files.textContent = fileNames || "File đã bị xóa";
-    content.append(title, prompt, files);
-
-    const actions = document.createElement("div");
-    actions.className = "row";
-    if (item.status === "error") {
-      const retry = document.createElement("button");
-      retry.type = "button";
-      retry.className = "secondary";
-      setIconButton(retry, "refresh", "Thử lại yêu cầu");
-      retry.addEventListener("click", () => {
-        item.status = "waiting";
-        renderRequestQueue();
-      });
-      actions.append(retry);
-    }
-    if (item.result?.job) {
-      const preview = document.createElement("button");
-      preview.type = "button";
-      preview.className = "secondary";
-      setIconButton(preview, "eye", "Xem preview");
-      preview.addEventListener("click", () => document.dispatchEvent(
-        new CustomEvent("queued-result-selected", { detail: item })));
-      actions.append(preview);
-    }
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "danger secondary";
-    setIconButton(remove, "trash", "Xóa yêu cầu khỏi hàng đợi");
-    remove.disabled = queueRunning && activeQueueItem === item;
-    remove.addEventListener("click", () => removeQueueItem(item));
-    actions.append(remove);
-    row.append(content, actions);
-    container.append(row);
-  }
-
   const waiting = requestQueue.filter(item => item.status === "waiting").length;
-  const needsAnswer = requestQueue.some(item => item.status === "needs-answer");
-  const runLabel = queueRunning
-    ? "AGY đang xử lý hàng đợi…"
-    : !plannerReady ? "AGY chưa sẵn sàng"
-    : needsAnswer ? "Cần trả lời câu hỏi của AGY"
-    : waiting ? `Chạy hàng đợi (${waiting})` : "Không còn yêu cầu chờ";
-  byId("queue-run-button").disabled = queueRunning || waiting === 0 || !plannerReady || needsAnswer;
-  setIconButton(byId("queue-run-button"), queueRunning ? "refresh" : "play", runLabel);
-  byId("queue-run-status").textContent = runLabel;
+  const processing = requestQueue.find(item => item.status === "processing");
+  const needsAnswer = requestQueue.find(item => item.status === "needs-answer");
+  const done = requestQueue.filter(item => item.status === "done").length;
+  const errors = requestQueue.filter(item => item.status === "error").length;
+  const summary = processing
+    ? `Đang xử lý yêu cầu ${processing.order}. Còn ${waiting} yêu cầu chờ.`
+    : needsAnswer
+    ? `Yêu cầu ${needsAnswer.order} cần bạn trả lời để tiếp tục.`
+    : !plannerReady && waiting
+    ? `${waiting} yêu cầu đang chờ AGY kết nối.`
+    : waiting
+    ? `${waiting} yêu cầu đang chờ xử lý.`
+    : `${done} yêu cầu hoàn tất${errors ? `, ${errors} yêu cầu lỗi` : ""}.`;
+  byId("request-queue").textContent = requestQueue.length ? summary : "";
+  renderSourceQueueBadges();
 }
 
 function queueStatusLabel(status) {
   return ({
     waiting: "đang chờ",
-    processing: "AGY đang xử lý",
-    "needs-answer": "cần bạn trả lời",
+    processing: "đang xử lý",
+    "needs-answer": "cần trả lời",
     done: "đã xong",
     error: "lỗi",
     cancelled: "đã hủy"
   })[status] || status;
 }
 
-function removeQueueItem(item) {
-  if (queueRunning && activeQueueItem === item) return;
-  requestQueue = requestQueue.filter(entry => entry !== item);
-  requestQueue.forEach((entry, index) => entry.order = index + 1);
-  if (activeQueueItem === item) {
-    activeQueueItem = null;
-    byId("planner-clarification").hidden = true;
+function renderSourceQueueBadges() {
+  const priority = { processing: 0, "needs-answer": 1, waiting: 2, error: 3, done: 4, cancelled: 5 };
+  const shortLabels = {
+    waiting: "chờ",
+    processing: "đang xử lý",
+    "needs-answer": "cần trả lời",
+    done: "xong",
+    error: "lỗi",
+    cancelled: "đã hủy"
+  };
+
+  for (const card of byId("sources").querySelectorAll(".source-card")) {
+    const sourceId = card.dataset.sourceId;
+    const item = requestQueue
+      .filter(entry => entry.sourceIds.includes(sourceId))
+      .sort((a, b) => priority[a.status] - priority[b.status] || a.order - b.order)[0];
+    const trigger = card.querySelector(".source-preview-trigger");
+    const existing = trigger.querySelector(".source-queue-badge");
+    if (!item) {
+      existing?.remove();
+      continue;
+    }
+
+    const badge = existing || document.createElement("span");
+    badge.className = "source-queue-badge";
+    badge.dataset.status = item.status;
+    badge.textContent = `#${item.order} ${shortLabels[item.status] || item.status}`;
+    badge.title = `Yêu cầu ${item.order} · ${queueStatusLabel(item.status)}`;
+    badge.setAttribute("aria-label", badge.title);
+    if (!existing) trigger.append(badge);
   }
-  renderRequestQueue();
 }
 
 function cancelRequestsForSources(sourceIds) {
@@ -129,7 +100,20 @@ function cancelRequestsForSources(sourceIds) {
     if (activeQueueItem === item) activeQueueItem = null;
   }
   byId("planner-clarification").hidden = true;
+  renderRequestQueue();
 }
 
-byId("planner-button").addEventListener("click", enqueuePlannerRequest);
-byId("queue-run-button").addEventListener("click", () => runPlannerQueue());
+byId("planner-form").addEventListener("submit", event => {
+  event.preventDefault();
+  enqueuePlannerRequest();
+});
+byId("planner-request").addEventListener("input", updatePlannerRequestButton);
+byId("planner-request").addEventListener("keydown", event => {
+  if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+  event.preventDefault();
+  byId("planner-form").requestSubmit();
+});
+document.addEventListener("local-ready", loadPlannerStatus);
+document.addEventListener("sources-updated", loadPlannerStatus);
+document.addEventListener("sources-updated", updatePlannerRequestButton);
+document.addEventListener("selection-updated", updatePlannerRequestButton);
